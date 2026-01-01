@@ -1,0 +1,62 @@
+<style>
+  .about {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 96px 24px 120px;
+    text-align: center;
+  }
+
+  .about-card {
+    max-width: 720px;
+    padding: 36px 32px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(10, 10, 16, 0.75), rgba(10, 10, 16, 0.45));
+    outline: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(10px);
+  }
+
+  .about-title {
+    font-size: 32px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0 0 18px;
+  }
+
+  .about-text {
+    font-size: 15px;
+    line-height: 1.7;
+    opacity: 0.9;
+    margin: 0 0 22px;
+  }
+
+  .about-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    text-decoration: none;
+    color: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    outline: 1px solid rgba(255, 255, 255, 0.16);
+  }
+</style>
+
+<div class="top-fade" aria-hidden="true"></div>
+<div class="about">
+  <div class="about-card">
+    <div class="about-title">About Us</div>
+    <p class="about-text">
+      Caelina blends modern minimalism with statement design. Each piece is
+      curated to feel bold yet refined, balancing everyday wear with a quiet
+      luxury edge. Our collections are built around clean silhouettes,
+      sculptural details, and a timeless palette.
+    </p>
+    <a class="about-link" href="{{ routes.root_url }}">Back to Canvas</a>
+  </div>
+</div>
