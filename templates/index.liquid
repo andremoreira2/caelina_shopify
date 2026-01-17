@@ -1,8 +1,6 @@
 <div class="intro" id="introScreen" aria-hidden="true"></div>
 <div class="top-fade" aria-hidden="true"></div>
 
-<div class="logo" id="brandLogo">CΛELINΛ</div>
-
 <div id="viewport">
   <div id="layer"></div>
 </div>
@@ -12,4 +10,10 @@
   <a href="/pages/about">About Us</a>
   <a href="#">Works</a>
   <a href="#">More</a>
+  <a class="dock-cart" href="/cart">
+    Cart
+    {% if cart.item_count > 0 %}
+      <span class="cart-count">{{ cart.item_count }}</span>
+    {% endif %}
+  </a>
 </nav>

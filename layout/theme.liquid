@@ -7,7 +7,23 @@
   {{ 'styles.css' | asset_url | stylesheet_tag }}
   {{ content_for_header }}
 </head>
-<body>
+<body class="template-{{ template.name }}">
+  <header class="site-header" role="banner">
+    <div class="site-header__inner">
+      <nav class="site-nav" aria-label="Primary">
+        <a href="{{ routes.root_url }}">Home</a>
+        <a href="/pages/about">About</a>
+        <a href="/collections">Collections</a>
+        <a href="{{ routes.cart_url }}" class="site-cart">
+          Cart
+          {% if cart.item_count > 0 %}
+            <span class="site-cart__count">{{ cart.item_count }}</span>
+          {% endif %}
+        </a>
+      </nav>
+    </div>
+  </header>
+  <a class="logo" id="brandLogo" href="{{ routes.root_url }}" aria-label="CAELINA home">CΛELINΛ</a>
   {{ content_for_layout }}
   {% if template.name == 'index' %}
     <script src="{{ 'app.js' | asset_url }}" defer></script>

@@ -1,0 +1,168 @@
+<section class="product-page">
+  <div class="product-media">
+    {% if product.media.size > 0 %}
+      {% assign main_image = nil %}
+      {% for media in product.media %}
+        {% if media.media_type == "image" %}
+          {% assign main_image = media %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+      {% if main_image %}
+        <div class="product-gallery" data-gallery>
+          <div class="product-main">
+            <img
+              src="{{ main_image | image_url: width: 900 }}"
+              alt="{{ main_image.alt | escape }}"
+              loading="lazy"
+              data-main-image
+            >
+          </div>
+          <div class="product-thumbs">
+            {% assign thumb_index = 0 %}
+            {% for media in product.media %}
+              {% if media.media_type == "image" %}
+                <button
+                  class="product-thumb{% if thumb_index == 0 %} is-active{% endif %}"
+                  type="button"
+                  data-thumb
+                  data-large="{{ media | image_url: width: 900 }}"
+                  data-alt="{{ media.alt | escape }}"
+                  aria-label="View image {{ thumb_index | plus: 1 }}"
+                >
+                  <img
+                    src="{{ media | image_url: width: 200 }}"
+                    alt="{{ media.alt | escape }}"
+                    loading="lazy"
+                  >
+                </button>
+                {% assign thumb_index = thumb_index | plus: 1 %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <div class="product-placeholder">No images yet.</div>
+      {% endif %}
+    {% else %}
+      <div class="product-placeholder">No images yet.</div>
+    {% endif %}
+  </div>
+
+  <div class="product-info">
+    {% assign current_variant = product.selected_or_first_available_variant %}
+    <h1 class="product-title">{{ product.title }}</h1>
+    <div class="product-price" data-product-price>
+      <span class="product-price-value">{{ current_variant.price | money }}</span>
+      <span class="product-compare" {% if current_variant.compare_at_price <= current_variant.price %}hidden{% endif %}>
+        {{ current_variant.compare_at_price | money }}
+      </span>
+    </div>
+
+    {% if product.description != blank %}
+      <div class="product-description">{{ product.description }}</div>
+    {% endif %}
+
+    {% form 'product', product, class: 'product-form' %}
+      {% if product.variants.size > 1 %}
+        <label class="product-label" for="variantSelect">Variant</label>
+        <select id="variantSelect" name="id" class="product-select">
+          {% for variant in product.variants %}
+            <option
+              value="{{ variant.id }}"
+              data-price="{{ variant.price | money }}"
+              data-compare="{{ variant.compare_at_price | money }}"
+              data-price-amount="{{ variant.price }}"
+              data-compare-amount="{{ variant.compare_at_price }}"
+              data-available="{{ variant.available }}"
+              {% if variant.id == current_variant.id %}selected{% endif %}
+              {% unless variant.available %}disabled{% endunless %}
+            >
+              {{ variant.title }} - {{ variant.price | money }}
+            </option>
+          {% endfor %}
+        </select>
+      {% else %}
+        <input type="hidden" name="id" value="{{ current_variant.id }}">
+      {% endif %}
+
+      <label class="product-label" for="quantity">Quantity</label>
+      <input id="quantity" class="product-qty" type="number" name="quantity" value="1" min="1" step="1">
+
+      <button
+        type="submit"
+        class="btn primary"
+        data-add-to-cart
+        {% unless current_variant.available %}disabled{% endunless %}
+      >
+        {% if current_variant.available %}Add to cart{% else %}Sold out{% endif %}
+      </button>
+    {% endform %}
+
+    <a class="cart-link" href="/cart">View cart</a>
+  </div>
+</section>
+
+<script>
+  (() => {
+    const gallery = document.querySelector("[data-gallery]");
+    const mainImage = gallery?.querySelector("[data-main-image]");
+    const thumbs = gallery ? [...gallery.querySelectorAll("[data-thumb]")] : [];
+
+    if (gallery && mainImage && thumbs.length > 0) {
+      const setActive = (btn) => {
+        if (!btn) return;
+        const nextSrc = btn.dataset.large;
+        const nextAlt = btn.dataset.alt || "";
+        if (nextSrc) mainImage.src = nextSrc;
+        mainImage.alt = nextAlt;
+        thumbs.forEach((thumb) => {
+          thumb.classList.toggle("is-active", thumb === btn);
+        });
+      };
+
+      thumbs.forEach((btn) => {
+        btn.addEventListener("click", () => setActive(btn));
+      });
+
+      if (thumbs.length <= 1) {
+        gallery.classList.add("is-single");
+      }
+    }
+
+    const variantSelect = document.getElementById("variantSelect");
+    if (!variantSelect) return;
+
+    const priceWrap = document.querySelector("[data-product-price]");
+    const priceValue = priceWrap?.querySelector(".product-price-value");
+    const compareValue = priceWrap?.querySelector(".product-compare");
+    const addBtn = document.querySelector("[data-add-to-cart]");
+
+    function updateFromOption(option){
+      if (!option) return;
+      if (priceValue) priceValue.textContent = option.dataset.price || "";
+
+      if (compareValue) {
+        const priceAmount = Number(option.dataset.priceAmount || 0);
+        const compareAmount = Number(option.dataset.compareAmount || 0);
+        if (compareAmount > priceAmount) {
+          compareValue.textContent = option.dataset.compare || "";
+          compareValue.hidden = false;
+        } else {
+          compareValue.hidden = true;
+        }
+      }
+
+      if (addBtn) {
+        const available = option.dataset.available === "true";
+        addBtn.disabled = !available;
+        addBtn.textContent = available ? "Add to cart" : "Sold out";
+      }
+    }
+
+    updateFromOption(variantSelect.selectedOptions?.[0]);
+    variantSelect.addEventListener("change", (e) => {
+      updateFromOption(e.target.selectedOptions?.[0]);
+    });
+  })();
+</script>
