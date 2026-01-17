@@ -1,1 +1,17 @@
+<<<<<<< HEAD
 []
+=======
+[
+  {
+    "name": "Theme settings",
+    "settings": [
+      {
+        "type": "color",
+        "id": "accent_color",
+        "label": "Accent color",
+        "default": "#ffffff"
+      }
+    ]
+  }
+]
+>>>>>>> db244a5 (Adding footer)

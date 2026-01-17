@@ -137,9 +137,7 @@
 
             el.appendChild(info);
             if (el.tagName === "A") {
-              el.href = `https://branvas.com/products/${product.handle}`;
-              el.target = "_blank";
-              el.rel = "noopener";
+              el.href = `/products/${product.handle}`;
             }
           } else {
             // Use gradient backgrounds for the demo
@@ -359,7 +357,6 @@
       await loadProducts();
       init();
       setTimeout(() => {
-        if (brandLogo) brandLogo.classList.add("to-top");
         if (introScreen) introScreen.classList.add("fade-out");
       }, 600);
     })();
