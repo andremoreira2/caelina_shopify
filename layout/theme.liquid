@@ -10,6 +10,8 @@
 <body class="template-{{ template.name }}">
   <header class="site-header" role="banner">
     <div class="site-header__inner">
+      <div class="site-header__spacer" aria-hidden="true"></div>
+      <a class="site-header__logo" id="brandLogo" href="{{ routes.root_url }}" aria-label="CAELINA home">CΛELINΛ</a>
       <nav class="site-nav" aria-label="Primary">
         <a href="{{ routes.root_url }}">Home</a>
         <a href="/pages/about">About</a>
@@ -55,7 +57,6 @@
       </div>
     </div>
   </header>
-  <a class="logo" id="brandLogo" href="{{ routes.root_url }}" aria-label="CAELINA home">CΛELINΛ</a>
   {{ content_for_layout }}
   {% if template.name == 'index' %}
     <script src="{{ 'app.js' | asset_url }}" defer></script>
