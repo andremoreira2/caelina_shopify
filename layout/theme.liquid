@@ -36,7 +36,7 @@
           </svg>
         </a>
       </div>
-      <a class="site-header__brand" href="{{ routes.root_url }}">CAELINA</a>
+      <a class="site-header__brand" href="{{ routes.root_url }}">CΛELINΛ</a>
       <div class="site-header__mobile-right">
         <a class="site-header__icon" href="/account" aria-label="Account">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -45,9 +45,8 @@
           </svg>
         </a>
         <a class="site-header__icon site-header__cart" href="{{ routes.cart_url }}" aria-label="Cart">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M6 7h12l-1.4 12H7.4L6 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-            <path d="M8 7l.6-3h6.8l.6 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
           </svg>
           {% if cart.item_count > 0 %}
             <span class="site-cart__count">{{ cart.item_count }}</span>
