@@ -104,12 +104,14 @@ body.template-index {
   text-transform: uppercase;
   opacity: 0.8;
   padding: 8px 12px;
+  border-radius: 0;
   transition: opacity 0.2s ease, background 0.2s ease;
   position: relative;
   overflow: hidden;
 }
 .site-nav a:hover {
   opacity: 1;
+  background: transparent;
 }
 .site-nav a::after {
   content: "";
@@ -132,13 +134,15 @@ body.template-index {
   gap: 8px;
 }
 .site-cart__count {
-  min-width: 18px;
-  height: 18px;
-  padding: 0 6px;
+  min-width: 8px;
+  height: 14px;
+  padding: 0 4px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  font-size: 10px;
-  line-height: 18px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 14px;
   text-align: center;
 }
 
