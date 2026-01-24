@@ -4,16 +4,3 @@
 <div id="viewport">
   <div id="layer"></div>
 </div>
-
-<nav class="dock" aria-label="Site">
-  <a class="active" href="{{ routes.root_url }}">Home</a>
-  <a href="/pages/about">About Us</a>
-  <a href="#">Works</a>
-  <a href="#">More</a>
-  <a class="dock-cart" href="/cart">
-    Cart
-    {% if cart.item_count > 0 %}
-      <span class="cart-count">{{ cart.item_count }}</span>
-    {% endif %}
-  </a>
-</nav>
