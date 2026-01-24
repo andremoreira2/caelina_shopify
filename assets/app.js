@@ -40,7 +40,8 @@
     let pointerX = 0, pointerY = 0;
     let hovering = false;
     let hoverActive = false;
-    let introActive = true;
+    const allowAutoPan = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    let introActive = allowAutoPan;
     let menuHovering = false;
     let lastRender = 0;
     let autoPanX = 0, autoPanY = 0;
@@ -186,7 +187,7 @@
       let targetPanY = 0;
 
       // Auto-pan based on distance from center (dead zone in the middle)
-      if (!introActive && hoverActive && hovering && !menuHovering) {
+      if (allowAutoPan && !introActive && hoverActive && hovering && !menuHovering) {
         const w = window.innerWidth;
         const h = window.innerHeight;
 
@@ -330,6 +331,7 @@
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onUp);
     viewport.addEventListener("pointerenter", (e) => {
+      if (!allowAutoPan) return;
       hovering = true;
       hoverActive = true;
       introActive = false;

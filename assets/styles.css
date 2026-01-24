@@ -24,14 +24,39 @@ body.template-index {
   position: sticky;
   top: 0;
   z-index: 12;
-  backdrop-filter: blur(12px);
-  background: rgba(12, 12, 18, 0.75);
+  color: var(--fg);
+  background: #0b0b0f;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+body.template-index .site-header {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+@media (hover: hover) and (pointer: fine) {
+  .site-header:hover {
+    background: #ffffff;
+    color: #111111;
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+  }
+  .site-header:hover .site-cart__count {
+    background: #111111;
+    color: #ffffff;
+  }
+  body.template-index .site-header:hover {
+    background: #ffffff;
+    color: #111111;
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+  }
+  body.template-index .site-header:hover .site-cart__count {
+    background: #111111;
+    color: #ffffff;
+  }
 }
 .site-header__inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 14px 22px;
+  padding: 26px 22px;
   display: grid;
   align-items: center;
   gap: 16px;
@@ -46,7 +71,7 @@ body.template-index {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-family: "Times New Roman", Times, serif;
-  font-size: 38px;
+  font-size: 48px;
   justify-self: center;
 }
 .site-header__mobile {
@@ -145,8 +170,17 @@ body.template-index {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  position: relative;
+}
+.site-cart svg {
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 .site-cart__count {
+  position: absolute;
+  top: 2px;
+  right: 2px;
   min-width: 8px;
   height: 14px;
   padding: 0 4px;
