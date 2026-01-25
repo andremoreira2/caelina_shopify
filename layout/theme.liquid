@@ -26,7 +26,7 @@
         <a href="{{ routes.root_url }}">Home</a>
         <a href="/pages/about">About</a>
         <a href="/collections">Collections</a>
-        <a href="{{ routes.cart_url }}" class="site-cart">
+        <a href="{{ routes.cart_url }}" class="site-cart" data-cart-toggle>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
           </svg>
@@ -58,7 +58,7 @@
             <path d="M4 20c1.8-4 6-6 8-6s6.2 2 8 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
           </svg>
         </a>
-        <a class="site-header__icon site-header__cart" href="{{ routes.cart_url }}" aria-label="Cart">
+        <a class="site-header__icon site-header__cart" href="{{ routes.cart_url }}" aria-label="Cart" data-cart-toggle>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
           </svg>
@@ -70,6 +70,16 @@
     </div>
   </header>
   {{ content_for_layout }}
+
+  <div class="cart-drawer" data-cart-drawer aria-hidden="true">
+    <div class="cart-drawer__overlay" data-cart-drawer-close></div>
+    <div class="cart-drawer__panel" role="dialog" aria-label="Cart" aria-modal="true">
+      <button class="cart-drawer__close" type="button" data-cart-drawer-close aria-label="Close cart">✕</button>
+      <div class="cart-drawer__content" data-cart-drawer-content></div>
+    </div>
+  </div>
+
+  {{ 'cart-drawer.js' | asset_url | script_tag }}
   {% if template.name == 'index' %}
     <script src="{{ 'app.js' | asset_url }}" defer></script>
   {% endif %}
