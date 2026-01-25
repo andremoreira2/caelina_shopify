@@ -11,7 +11,17 @@
   <header class="site-header" role="banner">
     <div class="site-header__inner">
       <div class="site-header__spacer" aria-hidden="true"></div>
-      <a class="site-header__logo" id="brandLogo" href="{{ routes.root_url }}" aria-label="CAELINA home">CΛELINΛ</a>
+      <div class="site-header__center">
+        <a class="site-header__logo" id="brandLogo" href="{{ routes.root_url }}" aria-label="CAELINA home">CΛELINΛ</a>
+        <nav class="site-subnav" aria-label="Collections">
+          {% assign subnav = linklists['header-subnavv'] %}
+          {% if subnav and subnav.links.size > 0 %}
+            {% for link in subnav.links %}
+              <a href="{{ link.url }}">{{ link.title }}</a>
+            {% endfor %}
+          {% endif %}
+        </nav>
+      </div>
       <nav class="site-nav" aria-label="Primary">
         <a href="{{ routes.root_url }}">Home</a>
         <a href="/pages/about">About</a>
