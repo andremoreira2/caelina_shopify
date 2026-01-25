@@ -656,11 +656,14 @@ kbd {
   font-size: 13px;
   opacity: 0.8;
 }
-.cart-title {
+.page-title {
   margin: 0;
-  font-size: 32px;
-  letter-spacing: 0.08em;
+  font-family: "Times New Roman", Times, serif;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+.cart-title {
+  font-size: 32px;
 }
 .cart-form {
   display: block;
@@ -773,10 +776,7 @@ kbd {
   gap: 10px;
 }
 .collection-title {
-  margin: 0;
   font-size: 34px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 .collection-description {
   font-size: 14px;
