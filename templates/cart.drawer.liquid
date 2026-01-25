@@ -1,0 +1,52 @@
+{% layout none %}
+
+<div class="drawer-cart">
+  <h2 class="drawer-cart__title">Your cart</h2>
+
+  {% if cart.item_count == 0 %}
+    <div class="drawer-cart__empty">Your cart is empty.</div>
+    <a class="btn" href="/collections/all">Explore products</a>
+  {% else %}
+    <ul class="drawer-cart__lines">
+      {% for item in cart.items %}
+        <li class="drawer-cart__line" data-cart-line data-key="{{ item.key }}">
+          {% if item.image %}
+            <img
+              src="{{ item.image | image_url: width: 160 }}"
+              alt="{{ item.image.alt | escape }}"
+              loading="lazy"
+            >
+          {% endif %}
+          <div class="drawer-cart__info">
+            <div class="drawer-cart__name">{{ item.product.title }}</div>
+            {% if item.variant.title != 'Default Title' %}
+              <div class="drawer-cart__variant">{{ item.variant.title }}</div>
+            {% endif %}
+            <div class="drawer-cart__price">{{ item.final_price | money }}</div>
+            <div class="drawer-cart__controls">
+              <label class="drawer-cart__qty">
+                Qty
+                <input
+                  type="number"
+                  min="0"
+                  value="{{ item.quantity }}"
+                  data-qty-input
+                >
+              </label>
+              <button class="drawer-cart__remove" type="button" data-remove>Remove</button>
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="drawer-cart__subtotal">
+      <span>Subtotal</span>
+      <span>{{ cart.total_price | money }}</span>
+    </div>
+    <div class="drawer-cart__actions">
+      <a class="btn primary" href="/checkout">Checkout</a>
+      <a class="cart-link" href="/cart">View cart</a>
+    </div>
+  {% endif %}
+</div>
