@@ -536,11 +536,23 @@ kbd {
   display: grid;
   gap: 14px;
 }
+.product-main {
+  aspect-ratio: 4 / 3;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
 .product-main img {
   width: 100%;
+  height: 100%;
   display: block;
-  border-radius: 18px;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+  border-radius: 0;
+  object-fit: cover;
+  cursor: zoom-in;
+  transition: transform 0.25s ease;
+}
+.product-main img:hover {
+  transform: scale(1.01);
 }
 .product-thumbs {
   display: grid;
@@ -617,6 +629,99 @@ kbd {
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+.product-options {
+  display: grid;
+  gap: 12px;
+}
+.product-option__values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.product-option__value {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.product-option__value:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.product-option__value.is-active {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+.product-select.is-hidden {
+  display: none;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.product-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 24px;
+}
+.product-lightbox.is-open {
+  display: flex;
+}
+.product-lightbox__image {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.product-lightbox__close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 22px;
+  cursor: pointer;
+}
+.product-lightbox__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  font-size: 24px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.product-lightbox__nav--prev {
+  left: 22px;
+}
+.product-lightbox__nav--next {
+  right: 22px;
 }
 .product-select {
   width: 100%;

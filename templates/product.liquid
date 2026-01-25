@@ -16,6 +16,7 @@
               alt="{{ main_image.alt | escape }}"
               loading="lazy"
               data-main-image
+              data-zoom="{{ main_image | image_url: width: 1600 }}"
             >
           </div>
           <div class="product-thumbs">
@@ -26,7 +27,9 @@
                   class="product-thumb{% if thumb_index == 0 %} is-active{% endif %}"
                   type="button"
                   data-thumb
+                  data-index="{{ thumb_index }}"
                   data-large="{{ media | image_url: width: 900 }}"
+                  data-zoom="{{ media | image_url: width: 1600 }}"
                   data-alt="{{ media.alt | escape }}"
                   aria-label="View image {{ thumb_index | plus: 1 }}"
                 >
@@ -65,8 +68,27 @@
 
     {% form 'product', product, class: 'product-form' %}
       {% if product.variants.size > 1 %}
-        <label class="product-label" for="variantSelect">Variant</label>
-        <select id="variantSelect" name="id" class="product-select">
+        <div class="product-options" data-options>
+          {% for option in product.options_with_values %}
+            <div class="product-option" data-option-index="{{ forloop.index0 }}">
+              <div class="product-label">{{ option.name }}</div>
+              <div class="product-option__values">
+                {% for value in option.values %}
+                  <button
+                    class="product-option__value"
+                    type="button"
+                    data-option-value="{{ value }}"
+                    aria-pressed="false"
+                  >
+                    {{ value }}
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <label class="product-label visually-hidden" for="variantSelect">Variant</label>
+        <select id="variantSelect" name="id" class="product-select is-hidden" data-variant-select>
           {% for variant in product.variants %}
             <option
               value="{{ variant.id }}"
@@ -103,8 +125,16 @@
   </div>
 </section>
 
+<div class="product-lightbox" data-lightbox aria-hidden="true">
+  <button class="product-lightbox__close" type="button" data-lightbox-close aria-label="Close image">✕</button>
+  <button class="product-lightbox__nav product-lightbox__nav--prev" type="button" data-lightbox-prev aria-label="Previous image">‹</button>
+  <img class="product-lightbox__image" data-lightbox-image alt="">
+  <button class="product-lightbox__nav product-lightbox__nav--next" type="button" data-lightbox-next aria-label="Next image">›</button>
+</div>
+
 <script>
   (() => {
+    const variants = {{ product.variants | json }};
     const gallery = document.querySelector("[data-gallery]");
     const mainImage = gallery?.querySelector("[data-main-image]");
     const thumbs = gallery ? [...gallery.querySelectorAll("[data-thumb]")] : [];
@@ -114,8 +144,10 @@
         if (!btn) return;
         const nextSrc = btn.dataset.large;
         const nextAlt = btn.dataset.alt || "";
+        const nextZoom = btn.dataset.zoom || nextSrc;
         if (nextSrc) mainImage.src = nextSrc;
         mainImage.alt = nextAlt;
+        if (nextZoom) mainImage.dataset.zoom = nextZoom;
         thumbs.forEach((thumb) => {
           thumb.classList.toggle("is-active", thumb === btn);
         });
@@ -130,6 +162,59 @@
       }
     }
 
+    const lightbox = document.querySelector("[data-lightbox]");
+    const lightboxImg = lightbox?.querySelector("[data-lightbox-image]");
+    const lightboxClose = lightbox?.querySelector("[data-lightbox-close]");
+    const lightboxPrev = lightbox?.querySelector("[data-lightbox-prev]");
+    const lightboxNext = lightbox?.querySelector("[data-lightbox-next]");
+    if (lightbox && lightboxImg && mainImage) {
+      const sources = thumbs.map((btn) => ({
+        zoom: btn.dataset.zoom || btn.dataset.large,
+        alt: btn.dataset.alt || "",
+      }));
+      let currentIndex = thumbs.findIndex((btn) => btn.classList.contains("is-active"));
+
+      const showAt = (idx) => {
+        if (!sources.length) return;
+        currentIndex = (idx + sources.length) % sources.length;
+        const next = sources[currentIndex];
+        lightboxImg.src = next.zoom;
+        lightboxImg.alt = next.alt;
+      };
+
+      const openLightbox = () => {
+        const activeIndex = thumbs.findIndex((btn) => btn.classList.contains("is-active"));
+        showAt(activeIndex >= 0 ? activeIndex : 0);
+        lightbox.classList.add("is-open");
+        lightbox.setAttribute("aria-hidden", "false");
+      };
+      const closeLightbox = () => {
+        lightbox.classList.remove("is-open");
+        lightbox.setAttribute("aria-hidden", "true");
+      };
+
+      mainImage.addEventListener("click", openLightbox);
+      lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) closeLightbox();
+      });
+      lightboxClose.addEventListener("click", closeLightbox);
+      lightboxPrev?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showAt(currentIndex - 1);
+      });
+      lightboxNext?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showAt(currentIndex + 1);
+      });
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeLightbox();
+        if (lightbox.classList.contains("is-open")) {
+          if (e.key === "ArrowLeft") showAt(currentIndex - 1);
+          if (e.key === "ArrowRight") showAt(currentIndex + 1);
+        }
+      });
+    }
+
     const variantSelect = document.getElementById("variantSelect");
     if (!variantSelect) return;
 
@@ -137,6 +222,7 @@
     const priceValue = priceWrap?.querySelector(".product-price-value");
     const compareValue = priceWrap?.querySelector(".product-compare");
     const addBtn = document.querySelector("[data-add-to-cart]");
+    const optionGroups = document.querySelectorAll("[data-option-index]");
 
     function updateFromOption(option){
       if (!option) return;
@@ -164,5 +250,47 @@
     variantSelect.addEventListener("change", (e) => {
       updateFromOption(e.target.selectedOptions?.[0]);
     });
+
+    if (optionGroups.length && variants.length) {
+      const findVariant = (selected) =>
+        variants.find((v) => v.options.every((opt, idx) => opt === selected[idx]));
+
+      let selectedOptions =
+        variants.find((v) => v.id === Number(variantSelect.value))?.options || [];
+
+      const syncButtons = () => {
+        optionGroups.forEach((group) => {
+          const index = Number(group.dataset.optionIndex);
+          group.querySelectorAll("[data-option-value]").forEach((btn) => {
+            const active = btn.dataset.optionValue === selectedOptions[index];
+            btn.classList.toggle("is-active", active);
+            btn.setAttribute("aria-pressed", active ? "true" : "false");
+          });
+        });
+      };
+
+      syncButtons();
+
+      optionGroups.forEach((group) => {
+        const index = Number(group.dataset.optionIndex);
+        group.querySelectorAll("[data-option-value]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            selectedOptions[index] = btn.dataset.optionValue;
+            const match = findVariant(selectedOptions);
+            if (match) {
+              variantSelect.value = match.id;
+              variantSelect.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+            syncButtons();
+          });
+        });
+      });
+
+      variantSelect.addEventListener("change", () => {
+        selectedOptions =
+          variants.find((v) => v.id === Number(variantSelect.value))?.options || selectedOptions;
+        syncButtons();
+      });
+    }
   })();
 </script>
