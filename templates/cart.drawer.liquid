@@ -40,13 +40,15 @@
       {% endfor %}
     </ul>
 
-    <div class="drawer-cart__subtotal">
-      <span>Subtotal</span>
-      <span>{{ cart.total_price | money }}</span>
-    </div>
-    <div class="drawer-cart__actions">
-      <a class="btn primary" href="/checkout">Checkout</a>
-      <a class="cart-link" href="/cart">View cart</a>
+    <div class="drawer-cart__footer">
+      <div class="drawer-cart__subtotal">
+        <span>Subtotal</span>
+        <span>{{ cart.total_price | money }}</span>
+      </div>
+      <div class="drawer-cart__actions">
+        <a class="btn primary" href="/checkout">Checkout</a>
+        <a class="cart-link" href="/cart">View cart</a>
+      </div>
     </div>
   {% endif %}
 </div>
