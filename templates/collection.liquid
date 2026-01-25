@@ -1,0 +1,114 @@
+{% paginate collection.products by 24 %}
+  <section class="collection-page">
+    <header class="collection-header">
+      <h1 class="collection-title">{{ collection.title }}</h1>
+      {% if collection.description != blank %}
+        <div class="collection-description">{{ collection.description }}</div>
+      {% endif %}
+    </header>
+
+    <div class="collection-layout">
+      <aside class="collection-sidebar" aria-label="Filters">
+        <form class="filter-form" method="get" action="{{ collection.url }}">
+          <div class="filter-block">
+            <label class="filter-title" for="SortBy">Sort</label>
+            <select id="SortBy" name="sort_by" class="filter-select">
+              {% for option in collection.sort_options %}
+                <option value="{{ option.value }}" {% if option.value == collection.sort_by %}selected{% endif %}>
+                  {{ option.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          {% if collection.filters.size > 0 %}
+            {% for filter in collection.filters %}
+              <div class="filter-block">
+                <div class="filter-title">{{ filter.label }}</div>
+                {% case filter.type %}
+                  {% when 'price_range' %}
+                    <div class="filter-range">
+                      <input
+                        class="filter-input"
+                        type="number"
+                        name="{{ filter.min_value.param_name }}"
+                        value="{{ filter.min_value.value }}"
+                        placeholder="Min"
+                        min="0"
+                        max="{{ filter.range_max }}"
+                      >
+                      <span class="filter-range__dash">—</span>
+                      <input
+                        class="filter-input"
+                        type="number"
+                        name="{{ filter.max_value.param_name }}"
+                        value="{{ filter.max_value.value }}"
+                        placeholder="Max"
+                        min="0"
+                        max="{{ filter.range_max }}"
+                      >
+                    </div>
+                  {% else %}
+                    <ul class="filter-list">
+                      {% for value in filter.values %}
+                        <li>
+                          <label class="filter-item">
+                            <input
+                              type="checkbox"
+                              name="{{ value.param_name }}"
+                              value="{{ value.value }}"
+                              {% if value.active %}checked{% endif %}
+                              {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                            >
+                            <span>{{ value.label }} ({{ value.count }})</span>
+                          </label>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                {% endcase %}
+              </div>
+            {% endfor %}
+            <button type="submit" class="btn">Apply</button>
+            <a class="filter-clear" href="{{ collection.url }}">Clear all</a>
+          {% else %}
+            <div class="filter-empty">No filters available yet.</div>
+          {% endif %}
+        </form>
+      </aside>
+
+      <div class="collection-grid">
+        {% if collection.products_count == 0 %}
+          <div class="collection-empty">No products found in this collection.</div>
+        {% else %}
+          {% for product in collection.products %}
+            <a class="collection-card" href="{{ product.url }}">
+              {% if product.featured_image %}
+                <img
+                  src="{{ product.featured_image | image_url: width: 600 }}"
+                  alt="{{ product.featured_image.alt | escape }}"
+                  loading="lazy"
+                >
+              {% endif %}
+              <div class="collection-card__info">
+                <span class="collection-card__title">{{ product.title }}</span>
+                <span class="collection-card__price">{{ product.price | money }}</span>
+              </div>
+            </a>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if paginate.pages > 1 %}
+      <nav class="collection-pagination" role="navigation" aria-label="Pagination">
+        {% if paginate.previous %}
+          <a href="{{ paginate.previous.url }}">Prev</a>
+        {% endif %}
+        <span>Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+        {% if paginate.next %}
+          <a href="{{ paginate.next.url }}">Next</a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  </section>
+{% endpaginate %}
