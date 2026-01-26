@@ -31,6 +31,11 @@ body.cart-drawer-open {
   display: grid;
   gap: 40px;
 }
+.home-page--minimal {
+  min-height: 72vh;
+  place-items: center;
+  text-align: center;
+}
 .home-page__hero {
   display: grid;
   gap: 12px;
@@ -54,6 +59,46 @@ body.cart-drawer-open {
   margin: 0;
   font-size: 14px;
   opacity: 0.8;
+}
+.home-page__definition {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0 0;
+  max-width: 520px;
+}
+.home-page__definition--hero {
+  max-width: 720px;
+  gap: 10px;
+}
+.home-page__definition-meta {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.home-page__pronunciation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  justify-content: center;
+}
+.home-page__name {
+  font-size: 42px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: "Times New Roman", Times, serif;
+}
+.home-page__meaning {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.7;
+  opacity: 0.8;
+  font-style: italic;
+  font-family: "Times New Roman", Times, serif;
 }
 .home-page__actions {
   display: flex;
