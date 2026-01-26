@@ -128,10 +128,11 @@ body.template-index .site-header {
   align-items: center;
   gap: 12px;
 }
-.site-header__home svg {
+.site-header svg {
   width: 24px;
   height: 24px;
   display: block;
+  stroke: currentColor;
 }
 .site-header__logo {
   color: inherit;
@@ -217,10 +218,24 @@ body.template-index .site-header {
   justify-content: center;
   cursor: pointer;
 }
-.site-header__icon svg {
-  width: 22px;
-  height: 22px;
-  display: block;
+.site-header__home {
+  position: relative;
+  overflow: hidden;
+}
+.site-header__home::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.18s ease;
+}
+.site-header__home:hover::after {
+  transform: scaleX(1);
 }
 .site-header__cart {
   position: relative;
@@ -282,11 +297,6 @@ body.template-index .site-header {
   align-items: center;
   gap: 8px;
   position: relative;
-}
-.site-cart svg {
-  width: 24px;
-  height: 24px;
-  display: block;
 }
 .site-cart__count {
   position: absolute;
