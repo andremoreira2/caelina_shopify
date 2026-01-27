@@ -7,7 +7,7 @@
   {{ 'styles.css' | asset_url | stylesheet_tag }}
   {{ content_for_header }}
 </head>
-<body class="template-{{ template.name }}">
+<body class="template-{{ template.name }}{% if template.name == 'page' and template.suffix == 'home' %} template-home{% endif %}">
   <header class="site-header" role="banner">
     <div class="site-header__inner">
       <div class="site-header__left">
