@@ -105,8 +105,8 @@
         <input type="hidden" name="id" value="{{ current_variant.id }}">
       {% endif %}
 
-      <div class="product-form-row">
-        <div class="qty-wrapper">
+      <div class="product-form-row{% unless current_variant.available %} is-sold-out{% endunless %}">
+        <div class="qty-wrapper" data-qty-wrapper {% unless current_variant.available %}hidden{% endunless %}>
              <label class="visually-hidden" for="quantity">Quantity</label>
              <!-- Simplified Quantity Input to match design ( - 1 + ) -->
              <div class="qty-control">
@@ -122,7 +122,12 @@
             data-add-to-cart
             {% unless current_variant.available %}disabled{% endunless %}
         >
-            {% if current_variant.available %}Add to cart{% else %}Sold out{% endif %}
+            <span class="btn-icon" aria-hidden="true" {% unless current_variant.available %}hidden{% endunless %}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+              </svg>
+            </span>
+            <span class="btn-text">{% if current_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
         </button>
       </div>
       
@@ -267,6 +272,10 @@
     const priceValue = priceWrap?.querySelector(".product-price-value");
     const compareValue = priceWrap?.querySelector(".product-compare");
     const addBtn = document.querySelector("[data-add-to-cart]");
+    const addBtnText = addBtn?.querySelector(".btn-text");
+    const addBtnIcon = addBtn?.querySelector(".btn-icon");
+    const qtyWrapper = document.querySelector("[data-qty-wrapper]");
+    const formRow = document.querySelector(".product-form-row");
     const optionGroups = document.querySelectorAll("[data-option-index]");
 
     function updateFromOption(option){
@@ -287,7 +296,14 @@
       if (addBtn) {
         const available = option.dataset.available === "true";
         addBtn.disabled = !available;
-        addBtn.textContent = available ? "Add to cart" : "Sold out";
+        if (qtyWrapper) qtyWrapper.hidden = !available;
+        if (addBtnIcon) addBtnIcon.hidden = !available;
+        if (formRow) formRow.classList.toggle("is-sold-out", !available);
+        if (addBtnText) {
+          addBtnText.textContent = available ? "Add to cart" : "Sold out";
+        } else {
+          addBtn.textContent = available ? "Add to cart" : "Sold out";
+        }
       }
     }
 

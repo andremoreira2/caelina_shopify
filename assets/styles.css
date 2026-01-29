@@ -1538,9 +1538,31 @@ kbd {
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.05em;
-  padding: 14px 24px;
+  padding: 0 24px;
   transition: opacity 0.2s ease;
   width: 100%;
+  height: var(--product-cta-height, 48px);
+  box-sizing: border-box;
+}
+
+.product-form .btn .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.product-form .btn .btn-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.product-form .btn[disabled] .btn-icon {
+  display: none;
+}
+
+.product-form .btn .btn-text {
+  display: inline-flex;
+  align-items: center;
 }
 
 .product-form .btn:hover {
@@ -1548,8 +1570,9 @@ kbd {
 }
 
 .product-form .btn.secondary {
-  background: transparent;
-  color: #000000;
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
   margin-top: 12px;
 }
 
@@ -1560,6 +1583,16 @@ kbd {
   grid-template-columns: min-content 1fr;
   gap: 12px;
   margin-top: 24px;
+  align-items: stretch;
+  --product-cta-height: 48px;
+}
+
+.product-form-row.is-sold-out {
+  grid-template-columns: 1fr;
+}
+
+.product-form-row.is-sold-out .btn {
+  grid-column: 1 / -1;
 }
 
 /* Fix Option Buttons for Light Mode */
@@ -1567,6 +1600,10 @@ kbd {
   color: #1a1a1a;
   border-color: rgba(26, 26, 26, 0.2);
   background: transparent;
+}
+
+.product-page .product-option__values {
+  margin-top: 8px;
 }
 
 .product-page .product-option__value:hover {
@@ -1583,16 +1620,17 @@ kbd {
 .qty-control {
   display: flex;
   align-items: center;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #000000;
   /* Match layout logic */
   width: fit-content;
+  height: var(--product-cta-height, 48px);
+  box-sizing: border-box;
 }
 
 .qty-btn {
   border: none;
   background: transparent;
-  padding: 14px;
-  /* Matches .btn padding-top/bottom */
+  padding: 0 14px;
   cursor: pointer;
   color: #1a1a1a;
   line-height: normal;
@@ -1600,6 +1638,7 @@ kbd {
   align-items: center;
   justify-content: center;
   font-size: 16px;
+  height: 100%;
 }
 
 .qty-btn:hover {
@@ -1615,9 +1654,15 @@ kbd {
   text-align: center;
   font-size: 16px;
   padding: 0;
-  height: auto;
+  height: 100%;
   appearance: none;
   -moz-appearance: textfield;
+}
+
+.product-qty::-webkit-outer-spin-button,
+.product-qty::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .product-qty:focus {
