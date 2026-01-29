@@ -63,10 +63,6 @@
       </span>
     </div>
 
-    {% if product.description != blank %}
-      <div class="product-description">{{ product.description }}</div>
-    {% endif %}
-
     {% form 'product', product, class: 'product-form' %}
       {% if product.variants.size > 1 %}
         <div class="product-options" data-options>
@@ -160,7 +156,11 @@
                 <span class="accordion-icon">+</span>
             </button>
             <div class="accordion-content">
-                <p>Premium sterling silver or 14k gold vermeil.</p>
+                {% if product.description != blank %}
+                  <div class="product-description">{{ product.description }}</div>
+                {% else %}
+                  <p>Premium sterling silver or 14k gold vermeil.</p>
+                {% endif %}
             </div>
         </div>
       </div>
