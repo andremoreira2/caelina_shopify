@@ -1554,29 +1554,74 @@ kbd {
 }
 
 /* Quantity and Add to Cart Row */
+/* Fix Layout for Quantity + Add to Cart */
 .product-form-row {
   display: grid;
-  grid-template-columns: 80px 1fr;
+  grid-template-columns: min-content 1fr;
   gap: 12px;
   margin-top: 24px;
 }
 
-.product-qty {
-  width: 100%;
-  border-radius: 0;
+/* Fix Option Buttons for Light Mode */
+.product-page .product-option__value {
+  color: #1a1a1a;
+  border-color: rgba(26, 26, 26, 0.2);
+  background: transparent;
+}
+
+.product-page .product-option__value:hover {
+  border-color: rgba(26, 26, 26, 0.5);
+}
+
+.product-page .product-option__value.is-active {
+  background: #1a1a1a;
+  color: #ffffff;
+  border-color: #1a1a1a;
+}
+
+/* Quantity Control - Matches .btn height */
+.qty-control {
+  display: flex;
+  align-items: center;
   border: 1px solid #e0e0e0;
+  /* Match layout logic */
+  width: fit-content;
+}
+
+.qty-btn {
+  border: none;
+  background: transparent;
+  padding: 14px;
+  /* Matches .btn padding-top/bottom */
+  cursor: pointer;
+  color: #1a1a1a;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.qty-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.product-qty {
+  width: 50px;
+  /* Slightly wider for ease */
+  border: none;
   background: transparent;
   color: #1a1a1a;
   text-align: center;
   font-size: 16px;
-  padding: 12px;
-  height: 100%;
-  box-sizing: border-box;
+  padding: 0;
+  height: auto;
+  appearance: none;
+  -moz-appearance: textfield;
 }
 
 .product-qty:focus {
-  outline: 1px solid #000;
-  border-color: #000;
+  outline: none;
 }
 
 /* Accordions */
