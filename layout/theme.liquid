@@ -16,6 +16,12 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
           </svg>
         </a>
+        <a href="/search" class="site-header__icon" aria-label="Search">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="11" cy="11" r="6.5"></circle>
+            <path d="M16.2 16.2L21 21" stroke-linecap="round"></path>
+          </svg>
+        </a>
       </div>
       <div class="site-header__center">
         <a class="site-header__logo" id="brandLogo" href="{{ routes.root_url }}" aria-label="CAELINA home">CΛELINΛ</a>
@@ -32,6 +38,7 @@
         <a href="{{ routes.root_url }}">Home</a>
         <a href="/pages/about">About</a>
         <a href="/collections">Collections</a>
+
         <a href="{{ routes.cart_url }}" class="site-cart" data-cart-toggle>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
@@ -85,7 +92,25 @@
     </div>
   </div>
 
+  <div class="search-overlay" data-search-overlay aria-hidden="true">
+    <div class="search-overlay__backdrop" data-search-close></div>
+    <div class="search-overlay__content">
+      <div class="search-overlay__header">
+        <div class="search-overlay__input-wrapper">
+          <svg class="search-overlay__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M16.2 16.2L21 21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <input type="text" class="search-overlay__input" placeholder="Search..." aria-label="Search" data-search-input>
+          <button class="search-overlay__close" type="button" aria-label="Close search" data-search-close>✕</button>
+        </div>
+      </div>
+      <div class="search-overlay__results" data-search-results></div>
+    </div>
+  </div>
+
   {{ 'cart-drawer.js' | asset_url | script_tag }}
+  <script src="{{ 'search.js' | asset_url }}" defer></script>
   {% if template.name == 'index' %}
     <script src="{{ 'app.js' | asset_url }}" defer></script>
   {% endif %}
