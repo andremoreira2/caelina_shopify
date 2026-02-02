@@ -266,92 +266,93 @@
     }
 
     const variantSelect = document.getElementById("variantSelect");
-    if (!variantSelect) return;
 
-    const priceWrap = document.querySelector("[data-product-price]");
-    const priceValue = priceWrap?.querySelector(".product-price-value");
-    const compareValue = priceWrap?.querySelector(".product-compare");
-    const addBtn = document.querySelector("[data-add-to-cart]");
-    const addBtnText = addBtn?.querySelector(".btn-text");
-    const addBtnIcon = addBtn?.querySelector(".btn-icon");
-    const qtyWrapper = document.querySelector("[data-qty-wrapper]");
-    const formRow = document.querySelector(".product-form-row");
-    const optionGroups = document.querySelectorAll("[data-option-index]");
+    if (variantSelect) {
+      const priceWrap = document.querySelector("[data-product-price]");
+      const priceValue = priceWrap?.querySelector(".product-price-value");
+      const compareValue = priceWrap?.querySelector(".product-compare");
+      const addBtn = document.querySelector("[data-add-to-cart]");
+      const addBtnText = addBtn?.querySelector(".btn-text");
+      const addBtnIcon = addBtn?.querySelector(".btn-icon");
+      const qtyWrapper = document.querySelector("[data-qty-wrapper]");
+      const formRow = document.querySelector(".product-form-row");
+      const optionGroups = document.querySelectorAll("[data-option-index]");
 
-    function updateFromOption(option){
-      if (!option) return;
-      if (priceValue) priceValue.textContent = option.dataset.price || "";
+      function updateFromOption(option){
+        if (!option) return;
+        if (priceValue) priceValue.textContent = option.dataset.price || "";
 
-      if (compareValue) {
-        const priceAmount = Number(option.dataset.priceAmount || 0);
-        const compareAmount = Number(option.dataset.compareAmount || 0);
-        if (compareAmount > priceAmount) {
-          compareValue.textContent = option.dataset.compare || "";
-          compareValue.hidden = false;
-        } else {
-          compareValue.hidden = true;
+        if (compareValue) {
+          const priceAmount = Number(option.dataset.priceAmount || 0);
+          const compareAmount = Number(option.dataset.compareAmount || 0);
+          if (compareAmount > priceAmount) {
+            compareValue.textContent = option.dataset.compare || "";
+            compareValue.hidden = false;
+          } else {
+            compareValue.hidden = true;
+          }
+        }
+
+        if (addBtn) {
+          const available = option.dataset.available === "true";
+          addBtn.disabled = !available;
+          if (qtyWrapper) qtyWrapper.hidden = !available;
+          if (addBtnIcon) addBtnIcon.hidden = !available;
+          if (formRow) formRow.classList.toggle("is-sold-out", !available);
+          if (addBtnText) {
+            addBtnText.textContent = available ? "Add to cart" : "Sold out";
+          } else {
+            addBtn.textContent = available ? "Add to cart" : "Sold out";
+          }
         }
       }
 
-      if (addBtn) {
-        const available = option.dataset.available === "true";
-        addBtn.disabled = !available;
-        if (qtyWrapper) qtyWrapper.hidden = !available;
-        if (addBtnIcon) addBtnIcon.hidden = !available;
-        if (formRow) formRow.classList.toggle("is-sold-out", !available);
-        if (addBtnText) {
-          addBtnText.textContent = available ? "Add to cart" : "Sold out";
-        } else {
-          addBtn.textContent = available ? "Add to cart" : "Sold out";
-        }
-      }
-    }
+      updateFromOption(variantSelect.selectedOptions?.[0]);
+      variantSelect.addEventListener("change", (e) => {
+        updateFromOption(e.target.selectedOptions?.[0]);
+      });
 
-    updateFromOption(variantSelect.selectedOptions?.[0]);
-    variantSelect.addEventListener("change", (e) => {
-      updateFromOption(e.target.selectedOptions?.[0]);
-    });
+      if (optionGroups.length && variants.length) {
+        const findVariant = (selected) =>
+          variants.find((v) => v.options.every((opt, idx) => opt === selected[idx]));
 
-    if (optionGroups.length && variants.length) {
-      const findVariant = (selected) =>
-        variants.find((v) => v.options.every((opt, idx) => opt === selected[idx]));
+        let selectedOptions =
+          variants.find((v) => v.id === Number(variantSelect.value))?.options || [];
 
-      let selectedOptions =
-        variants.find((v) => v.id === Number(variantSelect.value))?.options || [];
+        const syncButtons = () => {
+          optionGroups.forEach((group) => {
+            const index = Number(group.dataset.optionIndex);
+            group.querySelectorAll("[data-option-value]").forEach((btn) => {
+              const active = btn.dataset.optionValue === selectedOptions[index];
+              btn.classList.toggle("is-active", active);
+              btn.setAttribute("aria-pressed", active ? "true" : "false");
+            });
+          });
+        };
 
-      const syncButtons = () => {
+        syncButtons();
+
         optionGroups.forEach((group) => {
           const index = Number(group.dataset.optionIndex);
           group.querySelectorAll("[data-option-value]").forEach((btn) => {
-            const active = btn.dataset.optionValue === selectedOptions[index];
-            btn.classList.toggle("is-active", active);
-            btn.setAttribute("aria-pressed", active ? "true" : "false");
+            btn.addEventListener("click", () => {
+              selectedOptions[index] = btn.dataset.optionValue;
+              const match = findVariant(selectedOptions);
+              if (match) {
+                variantSelect.value = match.id;
+                variantSelect.dispatchEvent(new Event("change", { bubbles: true }));
+              }
+              syncButtons();
+            });
           });
         });
-      };
 
-      syncButtons();
-
-      optionGroups.forEach((group) => {
-        const index = Number(group.dataset.optionIndex);
-        group.querySelectorAll("[data-option-value]").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            selectedOptions[index] = btn.dataset.optionValue;
-            const match = findVariant(selectedOptions);
-            if (match) {
-              variantSelect.value = match.id;
-              variantSelect.dispatchEvent(new Event("change", { bubbles: true }));
-            }
-            syncButtons();
-          });
+        variantSelect.addEventListener("change", () => {
+          selectedOptions =
+            variants.find((v) => v.id === Number(variantSelect.value))?.options || selectedOptions;
+          syncButtons();
         });
-      });
-
-      variantSelect.addEventListener("change", () => {
-        selectedOptions =
-          variants.find((v) => v.id === Number(variantSelect.value))?.options || selectedOptions;
-        syncButtons();
-      });
+      }
     }
 
     // Accordion Logic
