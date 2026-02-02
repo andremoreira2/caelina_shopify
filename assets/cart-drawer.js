@@ -4,6 +4,8 @@
   const closeButtons = document.querySelectorAll("[data-cart-drawer-close]");
   const toggles = document.querySelectorAll("[data-cart-toggle]");
 
+  const FREE_SHIPPING_THRESHOLD = 10000; // $100.00
+
   if (!drawer || !content || toggles.length === 0) return;
 
   const isCartPage = document.body.classList.contains("template-cart");
@@ -28,8 +30,15 @@
       if (!res.ok) throw new Error("Failed to load cart");
       const html = await res.text();
       content.innerHTML = html;
+
+      // Update functional elements
+      const cartRes = await fetch("/cart.js", { credentials: "same-origin" });
+      const cartData = await cartRes.json();
+
+      updateShippingBar(cartData.total_price);
       bindDrawerEvents();
-      await updateCartCount();
+      updateCartCount(cartData.item_count);
+
     } catch (err) {
       console.warn(err);
       content.innerHTML =
@@ -37,12 +46,38 @@
     }
   };
 
-  const updateCartCount = async () => {
+  const updateShippingBar = (totalPrice) => {
+    const bar = document.querySelector("[data-shipping-bar]");
+    const text = document.querySelector("[data-shipping-text]");
+    const fill = document.querySelector("[data-shipping-fill]");
+
+    if (!bar || !text || !fill) return;
+
+    const remaining = FREE_SHIPPING_THRESHOLD - totalPrice;
+    const percentage = Math.min(100, (totalPrice / FREE_SHIPPING_THRESHOLD) * 100);
+
+    fill.style.width = `${percentage}%`;
+
+    if (remaining <= 0) {
+      text.textContent = "You've got free shipping!";
+      bar.classList.add("is-free");
+    } else {
+      const remainingMoney = (remaining / 100).toFixed(2);
+      text.textContent = `You are $${remainingMoney} away from free shipping.`;
+      bar.classList.remove("is-free");
+    }
+  };
+
+  const updateCartCount = async (countOverride) => {
     try {
-      const res = await fetch("/cart.js", { credentials: "same-origin" });
-      if (!res.ok) return;
-      const data = await res.json();
-      const count = Number(data.item_count || 0);
+      let count = countOverride;
+      if (count === undefined) {
+        const res = await fetch("/cart.js", { credentials: "same-origin" });
+        if (!res.ok) return;
+        const data = await res.json();
+        count = Number(data.item_count || 0);
+      }
+
       toggles.forEach((el) => {
         let badge = el.querySelector(".site-cart__count");
         if (count > 0) {
@@ -73,6 +108,12 @@
   };
 
   const bindDrawerEvents = () => {
+    // Handle close button inside the drawer content (loaded via AJAX)
+    const innerCloseBtn = content.querySelector("[data-cart-drawer-close]");
+    if (innerCloseBtn) {
+      innerCloseBtn.addEventListener("click", closeDrawer);
+    }
+
     content.querySelectorAll("[data-cart-line]").forEach((line) => {
       const key = line.getAttribute("data-key");
       const qtyInput = line.querySelector("[data-qty-input]");

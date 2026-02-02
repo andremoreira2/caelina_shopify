@@ -1,7 +1,26 @@
 {% layout none %}
 
 <div class="drawer-cart">
-  <h2 class="drawer-cart__title">Your cart</h2>
+  <div class="drawer-cart__header-banner">
+    Use coupon code <strong>WELCOME10</strong> for 10% off your first order.
+  </div>
+
+  <div class="drawer-cart__header">
+    <h2 class="drawer-cart__title">Cart ({{ cart.item_count }})</h2>
+    <button class="drawer-cart__close" type="button" data-cart-drawer-close aria-label="Close cart">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <div class="drawer-cart__shipping" data-shipping-bar>
+    <div class="drawer-cart__shipping-text" data-shipping-text>You are $100 away from free shipping.</div>
+    <div class="drawer-cart__shipping-progress">
+      <div class="drawer-cart__shipping-fill" data-shipping-fill style="width: 0%"></div>
+    </div>
+  </div>
 
   {% if cart.item_count == 0 %}
     <div class="drawer-cart__empty">Your cart is empty.</div>
@@ -10,44 +29,60 @@
     <ul class="drawer-cart__lines">
       {% for item in cart.items %}
         <li class="drawer-cart__line" data-cart-line data-key="{{ item.key }}">
-          {% if item.image %}
-            <img
-              src="{{ item.image | image_url: width: 160 }}"
-              alt="{{ item.image.alt | escape }}"
-              loading="lazy"
-            >
-          {% endif %}
-          <div class="drawer-cart__info">
-            <div class="drawer-cart__name">{{ item.product.title }}</div>
-            {% if item.variant.title != 'Default Title' %}
-              <div class="drawer-cart__variant">{{ item.variant.title }}</div>
+          <div class="drawer-cart__line-image">
+            {% if item.image %}
+              <img
+                src="{{ item.image | image_url: width: 200 }}"
+                alt="{{ item.image.alt | escape }}"
+                loading="lazy"
+              >
             {% endif %}
-            <div class="drawer-cart__price">{{ item.final_price | money }}</div>
+          </div>
+          
+          <div class="drawer-cart__line-details">
+            <div class="drawer-cart__line-header">
+              <div class="drawer-cart__name">{{ item.product.title }}</div>
+              <div class="drawer-cart__price">{{ item.final_price | money }}</div>
+            </div>
+            
+            {% if item.variant.title != 'Default Title' %}
+              <div class="drawer-cart__variant">Color: {{ item.variant.title }}</div>
+              <div class="drawer-cart__variant-price">{{ item.final_price | money }}</div>
+            {% endif %}
+
             <div class="drawer-cart__controls">
-              <label class="drawer-cart__qty">
-                Qty
-                <input
-                  type="number"
-                  min="0"
-                  value="{{ item.quantity }}"
-                  data-qty-input
-                >
-              </label>
-              <button class="drawer-cart__remove" type="button" data-remove>Remove</button>
+              <div class="drawer-cart__qty-wrapper">
+                <select class="drawer-cart__qty-select" data-qty-input>
+                  {% for i in (1..10) %}
+                    <option value="{{ i }}" {% if item.quantity == i %}selected{% endif %}>{{ i }}</option>
+                  {% endfor %}
+                </select>
+                <svg class="drawer-cart__qty-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor">
+                  <path d="M1 1L5 5L9 1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              
+              <button class="drawer-cart__remove" type="button" data-remove>REMOVE</button>
             </div>
           </div>
         </li>
       {% endfor %}
     </ul>
 
+    <!-- Upsell hidden for now to match clean design, or we can restore it down here later -->
+    <div class="drawer-cart__upsell" data-upsell-container style="display: none;">
+      <h3 class="drawer-cart__upsell-title">You might also like</h3>
+      <div class="drawer-cart__upsell-item" data-upsell-item></div>
+    </div>
+
     <div class="drawer-cart__footer">
       <div class="drawer-cart__subtotal">
-        <span>Subtotal</span>
-        <span>{{ cart.total_price | money }}</span>
+        <span>SUBTOTAL</span>
+        <span class="drawer-cart__subtotal-price">{{ cart.total_price | money }} USD</span>
       </div>
       <div class="drawer-cart__actions">
-        <a class="btn primary" href="/checkout">Checkout</a>
-        <a class="cart-link" href="/cart">View cart</a>
+        <button class="btn btn--block btn--checkout" type="submit" name="checkout" onclick="window.location.href='/checkout'">CHECK OUT</button>
+        <div class="drawer-cart__disclaimer">Shipping, taxes, and discount codes are calculated at checkout</div>
       </div>
     </div>
   {% endif %}
