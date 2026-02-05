@@ -299,6 +299,8 @@ body.template-home .site-header {
   font-size: 18px;
 }
 
+
+
 .site-header__icon {
   color: inherit;
   text-decoration: none;
@@ -571,6 +573,19 @@ body.template-home .site-header {
   font-weight: 500;
   outline: 1px solid rgba(255, 255, 255, 0.2);
   width: fit-content;
+}
+
+@media (hover: none) {
+
+  /* Spotlight Mode: Only active tile shows info */
+  .tile.is-active .tile-info {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .tile.is-active .tile-media-hover {
+    opacity: 1;
+  }
 }
 
 .intro {

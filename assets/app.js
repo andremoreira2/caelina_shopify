@@ -19,10 +19,17 @@ const layer = document.getElementById("layer");
 const brandLogo = document.getElementById("brandLogo");
 const introScreen = document.getElementById("introScreen");
 
-// Tile sizes (you can tweak these)
-let tileW = 360;
-let tileH = 260;
-let gap = 26;
+// Tile sizes (responsive)
+function getTileSize() {
+  const isMobile = window.innerWidth < 768;
+  return {
+    w: isMobile ? 240 : 360,
+    h: isMobile ? 180 : 260,
+    gap: isMobile ? 18 : 26
+  };
+}
+
+let { w: tileW, h: tileH, gap } = getTileSize();
 
 // Grid (computed from viewport size)
 let cols = 0, rows = 0, totalW = 0, totalH = 0;
@@ -244,6 +251,13 @@ function render() {
   const padX = tileW + gap;
   const padY = tileH + gap;
 
+  // Track closest tile for mobile spotlight
+  let closestTile = null;
+  let minDistance = Infinity;
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+  const isMobile = !allowAutoPan; // Assume touch/mobile if no hover capability
+
   for (const t of tiles) {
     const x = t.baseX + offsetX;
     const y = t.baseY + offsetY;
@@ -252,6 +266,27 @@ function render() {
     const wy = wrapAround(y, totalH, padY);
 
     t.el.style.transform = `translate3d(${wx}px, ${wy}px, 0)`;
+
+    // Mobile Spotlight Logic
+    if (isMobile) {
+      // Calculate distance from center of tile to center of screen
+      const tcx = wx + tileW / 2;
+      const tcy = wy + tileH / 2;
+      const dist = Math.hypot(tcx - cx, tcy - cy);
+
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestTile = t;
+      }
+    }
+  }
+
+  // Apply active class to closest, remove from others
+  if (isMobile && closestTile) {
+    tiles.forEach(t => {
+      if (t === closestTile) t.el.classList.add("is-active");
+      else t.el.classList.remove("is-active");
+    });
   }
 
   requestAnimationFrame(render);
@@ -330,6 +365,12 @@ function init() {
 }
 
 window.addEventListener("resize", () => {
+  // Update responsive sizes
+  const sizes = getTileSize();
+  tileW = sizes.w;
+  tileH = sizes.h;
+  gap = sizes.gap;
+
   // Rebuild grid on resize so it always covers the screen
   init();
 });
