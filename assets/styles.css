@@ -516,6 +516,24 @@ body.template-home .site-header {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(5, 5, 8, 0.05), rgba(5, 5, 8, 0.7));
+  z-index: 1;
+  /* Keep gradient above base image */
+  pointer-events: none;
+}
+
+.tile-media-hover {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+  /* Above the gradient and base image */
+}
+
+.tile:hover .tile-media-hover {
+  opacity: 1;
 }
 
 .tile-info {

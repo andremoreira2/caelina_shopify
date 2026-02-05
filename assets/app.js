@@ -110,12 +110,21 @@ function buildTiles() {
       if (products.length) {
         const product = products[idx % products.length];
         const image = product.images && product.images[0] ? product.images[0].src : "";
+        const hoverImage = product.images && product.images[1] ? product.images[1].src : "";
         const price = product.variants && product.variants[0] ? product.variants[0].price : "";
 
         if (image) {
           const media = document.createElement("div");
           media.className = "tile-media";
           media.style.backgroundImage = `url("${image}")`;
+
+          if (hoverImage) {
+            const hoverMedia = document.createElement("div");
+            hoverMedia.className = "tile-media-hover";
+            hoverMedia.style.backgroundImage = `url("${hoverImage}")`;
+            media.appendChild(hoverMedia);
+          }
+
           el.appendChild(media);
         } else {
           el.style.background = gradientFor(idx);
