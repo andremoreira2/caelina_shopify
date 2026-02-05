@@ -543,14 +543,20 @@ body.template-home .site-header {
   bottom: 14px;
   display: grid;
   gap: 6px;
-  z-index: 1;
+  z-index: 3;
+  /* Ensure text is above all images */
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.tile:hover .tile-info {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .tile-title {
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.2;
-  text-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  display: none;
 }
 
 .tile-price {
