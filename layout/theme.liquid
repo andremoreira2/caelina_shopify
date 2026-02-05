@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  
   <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LCYS2Q3ZYL"></script>
 <script>
@@ -11,6 +12,11 @@
 
   gtag('config', 'G-LCYS2Q3ZYL');
 </script>
+
+  <!-- Performance: Preconnect to external domains -->
+  <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.shopify.com">
+
   {% if page_description %}
     <meta name="description" content="{{ page_description }}">
   {% endif %}
