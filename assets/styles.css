@@ -144,6 +144,44 @@ body.cart-drawer-open {
   text-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
 }
 
+.home-page__explore-button {
+  position: absolute;
+  left: 50%;
+  top: 80%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 170px;
+  padding: 14px 34px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 0;
+  text-decoration: none;
+  color: #f8f8fa;
+  letter-spacing: 0.26em;
+  font-size: 12px;
+  text-transform: uppercase;
+  background: transparent;
+  backdrop-filter: none;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+
+.home-page__explore-button:hover {
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f0f12;
+  transform: translate(-50%, calc(-50% - 2px));
+}
+
+@media (max-width: 640px) {
+  .home-page__explore-button {
+    min-width: 148px;
+    padding: 12px 24px;
+    letter-spacing: 0.2em;
+    font-size: 11px;
+  }
+}
+
 .site-header {
   position: sticky;
   top: 0;
