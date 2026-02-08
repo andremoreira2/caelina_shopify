@@ -5,6 +5,65 @@
     </video>
     <a class="home-page__explore-button" href="{{ routes.root_url }}">EXPLORE</a>
   </div>
+  <section class="home-collections" aria-label="Jewelry collections" data-home-collections>
+    <div class="home-collections__top">
+      <h2 class="home-collections__heading">SHOP BY COLLECTION</h2>
+      <div class="home-collections__line" aria-hidden="true"></div>
+    </div>
+
+    <div class="home-collections__frame">
+      <div class="home-collections__controls">
+        <button class="home-collections__control" type="button" aria-label="Previous collections" data-home-collections-prev>
+          <span aria-hidden="true">‹</span>
+        </button>
+        <button class="home-collections__control" type="button" aria-label="Next collections" data-home-collections-next>
+          <span aria-hidden="true">›</span>
+        </button>
+      </div>
+      <div class="home-collections__viewport" data-home-collections-viewport tabindex="0" aria-label="Jewelry categories slider">
+        <div class="home-collections__track">
+          {% assign jewelry_entries = 'earrings:EARRINGS|rings:RINGS|necklaces:NECKLACE|bracelets:BRACELETS|watches:WATCHES' | split: '|' %}
+          {% for entry in jewelry_entries %}
+            {% assign parts = entry | split: ':' %}
+            {% assign handle = parts[0] %}
+            {% assign card_title = parts[1] %}
+            {% assign jewelry_collection = collections[handle] %}
+            {% assign card_url = '/collections/' | append: handle %}
+            {% assign card_image = blank %}
+
+            {% if jewelry_collection %}
+              {% assign card_url = jewelry_collection.url %}
+              {% assign card_image = jewelry_collection.featured_image %}
+              {% if card_image == blank and jewelry_collection.products.first %}
+                {% assign card_image = jewelry_collection.products.first.featured_image %}
+              {% endif %}
+            {% endif %}
+
+            <a class="home-collections__card" href="{{ card_url }}">
+              {% if card_image != blank %}
+                <img
+                  class="home-collections__image"
+                  src="{{ card_image | image_url: width: 1600 }}"
+                  alt="{{ card_title }}"
+                  loading="lazy"
+                  width="800"
+                  height="1120"
+                >
+              {% else %}
+                <span class="home-collections__image home-collections__image--fallback" aria-hidden="true"></span>
+              {% endif %}
+              <span class="home-collections__shade" aria-hidden="true"></span>
+              <span class="home-collections__content">
+                <span class="home-collections__title">{{ card_title }}</span>
+                <span class="home-collections__cta">EXPLORE</span>
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="home-collections__pagination" data-home-collections-pagination aria-label="Carousel progress"></div>
+    </div>
+  </section>
   <div class="home-page__definition home-page__definition--hero">
     <div class="home-page__pronunciation">
       <span class="home-page__ipa">/keɪˈliːnə/</span>
@@ -17,3 +76,233 @@
     </p>
   </div>
 </section>
+
+<script>
+  (function initHomeCollectionsCarousel() {
+    var sections = document.querySelectorAll("[data-home-collections]");
+    if (!sections.length) return;
+    var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var autoplayDelay = 2300;
+
+    sections.forEach(function (section) {
+      var viewport = section.querySelector("[data-home-collections-viewport]");
+      var prev = section.querySelector("[data-home-collections-prev]");
+      var next = section.querySelector("[data-home-collections-next]");
+      var track = section.querySelector(".home-collections__track");
+      var pagination = section.querySelector("[data-home-collections-pagination]");
+      if (!viewport || !prev || !next || !track || !pagination) return;
+      var pageCount = 1;
+      var currentIndex = 0;
+      var scrollPoints = [0];
+      var dots = [];
+      var rafId = null;
+      var lastFrameAt = 0;
+      var elapsedInCycle = 0;
+
+      function getMaxScroll() {
+        return Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+      }
+
+      function rebuildScrollPoints() {
+        var cards = track.querySelectorAll(".home-collections__card");
+        var maxScroll = getMaxScroll();
+        var nextPoints = [0];
+
+        cards.forEach(function (card) {
+          var left = Math.min(maxScroll, Math.max(0, card.offsetLeft - track.offsetLeft));
+          if (Math.abs(left - nextPoints[nextPoints.length - 1]) > 1) {
+            nextPoints.push(left);
+          }
+        });
+
+        if (Math.abs(maxScroll - nextPoints[nextPoints.length - 1]) > 1) {
+          nextPoints.push(maxScroll);
+        }
+
+        scrollPoints = nextPoints;
+        pageCount = Math.max(1, scrollPoints.length);
+      }
+
+      function getCurrentIndex() {
+        var left = viewport.scrollLeft;
+        var closestIndex = 0;
+        var closestDistance = Infinity;
+
+        scrollPoints.forEach(function (point, index) {
+          var distance = Math.abs(point - left);
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestIndex = index;
+          }
+        });
+
+        return closestIndex;
+      }
+
+      function setProgress(progress) {
+        var clamped = Math.max(0, Math.min(1, progress));
+        dots.forEach(function (dot, index) {
+          dot.style.setProperty("--progress", index === currentIndex ? clamped : 0);
+        });
+      }
+
+      function updateActiveDot() {
+        dots.forEach(function (dot, index) {
+          var isActive = index === currentIndex;
+          dot.classList.toggle("is-active", isActive);
+          dot.setAttribute("aria-current", isActive ? "true" : "false");
+        });
+      }
+
+      function buildDots() {
+        pagination.innerHTML = "";
+        dots = [];
+
+        for (var i = 0; i < pageCount; i += 1) {
+          var dot = document.createElement("button");
+          dot.type = "button";
+          dot.className = "home-collections__dot";
+          dot.setAttribute("aria-label", "Go to slide " + (i + 1));
+          dot.innerHTML = '<span class="home-collections__dot-fill" aria-hidden="true"></span>';
+          dot.dataset.index = i;
+          dot.addEventListener("click", function () {
+            scrollToIndex(Number(this.dataset.index));
+            resetTimer();
+          });
+          pagination.appendChild(dot);
+          dots.push(dot);
+        }
+
+        pagination.classList.toggle("is-single", pageCount <= 1);
+      }
+
+      function updateControls() {
+        currentIndex = getCurrentIndex();
+        var hasMultiplePages = pageCount > 1;
+        prev.disabled = !hasMultiplePages;
+        next.disabled = !hasMultiplePages;
+        updateActiveDot();
+      }
+
+      function scrollToIndex(index) {
+        var targetIndex = Math.min(pageCount - 1, Math.max(0, index));
+        var targetLeft = scrollPoints[targetIndex] || 0;
+        viewport.scrollTo({ left: targetLeft, behavior: "smooth" });
+      }
+
+      function scrollByStep(direction) {
+        if (pageCount <= 1) return;
+        var nextIndex = getCurrentIndex() + direction;
+        if (nextIndex > pageCount - 1) nextIndex = 0;
+        if (nextIndex < 0) nextIndex = pageCount - 1;
+        scrollToIndex(nextIndex);
+      }
+
+      function canAutoplay() {
+        return pageCount > 1 && !prefersReducedMotion.matches;
+      }
+
+      function resetTimer() {
+        elapsedInCycle = 0;
+        lastFrameAt = performance.now();
+        setProgress(0);
+      }
+
+      function stopTimer() {
+        if (!rafId) return;
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+
+      function tick(now) {
+        if (!canAutoplay()) {
+          stopTimer();
+          resetTimer();
+          return;
+        }
+
+        var delta = Math.min(120, Math.max(0, now - lastFrameAt));
+        lastFrameAt = now;
+
+        if (!document.hidden) {
+          elapsedInCycle += delta;
+        }
+
+        setProgress(elapsedInCycle / autoplayDelay);
+
+        if (elapsedInCycle >= autoplayDelay) {
+          elapsedInCycle = 0;
+          scrollToIndex((currentIndex + 1) % pageCount);
+        }
+
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function startTimer() {
+        if (rafId || !canAutoplay()) return;
+        lastFrameAt = performance.now();
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function recalc() {
+        var previousPageCount = pageCount;
+        rebuildScrollPoints();
+        var countChanged = pageCount !== previousPageCount;
+
+        if (countChanged) {
+          buildDots();
+          resetTimer();
+        }
+
+        updateControls();
+
+        if (canAutoplay()) {
+          startTimer();
+        } else {
+          stopTimer();
+          resetTimer();
+        }
+      }
+
+      prev.addEventListener("click", function () {
+        scrollByStep(-1);
+        resetTimer();
+      });
+
+      next.addEventListener("click", function () {
+        scrollByStep(1);
+        resetTimer();
+      });
+
+      viewport.addEventListener("scroll", updateControls, { passive: true });
+      window.addEventListener("resize", recalc);
+      window.addEventListener("load", recalc);
+      viewport.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowLeft") {
+          scrollByStep(-1);
+          resetTimer();
+        }
+        if (event.key === "ArrowRight") {
+          scrollByStep(1);
+          resetTimer();
+        }
+      });
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) {
+          lastFrameAt = performance.now();
+        }
+      });
+
+      if (typeof prefersReducedMotion.addEventListener === "function") {
+        prefersReducedMotion.addEventListener("change", recalc);
+      } else if (typeof prefersReducedMotion.addListener === "function") {
+        prefersReducedMotion.addListener(recalc);
+      }
+
+      rebuildScrollPoints();
+      buildDots();
+      updateControls();
+      startTimer();
+    });
+  })();
+</script>

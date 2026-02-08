@@ -195,6 +195,303 @@ body.cart-drawer-open {
   }
 }
 
+.home-collections {
+  padding: clamp(28px, 5vw, 58px) clamp(12px, 1.8vw, 22px) clamp(56px, 8vw, 96px);
+  background: #ffffff;
+}
+
+.home-collections__top {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.home-collections__heading {
+  margin: 0 0 12px;
+  color: #111111;
+  font-size: clamp(14px, 1.8vw, 18px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.home-collections__line {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.home-collections__frame {
+  position: relative;
+}
+
+.home-collections__controls {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(8px, 1.25vw, 18px);
+  pointer-events: none;
+}
+
+.home-collections__control {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  background: rgba(255, 255, 255, 0.72);
+  color: #111111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(2px);
+  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease, border-color 0.2s ease;
+}
+
+.home-collections__control span {
+  font-size: 30px;
+  line-height: 1;
+  margin-top: -2px;
+}
+
+.home-collections__control:hover {
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
+}
+
+.home-collections__control:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.home-collections__viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.home-collections__viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.home-collections__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 14px;
+}
+
+.home-collections__pagination.is-single {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.home-collections__dot {
+  --progress: 0;
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(17, 17, 17, 0.28);
+  cursor: pointer;
+  overflow: hidden;
+  transition: width 0.26s ease, background-color 0.2s ease;
+}
+
+.home-collections__dot-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border-radius: inherit;
+  background: #111111;
+  transform-origin: left center;
+  transform: scaleX(var(--progress));
+  opacity: 0;
+  transition: transform 0.1s linear, opacity 0.2s ease;
+}
+
+.home-collections__dot.is-active {
+  width: clamp(42px, 8vw, 68px);
+  background: rgba(17, 17, 17, 0.18);
+}
+
+.home-collections__dot.is-active .home-collections__dot-fill {
+  opacity: 1;
+}
+
+.home-collections__dot:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 2px;
+}
+
+.home-collections__track {
+  display: flex;
+  gap: 2px;
+  min-width: 100%;
+}
+
+.home-collections__card {
+  position: relative;
+  flex: 0 0 calc((100% - 4px) / 3);
+  min-height: clamp(360px, 40vw, 560px);
+  display: block;
+  overflow: hidden;
+  color: #ffffff;
+  text-decoration: none;
+  isolation: isolate;
+  scroll-snap-align: start;
+}
+
+.home-collections__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.01);
+  transition: transform 0.6s ease;
+}
+
+.home-collections__image--fallback {
+  background:
+    linear-gradient(140deg, rgba(17, 25, 26, 0.5), rgba(61, 43, 29, 0.64)),
+    radial-gradient(circle at 24% 20%, rgba(238, 208, 166, 0.25), transparent 48%),
+    #2f2a24;
+}
+
+.home-collections__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 6, 8, 0.08) 45%, rgba(6, 6, 8, 0.62) 100%);
+  transition: background 0.4s ease;
+}
+
+.home-collections__content {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: clamp(18px, 5vw, 34px);
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  z-index: 1;
+}
+
+.home-collections__title {
+  font-family: "Didot", "Bodoni MT", "Times New Roman", serif;
+  font-size: clamp(28px, 2.55vw, 52px);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+  text-shadow: 0 8px 20px rgba(0, 0, 0, 0.34);
+  transition: transform 0.3s ease;
+}
+
+.home-collections__cta {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  padding: 6px 8px;
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.home-collections__cta::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.8s ease;
+}
+
+.home-collections__card:hover .home-collections__image,
+.home-collections__card:focus-visible .home-collections__image {
+  transform: scale(1.045);
+}
+
+.home-collections__card:hover .home-collections__shade,
+.home-collections__card:focus-visible .home-collections__shade {
+  background: linear-gradient(180deg, rgba(6, 6, 8, 0.12) 40%, rgba(6, 6, 8, 0.72) 100%);
+}
+
+.home-collections__card:hover .home-collections__title,
+.home-collections__card:focus-visible .home-collections__title {
+  transform: translateY(-5px);
+}
+
+.home-collections__card:hover .home-collections__cta,
+.home-collections__card:focus-visible .home-collections__cta {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.home-collections__card:hover .home-collections__cta::after,
+.home-collections__card:focus-visible .home-collections__cta::after {
+  transform: scaleX(1);
+}
+
+.home-collections__card:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: -8px;
+}
+
+@media (max-width: 1100px) {
+  .home-collections__card {
+    flex-basis: calc((100% - 2px) / 2);
+  }
+}
+
+@media (max-width: 680px) {
+  .home-collections {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .home-collections__top {
+    padding: 0 14px;
+    margin-bottom: 10px;
+  }
+
+  .home-collections__track {
+    gap: 10px;
+    padding: 0 14px;
+  }
+
+  .home-collections__card {
+    flex-basis: 86%;
+    min-height: 420px;
+  }
+}
+
+@media (hover: none) {
+  .home-collections__cta {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .home-collections__control {
+    display: none;
+  }
+}
+
 .site-header {
   position: sticky;
   top: 0;
