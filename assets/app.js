@@ -44,11 +44,14 @@ let velX = 0, velY = 0;
 let dragging = false;
 let lastX = 0, lastY = 0;
 let lastT = 0;
+let dragStartX = 0, dragStartY = 0;
 let pointerX = 0, pointerY = 0;
+let activePointerId = null;
+let dragMoved = false;
+let suppressClickUntil = 0;
 let hovering = false;
 let hoverActive = false;
 const allowAutoPan = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-let introActive = allowAutoPan;
 let menuHovering = false;
 let lastRender = 0;
 let autoPanX = 0, autoPanY = 0;
@@ -61,9 +64,8 @@ const edgeMaxSpeed = 12;   // px/frame near edges
 const wheelSpeed = 0.08;   // trackpad/wheel impulse scale
 const wheelMax = 30;       // cap wheel impulse to avoid spikes
 const panEase = 0.04;       // smoothing factor for auto-pan changes
-const introSpeed = 2;    // px/frame for the startup diagonal pan
-const introDuration = 99999; // ms for the startup hint animation
-let introStart = 0;
+const dragClickThreshold = 6; // px before a drag should suppress link click
+const suppressClickMs = 300;
 const productsUrl = "/products.json?limit=250";
 
 async function loadProducts() {
@@ -113,6 +115,7 @@ function buildTiles() {
     for (let c = 0; c < cols; c++) {
       const el = document.createElement(products.length ? "a" : "div");
       el.className = "tile";
+      el.draggable = false;
 
       if (products.length) {
         const product = products[idx % products.length];
@@ -181,20 +184,6 @@ function buildTiles() {
 }
 
 function render() {
-  // Intro auto-pan to hint interaction, then stop until hover
-  if (introActive) {
-    if (!introStart) introStart = performance.now();
-    const t = performance.now() - introStart;
-    const easeOut = Math.max(0, 1 - t / introDuration);
-    offsetX += - introSpeed * easeOut;
-    offsetY += - introSpeed * easeOut;
-    if (t >= introDuration) {
-      introActive = false;
-      velX = 1;
-      velY = 0;
-    }
-  }
-
   const now = performance.now();
   const dt = lastRender ? now - lastRender : 16.67;
   lastRender = now;
@@ -203,7 +192,7 @@ function render() {
   let targetPanY = 0;
 
   // Auto-pan based on distance from center (dead zone in the middle)
-  if (allowAutoPan && !introActive && hoverActive && hovering && !menuHovering) {
+  if (allowAutoPan && hoverActive && hovering && !menuHovering) {
     const w = window.innerWidth;
     const h = window.innerHeight;
 
@@ -294,17 +283,32 @@ function render() {
 
 // ===== Input =====
 function onDown(e) {
+  if (e.button !== undefined && e.button !== 0) return;
   dragging = true;
+  dragMoved = false;
   viewport.classList.add("dragging");
   velX = 0; velY = 0;
 
   const p = getPoint(e);
   lastX = pointerX = p.x;
   lastY = pointerY = p.y;
+  dragStartX = p.x;
+  dragStartY = p.y;
   lastT = performance.now();
+  activePointerId = typeof e.pointerId === "number" ? e.pointerId : null;
+
+  if (activePointerId !== null && viewport.setPointerCapture) {
+    viewport.setPointerCapture(activePointerId);
+  }
+
+  e.preventDefault();
 }
 
 function onMove(e) {
+  if (dragging && activePointerId !== null && typeof e.pointerId === "number" && e.pointerId !== activePointerId) {
+    return;
+  }
+
   const p = getPoint(e);
   pointerX = p.x;
   pointerY = p.y;
@@ -316,6 +320,10 @@ function onMove(e) {
 
   const dx = p.x - lastX;
   const dy = p.y - lastY;
+
+  if (!dragMoved && Math.hypot(p.x - dragStartX, p.y - dragStartY) >= dragClickThreshold) {
+    dragMoved = true;
+  }
 
   offsetX += dx;
   offsetY += dy;
@@ -329,7 +337,27 @@ function onMove(e) {
   lastT = now;
 }
 
-function onUp() {
+function onUp(e) {
+  if (activePointerId !== null && e && typeof e.pointerId === "number" && e.pointerId !== activePointerId) {
+    return;
+  }
+
+  if (activePointerId !== null && viewport.releasePointerCapture) {
+    try {
+      if (viewport.hasPointerCapture?.(activePointerId)) {
+        viewport.releasePointerCapture(activePointerId);
+      }
+    } catch (_) {
+      // Pointer may already be released/cancelled; safe to ignore.
+    }
+  }
+
+  if (dragMoved) {
+    suppressClickUntil = performance.now() + suppressClickMs;
+  }
+
+  activePointerId = null;
+  dragMoved = false;
   dragging = false;
   viewport.classList.remove("dragging");
 }
@@ -384,7 +412,6 @@ viewport.addEventListener("pointerenter", (e) => {
   if (!allowAutoPan) return;
   hovering = true;
   hoverActive = true;
-  introActive = false;
   velX = 0;
   velY = 0;
   const p = getPoint(e);
@@ -400,6 +427,13 @@ if (dock) {
 }
 
 viewport.addEventListener("wheel", onWheel, { passive: false });
+layer.addEventListener("dragstart", (e) => e.preventDefault());
+layer.addEventListener("click", (e) => {
+  if (performance.now() < suppressClickUntil) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}, true);
 
 window.addEventListener("keydown", (e) => {
   if (e.key.toLowerCase() === "r") reshuffle();
