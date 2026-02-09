@@ -419,7 +419,7 @@ body.cart-drawer-open {
   background: currentColor;
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.8s ease;
+  transition: transform 0.18s ease;
 }
 
 .home-collections__card:hover .home-collections__image,
@@ -461,23 +461,74 @@ body.cart-drawer-open {
 
 @media (max-width: 680px) {
   .home-collections {
+    padding-top: 20px;
+    padding-bottom: 52px;
     padding-left: 0;
     padding-right: 0;
   }
 
   .home-collections__top {
     padding: 0 14px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
-  .home-collections__track {
-    gap: 10px;
+  .home-collections__heading {
+    margin-bottom: 10px;
+    font-size: 13px;
+    letter-spacing: 0.16em;
+  }
+
+  .home-collections__frame {
     padding: 0 14px;
   }
 
+  .home-collections__track {
+    gap: 8px;
+    padding: 0;
+  }
+
   .home-collections__card {
-    flex-basis: 86%;
-    min-height: 420px;
+    flex-basis: 100%;
+    min-height: clamp(330px, 92vw, 420px);
+  }
+
+  .home-collections__content {
+    left: 14px;
+    right: 14px;
+    bottom: 16px;
+  }
+
+  .home-collections__title {
+    font-size: clamp(24px, 9vw, 34px);
+  }
+
+  .home-collections__cta {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    padding: 4px 6px;
+  }
+
+  .home-collections__pagination {
+    gap: 8px;
+    padding-top: 12px;
+  }
+
+  .home-collections__dot.is-active {
+    width: clamp(32px, 12vw, 48px);
+  }
+}
+
+@media (max-width: 420px) {
+  .home-collections__heading {
+    letter-spacing: 0.12em;
+  }
+
+  .home-collections__card {
+    min-height: clamp(300px, 96vw, 360px);
+  }
+
+  .home-collections__title {
+    font-size: clamp(22px, 8.6vw, 30px);
   }
 }
 
@@ -487,8 +538,21 @@ body.cart-drawer-open {
     transform: translateY(0);
   }
 
+  .home-collections__controls {
+    padding: 0 6px;
+  }
+
   .home-collections__control {
-    display: none;
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    border-color: rgba(0, 0, 0, 0.22);
+    background: rgba(255, 255, 255, 0.9);
+    color: #111111;
+  }
+
+  .home-collections__control span {
+    font-size: 24px;
   }
 }
 

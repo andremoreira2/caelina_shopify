@@ -107,10 +107,14 @@
         var cards = track.querySelectorAll(".home-collections__card");
         var maxScroll = getMaxScroll();
         var nextPoints = [0];
+        var viewportRect = viewport.getBoundingClientRect();
+        var currentScroll = viewport.scrollLeft;
 
         cards.forEach(function (card) {
-          var left = Math.min(maxScroll, Math.max(0, card.offsetLeft - track.offsetLeft));
-          if (Math.abs(left - nextPoints[nextPoints.length - 1]) > 1) {
+          var cardRect = card.getBoundingClientRect();
+          var left = currentScroll + (cardRect.left - viewportRect.left);
+          left = Math.min(maxScroll, Math.max(0, left));
+          if (Math.abs(left - nextPoints[nextPoints.length - 1]) > 2) {
             nextPoints.push(left);
           }
         });
@@ -199,7 +203,7 @@
       }
 
       function canAutoplay() {
-        return pageCount > 1 && !prefersReducedMotion.matches;
+        return pageCount > 1;
       }
 
       function resetTimer() {
@@ -277,6 +281,10 @@
       viewport.addEventListener("scroll", updateControls, { passive: true });
       window.addEventListener("resize", recalc);
       window.addEventListener("load", recalc);
+      track.querySelectorAll("img").forEach(function (img) {
+        if (img.complete) return;
+        img.addEventListener("load", recalc, { once: true });
+      });
       viewport.addEventListener("keydown", function (event) {
         if (event.key === "ArrowLeft") {
           scrollByStep(-1);
