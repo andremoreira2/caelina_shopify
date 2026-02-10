@@ -581,6 +581,30 @@ body.template-home .site-header {
   right: 0;
 }
 
+body.template-index .site-header.is-scrolled,
+body.template-home .site-header.is-scrolled {
+  background: #0b0b0f;
+  color: var(--fg);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.template-index .site-header.is-scrolled .site-cart__count,
+body.template-home .site-header.is-scrolled .site-cart__count {
+  background: #ffffff;
+  color: #111111;
+}
+
+body.template-index .site-header .site-header__inner,
+body.template-home .site-header .site-header__inner {
+  padding-top: calc(26px - (10px * var(--header-shrink-progress, 0)));
+  padding-bottom: calc(26px - (10px * var(--header-shrink-progress, 0)));
+}
+
+body.template-index .site-header .site-header__logo,
+body.template-home .site-header .site-header__logo {
+  font-size: calc(65px - (25px * var(--header-shrink-progress, 0)));
+}
+
 @media (hover: hover) and (pointer: fine) {
   .site-header:hover {
     background: #ffffff;
@@ -615,6 +639,7 @@ body.template-home .site-header {
   align-items: center;
   gap: 16px;
   grid-template-columns: 1fr auto 1fr;
+  transition: padding 0.08s linear;
 }
 
 .site-header__left {
@@ -639,6 +664,7 @@ body.template-home .site-header {
   font-family: "Times New Roman", Times, serif;
   font-size: 65px;
   justify-self: center;
+  transition: font-size 0.08s linear;
 }
 
 .site-header__center {
