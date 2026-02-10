@@ -42,12 +42,13 @@ body.cart-drawer-open {
   text-align: center;
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .home-page__media {
-  position: relative;
-  height: 100vh;
+  position: sticky;
+  top: 0;
+  height: 100svh;
   min-height: 100vh;
   z-index: 0;
   background: #0b0b10;
@@ -196,6 +197,8 @@ body.cart-drawer-open {
 }
 
 .home-collections {
+  position: relative;
+  z-index: 2;
   padding: clamp(28px, 5vw, 58px) clamp(12px, 1.8vw, 22px) clamp(56px, 8vw, 96px);
   background: #ffffff;
 }
