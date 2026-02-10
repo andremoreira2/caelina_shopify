@@ -562,15 +562,25 @@ body.cart-drawer-open {
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 12;
+  z-index: 120;
   color: var(--fg);
   background: #0b0b0f;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-body.template-index .site-header,
-body.template-home .site-header {
+.site-header.site-header--fixed {
+  position: fixed;
+  left: 0;
+  right: 0;
+}
+
+body.has-fixed-header {
+  padding-top: var(--site-header-offset, 0px);
+}
+
+body.template-index .site-header:not(.is-scrolled),
+body.template-home .site-header:not(.is-scrolled) {
   background: transparent;
   border-bottom-color: transparent;
 }
@@ -581,27 +591,23 @@ body.template-home .site-header {
   right: 0;
 }
 
-body.template-index .site-header.is-scrolled,
-body.template-home .site-header.is-scrolled {
+.site-header.is-scrolled {
   background: #0b0b0f;
   color: var(--fg);
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
-body.template-index .site-header.is-scrolled .site-cart__count,
-body.template-home .site-header.is-scrolled .site-cart__count {
+.site-header.is-scrolled .site-cart__count {
   background: #ffffff;
   color: #111111;
 }
 
-body.template-index .site-header .site-header__inner,
-body.template-home .site-header .site-header__inner {
+.site-header .site-header__inner {
   padding-top: calc(26px - (10px * var(--header-shrink-progress, 0)));
   padding-bottom: calc(26px - (10px * var(--header-shrink-progress, 0)));
 }
 
-body.template-index .site-header .site-header__logo,
-body.template-home .site-header .site-header__logo {
+.site-header .site-header__logo {
   font-size: calc(65px - (25px * var(--header-shrink-progress, 0)));
 }
 
