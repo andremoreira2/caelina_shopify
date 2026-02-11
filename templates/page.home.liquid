@@ -98,6 +98,9 @@
       var rafId = null;
       var lastFrameAt = 0;
       var elapsedInCycle = 0;
+      var suppressScrollResetUntil = 0;
+      var lastUserGestureAt = 0;
+      var hasResetForGesture = false;
 
       function getMaxScroll() {
         return Math.max(0, viewport.scrollWidth - viewport.clientWidth);
@@ -170,8 +173,10 @@
           dot.innerHTML = '<span class="home-collections__dot-fill" aria-hidden="true"></span>';
           dot.dataset.index = i;
           dot.addEventListener("click", function () {
-            scrollToIndex(Number(this.dataset.index));
-            resetTimer();
+            var targetIndex = Number(this.dataset.index);
+            runManualNavigation(function () {
+              scrollToIndex(targetIndex);
+            });
           });
           pagination.appendChild(dot);
           dots.push(dot);
@@ -191,6 +196,7 @@
       function scrollToIndex(index) {
         var targetIndex = Math.min(pageCount - 1, Math.max(0, index));
         var targetLeft = scrollPoints[targetIndex] || 0;
+        suppressScrollResetUntil = performance.now() + 500;
         viewport.scrollTo({ left: targetLeft, behavior: "smooth" });
       }
 
@@ -216,6 +222,29 @@
         if (!rafId) return;
         cancelAnimationFrame(rafId);
         rafId = null;
+      }
+
+      function runManualNavigation(navigate) {
+        stopTimer();
+        navigate();
+        resetTimer();
+        startTimer();
+      }
+
+      function noteUserGesture() {
+        lastUserGestureAt = performance.now();
+        hasResetForGesture = false;
+      }
+
+      function maybeResetTimerForUserScroll() {
+        var now = performance.now();
+        var gestureIsRecent = now - lastUserGestureAt < 900;
+        if (!gestureIsRecent || hasResetForGesture) return;
+        if (now < suppressScrollResetUntil) return;
+        hasResetForGesture = true;
+        stopTimer();
+        resetTimer();
+        startTimer();
       }
 
       function tick(now) {
@@ -269,16 +298,24 @@
       }
 
       prev.addEventListener("click", function () {
-        scrollByStep(-1);
-        resetTimer();
+        runManualNavigation(function () {
+          scrollByStep(-1);
+        });
       });
 
       next.addEventListener("click", function () {
-        scrollByStep(1);
-        resetTimer();
+        runManualNavigation(function () {
+          scrollByStep(1);
+        });
       });
 
-      viewport.addEventListener("scroll", updateControls, { passive: true });
+      viewport.addEventListener("scroll", function () {
+        updateControls();
+        maybeResetTimerForUserScroll();
+      }, { passive: true });
+      viewport.addEventListener("touchstart", noteUserGesture, { passive: true });
+      viewport.addEventListener("pointerdown", noteUserGesture);
+      viewport.addEventListener("wheel", noteUserGesture, { passive: true });
       window.addEventListener("resize", recalc);
       window.addEventListener("load", recalc);
       track.querySelectorAll("img").forEach(function (img) {
@@ -287,12 +324,14 @@
       });
       viewport.addEventListener("keydown", function (event) {
         if (event.key === "ArrowLeft") {
-          scrollByStep(-1);
-          resetTimer();
+          runManualNavigation(function () {
+            scrollByStep(-1);
+          });
         }
         if (event.key === "ArrowRight") {
-          scrollByStep(1);
-          resetTimer();
+          runManualNavigation(function () {
+            scrollByStep(1);
+          });
         }
       });
       document.addEventListener("visibilitychange", function () {
