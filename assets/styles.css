@@ -351,6 +351,7 @@ body.cart-drawer-open {
   text-decoration: none;
   isolation: isolate;
   scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .home-collections__image {
