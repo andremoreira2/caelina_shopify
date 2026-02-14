@@ -3,15 +3,36 @@
   if (!header) return;
   var body = document.body;
   var isHomeTemplate = body.classList.contains('template-home') || body.classList.contains('template-index');
+  var homeCollectionsSection = isHomeTemplate ? document.querySelector('[data-home-collections]') : null;
 
-  var shrinkStart = isHomeTemplate ? 650 : 150;
-  var shrinkEnd = isHomeTemplate ? 690 : 190;
+  var homeShrinkFallbackStart = 650;
+  var homeShrinkRange = 40;
+  var shrinkStart = isHomeTemplate ? homeShrinkFallbackStart : 150;
+  var shrinkEnd = isHomeTemplate ? homeShrinkFallbackStart + homeShrinkRange : 190;
   var shrinkDistance = Math.max(1, shrinkEnd - shrinkStart);
   var ticking = false;
 
   if (!isHomeTemplate) {
     header.classList.add('site-header--fixed');
     body.classList.add('has-fixed-header');
+  }
+
+  function updateShrinkThresholds() {
+    if (!isHomeTemplate) return;
+    if (!homeCollectionsSection) {
+      shrinkStart = homeShrinkFallbackStart;
+      shrinkEnd = homeShrinkFallbackStart + homeShrinkRange;
+      shrinkDistance = Math.max(1, shrinkEnd - shrinkStart);
+      return;
+    }
+
+    var scrollY = window.scrollY || window.pageYOffset || 0;
+    var sectionTop = homeCollectionsSection.getBoundingClientRect().top + scrollY;
+    var headerHeight = Math.ceil(header.getBoundingClientRect().height);
+    var calculatedStart = Math.max(0, Math.round(sectionTop - headerHeight));
+    shrinkStart = calculatedStart;
+    shrinkEnd = calculatedStart + homeShrinkRange;
+    shrinkDistance = Math.max(1, shrinkEnd - shrinkStart);
   }
 
   function updateHeaderOffset() {
@@ -37,13 +58,19 @@
   }
 
   function handleResize() {
+    updateShrinkThresholds();
     applyHeaderState();
     updateHeaderOffset();
   }
 
+  updateShrinkThresholds();
   applyHeaderState();
   updateHeaderOffset();
-  window.addEventListener('load', updateHeaderOffset);
+  window.addEventListener('load', function () {
+    updateShrinkThresholds();
+    applyHeaderState();
+    updateHeaderOffset();
+  });
   window.addEventListener('scroll', updateHeaderState, { passive: true });
   window.addEventListener('resize', handleResize);
 })();
