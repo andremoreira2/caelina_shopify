@@ -52,7 +52,7 @@
           {% assign subnav = linklists['header-subnavv'] %}
           {% if subnav and subnav.links.size > 0 %}
             {% for link in subnav.links %}
-              <a href="{{ link.url }}">{{ link.title }}</a>
+              <a href="{{ link.url }}" class="site-subnav__link{% if link.current or link.active or link.child_active %} is-active{% endif %}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
             {% endfor %}
           {% endif %}
         </nav>
