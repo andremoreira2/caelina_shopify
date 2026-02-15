@@ -136,6 +136,9 @@
   {{ 'cart-drawer.js' | asset_url | script_tag }}
   <script src="{{ 'header-scroll.js' | asset_url }}" defer></script>
   <script src="{{ 'search.js' | asset_url }}" defer></script>
+  {% if template.name == 'product' or (template.name == 'page' and template.suffix == 'home') %}
+    <script src="{{ 'shop-the-look.js' | asset_url }}" defer></script>
+  {% endif %}
   {% if template.name == 'index' %}
     <script src="{{ 'app.js' | asset_url }}" defer></script>
   {% endif %}

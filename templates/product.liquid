@@ -175,6 +175,179 @@
   </div>
 </section>
 
+{% assign stl_enabled = product.metafields.custom.shop_the_look_enabled.value %}
+{% assign stl_title = product.metafields.custom.shop_the_look_title.value | default: 'Shop The Look' %}
+{% assign stl_image = product.metafields.custom.shop_the_look_image.value %}
+{% assign stl_products = product.metafields.custom.shop_the_look_products.value %}
+{% assign stl_hotspots = product.metafields.custom.shop_the_look_hotspots.value %}
+{% assign stl_product_count = 0 %}
+{% if stl_products != blank %}
+  {% for stl_product in stl_products limit: 4 %}
+    {% if stl_product != blank %}
+      {% assign stl_product_count = stl_product_count | plus: 1 %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% if stl_enabled and stl_image != blank and stl_product_count > 0 %}
+  <section class="shop-the-look shop-the-look--product" data-shop-the-look>
+    <div class="shop-the-look__inner">
+      <div class="shop-the-look__header">
+        <h2 class="shop-the-look__title">{{ stl_title }}</h2>
+      </div>
+      <div class="shop-the-look__layout">
+        <div class="shop-the-look__media-wrap">
+          <img
+            class="shop-the-look__image"
+            src="{{ stl_image | image_url: width: 1800 }}"
+            alt="{{ stl_image.alt | default: stl_title | escape }}"
+            loading="lazy"
+            width="{{ stl_image.width | default: 1200 }}"
+            height="{{ stl_image.height | default: 1400 }}"
+          >
+          <div class="shop-the-look__dots">
+            {% assign stl_dot_index = 0 %}
+            {% for stl_product in stl_products limit: 4 %}
+              {% if stl_product != blank %}
+                {% assign fallback_x = 50 %}
+                {% assign fallback_y = 50 %}
+                {% case stl_dot_index %}
+                  {% when 0 %}
+                    {% assign fallback_x = 28 %}
+                    {% assign fallback_y = 34 %}
+                  {% when 1 %}
+                    {% assign fallback_x = 64 %}
+                    {% assign fallback_y = 30 %}
+                  {% when 2 %}
+                    {% assign fallback_x = 70 %}
+                    {% assign fallback_y = 62 %}
+                  {% when 3 %}
+                    {% assign fallback_x = 48 %}
+                    {% assign fallback_y = 78 %}
+                {% endcase %}
+
+                {% assign stl_dot_x = fallback_x %}
+                {% assign stl_dot_y = fallback_y %}
+                {% assign stl_dot_label = stl_product.title %}
+                {% if stl_hotspots != blank and stl_hotspots.size > stl_dot_index %}
+                  {% assign stl_hotspot = stl_hotspots[stl_dot_index] %}
+                  {% if stl_hotspot.x != blank %}
+                    {% assign stl_dot_x = stl_hotspot.x %}
+                  {% endif %}
+                  {% if stl_hotspot.y != blank %}
+                    {% assign stl_dot_y = stl_hotspot.y %}
+                  {% endif %}
+                  {% if stl_hotspot.label != blank %}
+                    {% assign stl_dot_label = stl_hotspot.label %}
+                  {% endif %}
+                {% endif %}
+                <button
+                  class="shop-the-look__dot{% if stl_dot_index == 0 %} is-active{% endif %}"
+                  type="button"
+                  data-stl-dot
+                  data-index="{{ stl_dot_index }}"
+                  aria-label="Show {{ stl_dot_label | escape }}"
+                  aria-pressed="{% if stl_dot_index == 0 %}true{% else %}false{% endif %}"
+                  style="left: {{ stl_dot_x | at_least: 0 | at_most: 100 }}%; top: {{ stl_dot_y | at_least: 0 | at_most: 100 }}%;"
+                >
+                  <span class="shop-the-look__dot-core" aria-hidden="true"></span>
+                </button>
+                {% assign stl_dot_index = stl_dot_index | plus: 1 %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="shop-the-look__panel">
+          {% assign stl_card_index = 0 %}
+          {% for stl_product in stl_products limit: 4 %}
+            {% if stl_product != blank %}
+              {% assign stl_active = false %}
+              {% if stl_card_index == 0 %}
+                {% assign stl_active = true %}
+              {% endif %}
+              {% assign stl_variant = stl_product.selected_or_first_available_variant | default: stl_product.variants.first %}
+              {% assign stl_product_image = stl_product.featured_image | default: stl_product.images.first %}
+              {% capture stl_variant_select_id %}stlVariant-{{ product.id }}-{{ stl_card_index }}{% endcapture %}
+              <article
+                class="shop-the-look__card{% if stl_active %} is-active{% endif %}"
+                data-stl-card
+                data-index="{{ stl_card_index }}"
+                {% unless stl_active %}hidden{% endunless %}
+                aria-hidden="{% if stl_active %}false{% else %}true{% endif %}"
+              >
+                <a class="shop-the-look__card-media" href="{{ stl_product.url }}">
+                  {% if stl_product_image != blank %}
+                    <img
+                      src="{{ stl_product_image | image_url: width: 1000 }}"
+                      alt="{{ stl_product_image.alt | default: stl_product.title | escape }}"
+                      loading="lazy"
+                      width="{{ stl_product_image.width | default: 900 }}"
+                      height="{{ stl_product_image.height | default: 900 }}"
+                    >
+                  {% else %}
+                    <span class="shop-the-look__media-fallback" aria-hidden="true"></span>
+                  {% endif %}
+                </a>
+
+                <div class="shop-the-look__card-meta">
+                  {% if stl_product.vendor != blank %}
+                    <p class="shop-the-look__vendor">{{ stl_product.vendor }}</p>
+                  {% endif %}
+                  <h3 class="shop-the-look__product-title"><a href="{{ stl_product.url }}">{{ stl_product.title }}</a></h3>
+                  <div class="shop-the-look__price-line">
+                    <span class="shop-the-look__price-value" data-stl-price>{{ stl_variant.price | money }}</span>
+                    <span
+                      class="shop-the-look__price-compare"
+                      data-stl-compare
+                      {% if stl_variant.compare_at_price <= stl_variant.price %}hidden{% endif %}
+                    >
+                      {{ stl_variant.compare_at_price | money }}
+                    </span>
+                  </div>
+
+                  <form method="post" action="/cart/add" class="shop-the-look__form">
+                    {% if stl_product.variants.size > 1 %}
+                      <label class="shop-the-look__label" for="{{ stl_variant_select_id }}">Choose option</label>
+                      <select class="shop-the-look__select" id="{{ stl_variant_select_id }}" data-stl-variant-select>
+                        {% for variant in stl_product.variants %}
+                          <option
+                            value="{{ variant.id }}"
+                            data-price="{{ variant.price | money }}"
+                            data-compare="{{ variant.compare_at_price | money }}"
+                            data-price-amount="{{ variant.price }}"
+                            data-compare-amount="{{ variant.compare_at_price }}"
+                            data-available="{{ variant.available }}"
+                            {% if variant.id == stl_variant.id %}selected{% endif %}
+                            {% unless variant.available %}disabled{% endunless %}
+                          >
+                            {{ variant.title }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    {% endif %}
+
+                    <input type="hidden" name="id" value="{{ stl_variant.id }}" data-stl-variant-id>
+                    <button
+                      type="submit"
+                      class="btn shop-the-look__add"
+                      data-stl-add-button
+                      {% unless stl_variant.available %}disabled{% endunless %}
+                    >
+                      <span data-stl-add-text>{% if stl_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
+                    </button>
+                  </form>
+                </div>
+              </article>
+              {% assign stl_card_index = stl_card_index | plus: 1 %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+{% endif %}
+
 <div class="product-lightbox" data-lightbox aria-hidden="true">
   <button class="product-lightbox__close" type="button" data-lightbox-close aria-label="Close image">✕</button>
   <button class="product-lightbox__nav product-lightbox__nav--prev" type="button" data-lightbox-prev aria-label="Previous image">‹</button>
