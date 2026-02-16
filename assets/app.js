@@ -297,11 +297,6 @@ function onDown(e) {
   lastT = performance.now();
   activePointerId = typeof e.pointerId === "number" ? e.pointerId : null;
 
-  if (activePointerId !== null && viewport.setPointerCapture) {
-    viewport.setPointerCapture(activePointerId);
-  }
-
-  e.preventDefault();
 }
 
 function onMove(e) {
@@ -340,16 +335,6 @@ function onMove(e) {
 function onUp(e) {
   if (activePointerId !== null && e && typeof e.pointerId === "number" && e.pointerId !== activePointerId) {
     return;
-  }
-
-  if (activePointerId !== null && viewport.releasePointerCapture) {
-    try {
-      if (viewport.hasPointerCapture?.(activePointerId)) {
-        viewport.releasePointerCapture(activePointerId);
-      }
-    } catch (_) {
-      // Pointer may already be released/cancelled; safe to ignore.
-    }
   }
 
   if (dragMoved) {
