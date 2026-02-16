@@ -36,7 +36,6 @@
   }
 
   function updateHeaderOffset() {
-    if (isHomeTemplate) return;
     var headerHeight = Math.ceil(header.getBoundingClientRect().height);
     body.style.setProperty('--site-header-offset', headerHeight + 'px');
   }

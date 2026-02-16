@@ -81,49 +81,51 @@
   {% if settings.home_stl_enabled and settings.home_stl_image != blank and home_stl_product_count > 0 %}
     <section class="shop-the-look shop-the-look--home" data-shop-the-look>
       <div class="shop-the-look__inner">
-        <div class="shop-the-look__header">
-          <h2 class="shop-the-look__title">{{ settings.home_stl_title | default: 'Shop The Look' }}</h2>
-        </div>
         <div class="shop-the-look__layout">
-          <div class="shop-the-look__media-wrap">
-            <img
-              class="shop-the-look__image"
-              src="{{ settings.home_stl_image | image_url: width: 1800 }}"
-              alt="{{ settings.home_stl_title | default: 'Shop The Look' | escape }}"
-              loading="lazy"
-              width="{{ settings.home_stl_image.width | default: 1200 }}"
-              height="{{ settings.home_stl_image.height | default: 1400 }}"
-            >
-            <div class="shop-the-look__dots">
-              {% assign home_stl_dot_index = 0 %}
-              {% for i in (1..4) %}
-                {% capture home_stl_product_key %}home_stl_product_{{ i }}{% endcapture %}
-                {% assign home_stl_setting = settings[home_stl_product_key] %}
-                {% assign home_stl_product = all_products[home_stl_setting] %}
-                {% if home_stl_product == blank and home_stl_setting != blank and home_stl_setting.title != blank %}
-                  {% assign home_stl_product = home_stl_setting %}
-                {% endif %}
-                {% if home_stl_product != blank %}
-                  {% capture home_stl_x_key %}home_stl_dot_{{ i }}_x{% endcapture %}
-                  {% capture home_stl_y_key %}home_stl_dot_{{ i }}_y{% endcapture %}
-                  {% capture home_stl_label_key %}home_stl_dot_{{ i }}_label{% endcapture %}
-                  {% assign home_stl_dot_x = settings[home_stl_x_key] | default: 50 %}
-                  {% assign home_stl_dot_y = settings[home_stl_y_key] | default: 50 %}
-                  {% assign home_stl_dot_label = settings[home_stl_label_key] | default: home_stl_product.title %}
-                  <button
-                    class="shop-the-look__dot{% if home_stl_dot_index == 0 %} is-active{% endif %}"
-                    type="button"
-                    data-stl-dot
-                    data-index="{{ home_stl_dot_index }}"
-                    aria-label="Show {{ home_stl_dot_label | escape }}"
-                    aria-pressed="{% if home_stl_dot_index == 0 %}true{% else %}false{% endif %}"
-                    style="left: {{ home_stl_dot_x | at_least: 0 | at_most: 100 }}%; top: {{ home_stl_dot_y | at_least: 0 | at_most: 100 }}%;"
-                  >
-                    <span class="shop-the-look__dot-core" aria-hidden="true"></span>
-                  </button>
-                  {% assign home_stl_dot_index = home_stl_dot_index | plus: 1 %}
-                {% endif %}
-              {% endfor %}
+          <div class="shop-the-look__media-column">
+            <div class="shop-the-look__header">
+              <h2 class="shop-the-look__title">{{ settings.home_stl_title | default: 'Shop The Look' }}</h2>
+            </div>
+            <div class="shop-the-look__media-wrap">
+              <img
+                class="shop-the-look__image"
+                src="{{ settings.home_stl_image | image_url: width: 1800 }}"
+                alt="{{ settings.home_stl_title | default: 'Shop The Look' | escape }}"
+                loading="lazy"
+                width="{{ settings.home_stl_image.width | default: 1200 }}"
+                height="{{ settings.home_stl_image.height | default: 1400 }}"
+              >
+              <div class="shop-the-look__dots">
+                {% assign home_stl_dot_index = 0 %}
+                {% for i in (1..4) %}
+                  {% capture home_stl_product_key %}home_stl_product_{{ i }}{% endcapture %}
+                  {% assign home_stl_setting = settings[home_stl_product_key] %}
+                  {% assign home_stl_product = all_products[home_stl_setting] %}
+                  {% if home_stl_product == blank and home_stl_setting != blank and home_stl_setting.title != blank %}
+                    {% assign home_stl_product = home_stl_setting %}
+                  {% endif %}
+                  {% if home_stl_product != blank %}
+                    {% capture home_stl_x_key %}home_stl_dot_{{ i }}_x{% endcapture %}
+                    {% capture home_stl_y_key %}home_stl_dot_{{ i }}_y{% endcapture %}
+                    {% capture home_stl_label_key %}home_stl_dot_{{ i }}_label{% endcapture %}
+                    {% assign home_stl_dot_x = settings[home_stl_x_key] | default: 50 %}
+                    {% assign home_stl_dot_y = settings[home_stl_y_key] | default: 50 %}
+                    {% assign home_stl_dot_label = settings[home_stl_label_key] | default: home_stl_product.title %}
+                    <button
+                      class="shop-the-look__dot{% if home_stl_dot_index == 0 %} is-active{% endif %}"
+                      type="button"
+                      data-stl-dot
+                      data-index="{{ home_stl_dot_index }}"
+                      aria-label="Show {{ home_stl_dot_label | escape }}"
+                      aria-pressed="{% if home_stl_dot_index == 0 %}true{% else %}false{% endif %}"
+                      style="left: {{ home_stl_dot_x | at_least: 0 | at_most: 100 }}%; top: {{ home_stl_dot_y | at_least: 0 | at_most: 100 }}%;"
+                    >
+                      <span class="shop-the-look__dot-core" aria-hidden="true"></span>
+                    </button>
+                    {% assign home_stl_dot_index = home_stl_dot_index | plus: 1 %}
+                  {% endif %}
+                {% endfor %}
+              </div>
             </div>
           </div>
 
@@ -148,8 +150,6 @@
                   class="shop-the-look__card{% if home_stl_active %} is-active{% endif %}"
                   data-stl-card
                   data-index="{{ home_stl_card_index }}"
-                  {% unless home_stl_active %}hidden{% endunless %}
-                  aria-hidden="{% if home_stl_active %}false{% else %}true{% endif %}"
                 >
                   <a class="shop-the-look__card-media" href="{{ home_stl_product.url }}">
                     {% if home_stl_product_image != blank %}
