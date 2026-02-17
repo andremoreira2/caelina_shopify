@@ -2588,6 +2588,17 @@ kbd {
 }
 
 @media (min-width: 901px) {
+  .shop-the-look__media-wrap {
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .shop-the-look__image {
+    width: auto;
+    max-width: 100%;
+    max-height: calc(100dvh - var(--stl-sticky-line) - clamp(84px, 11vh, 140px));
+  }
+
   .shop-the-look__panel {
     padding-top: min(140px, max(56px, calc(var(--stl-sticky-line) - 24px)));
   }
