@@ -65,158 +65,331 @@
     </div>
   </section>
 
-  {% assign home_stl_product_count = 0 %}
-  {% for i in (1..4) %}
-    {% capture home_stl_product_key %}home_stl_product_{{ i }}{% endcapture %}
-    {% assign home_stl_setting = settings[home_stl_product_key] %}
-    {% assign home_stl_product = all_products[home_stl_setting] %}
-    {% if home_stl_product == blank and home_stl_setting != blank and home_stl_setting.title != blank %}
-      {% assign home_stl_product = home_stl_setting %}
-    {% endif %}
-    {% if home_stl_product != blank %}
-      {% assign home_stl_product_count = home_stl_product_count | plus: 1 %}
-    {% endif %}
-  {% endfor %}
+  {% assign home_stl_enabled = settings.home_stl_enabled %}
+  {% assign home_stl_title = settings.home_stl_title | default: 'Shop The Look' %}
+  {% assign home_stl_image = settings.home_stl_image %}
+  {% assign home_stl_products = blank %}
+  {% assign home_stl_hotspots = blank %}
+  {% assign home_stl_set = shop.metafields.custom.home_shop_the_look_set.value %}
+  {% if home_stl_set == blank %}
+    {% assign home_stl_set = shop.metafields.custom.shop_the_look_set.value %}
+  {% endif %}
 
-  {% if settings.home_stl_enabled and settings.home_stl_image != blank and home_stl_product_count > 0 %}
+  {% if home_stl_set != blank %}
+    {% assign home_stl_set_title = home_stl_set.shop_the_look_title.value | default: home_stl_set.title.value | default: home_stl_set.shop_the_look_title | default: home_stl_set.title %}
+    {% assign home_stl_set_image = home_stl_set.shop_the_look_image.value | default: home_stl_set.image.value | default: home_stl_set.shop_the_look_image | default: home_stl_set.image %}
+    {% assign home_stl_set_products = home_stl_set.shop_the_look_products.value | default: home_stl_set.products.value | default: home_stl_set.shop_the_look_products | default: home_stl_set.products %}
+    {% assign home_stl_set_hotspots = home_stl_set.shop_the_look_hotspots.value | default: home_stl_set.hotspots.value | default: home_stl_set.shop_the_look_hotspots | default: home_stl_set.hotspots %}
+
+    {% if home_stl_set_title != blank %}
+      {% assign home_stl_title = home_stl_set_title %}
+    {% endif %}
+    {% if home_stl_set_image != blank %}
+      {% assign home_stl_image = home_stl_set_image %}
+    {% endif %}
+    {% if home_stl_set_products != blank %}
+      {% assign home_stl_products = home_stl_set_products %}
+    {% endif %}
+    {% if home_stl_set_hotspots != blank %}
+      {% assign home_stl_hotspots = home_stl_set_hotspots %}
+    {% endif %}
+    {% assign home_stl_enabled = true %}
+  {% endif %}
+
+  {% assign home_stl_product_count = 0 %}
+  {% if home_stl_products != blank %}
+    {% for home_stl_product in home_stl_products limit: 4 %}
+      {% if home_stl_product != blank %}
+        {% assign home_stl_product_count = home_stl_product_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    {% for i in (1..4) %}
+      {% capture home_stl_product_key %}home_stl_product_{{ i }}{% endcapture %}
+      {% assign home_stl_setting = settings[home_stl_product_key] %}
+      {% assign home_stl_product = all_products[home_stl_setting] %}
+      {% if home_stl_product == blank and home_stl_setting != blank and home_stl_setting.title != blank %}
+        {% assign home_stl_product = home_stl_setting %}
+      {% endif %}
+      {% if home_stl_product != blank %}
+        {% assign home_stl_product_count = home_stl_product_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {% if home_stl_enabled and home_stl_image != blank and home_stl_product_count > 0 %}
     <section class="shop-the-look shop-the-look--home" data-shop-the-look>
       <div class="shop-the-look__inner">
         <div class="shop-the-look__layout">
           <div class="shop-the-look__media-column">
             <div class="shop-the-look__header">
-              <h2 class="shop-the-look__title">{{ settings.home_stl_title | default: 'Shop The Look' }}</h2>
+              <h2 class="shop-the-look__title">{{ home_stl_title }}</h2>
             </div>
             <div class="shop-the-look__media-wrap">
               <img
                 class="shop-the-look__image"
-                src="{{ settings.home_stl_image | image_url: width: 1800 }}"
-                alt="{{ settings.home_stl_title | default: 'Shop The Look' | escape }}"
+                src="{{ home_stl_image | image_url: width: 1800 }}"
+                alt="{{ home_stl_title | escape }}"
                 loading="lazy"
-                width="{{ settings.home_stl_image.width | default: 1200 }}"
-                height="{{ settings.home_stl_image.height | default: 1400 }}"
+                width="{{ home_stl_image.width | default: 1200 }}"
+                height="{{ home_stl_image.height | default: 1400 }}"
               >
               <div class="shop-the-look__dots">
                 {% assign home_stl_dot_index = 0 %}
-                {% for i in (1..4) %}
-                  {% capture home_stl_product_key %}home_stl_product_{{ i }}{% endcapture %}
-                  {% assign home_stl_setting = settings[home_stl_product_key] %}
-                  {% assign home_stl_product = all_products[home_stl_setting] %}
-                  {% if home_stl_product == blank and home_stl_setting != blank and home_stl_setting.title != blank %}
-                    {% assign home_stl_product = home_stl_setting %}
-                  {% endif %}
-                  {% if home_stl_product != blank %}
-                    {% capture home_stl_x_key %}home_stl_dot_{{ i }}_x{% endcapture %}
-                    {% capture home_stl_y_key %}home_stl_dot_{{ i }}_y{% endcapture %}
-                    {% capture home_stl_label_key %}home_stl_dot_{{ i }}_label{% endcapture %}
-                    {% assign home_stl_dot_x = settings[home_stl_x_key] | default: 50 %}
-                    {% assign home_stl_dot_y = settings[home_stl_y_key] | default: 50 %}
-                    {% assign home_stl_dot_label = settings[home_stl_label_key] | default: home_stl_product.title %}
-                    <button
-                      class="shop-the-look__dot{% if home_stl_dot_index == 0 %} is-active{% endif %}"
-                      type="button"
-                      data-stl-dot
-                      data-index="{{ home_stl_dot_index }}"
-                      aria-label="Show {{ home_stl_dot_label | escape }}"
-                      aria-pressed="{% if home_stl_dot_index == 0 %}true{% else %}false{% endif %}"
-                      style="left: {{ home_stl_dot_x | at_least: 0 | at_most: 100 }}%; top: {{ home_stl_dot_y | at_least: 0 | at_most: 100 }}%;"
-                    >
-                      <span class="shop-the-look__dot-core" aria-hidden="true"></span>
-                    </button>
-                    {% assign home_stl_dot_index = home_stl_dot_index | plus: 1 %}
-                  {% endif %}
-                {% endfor %}
+                {% if home_stl_products != blank %}
+                  {% for home_stl_product in home_stl_products limit: 4 %}
+                    {% if home_stl_product != blank %}
+                      {% assign fallback_x = 50 %}
+                      {% assign fallback_y = 50 %}
+                      {% case home_stl_dot_index %}
+                        {% when 0 %}
+                          {% assign fallback_x = 28 %}
+                          {% assign fallback_y = 34 %}
+                        {% when 1 %}
+                          {% assign fallback_x = 64 %}
+                          {% assign fallback_y = 30 %}
+                        {% when 2 %}
+                          {% assign fallback_x = 70 %}
+                          {% assign fallback_y = 62 %}
+                        {% when 3 %}
+                          {% assign fallback_x = 48 %}
+                          {% assign fallback_y = 78 %}
+                      {% endcase %}
+
+                      {% assign home_stl_dot_x = fallback_x %}
+                      {% assign home_stl_dot_y = fallback_y %}
+                      {% assign home_stl_dot_label = home_stl_product.title %}
+                      {% if home_stl_hotspots != blank and home_stl_hotspots.size > home_stl_dot_index %}
+                        {% assign home_stl_hotspot = home_stl_hotspots[home_stl_dot_index] %}
+                        {% if home_stl_hotspot.x != blank %}
+                          {% assign home_stl_dot_x = home_stl_hotspot.x %}
+                        {% endif %}
+                        {% if home_stl_hotspot.y != blank %}
+                          {% assign home_stl_dot_y = home_stl_hotspot.y %}
+                        {% endif %}
+                        {% if home_stl_hotspot.label != blank %}
+                          {% assign home_stl_dot_label = home_stl_hotspot.label %}
+                        {% endif %}
+                      {% endif %}
+                      <button
+                        class="shop-the-look__dot{% if home_stl_dot_index == 0 %} is-active{% endif %}"
+                        type="button"
+                        data-stl-dot
+                        data-index="{{ home_stl_dot_index }}"
+                        aria-label="Show {{ home_stl_dot_label | escape }}"
+                        aria-pressed="{% if home_stl_dot_index == 0 %}true{% else %}false{% endif %}"
+                        style="left: {{ home_stl_dot_x | at_least: 0 | at_most: 100 }}%; top: {{ home_stl_dot_y | at_least: 0 | at_most: 100 }}%;"
+                      >
+                        <span class="shop-the-look__dot-core" aria-hidden="true"></span>
+                      </button>
+                      {% assign home_stl_dot_index = home_stl_dot_index | plus: 1 %}
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  {% for i in (1..4) %}
+                    {% capture home_stl_product_key %}home_stl_product_{{ i }}{% endcapture %}
+                    {% assign home_stl_setting = settings[home_stl_product_key] %}
+                    {% assign home_stl_product = all_products[home_stl_setting] %}
+                    {% if home_stl_product == blank and home_stl_setting != blank and home_stl_setting.title != blank %}
+                      {% assign home_stl_product = home_stl_setting %}
+                    {% endif %}
+                    {% if home_stl_product != blank %}
+                      {% capture home_stl_x_key %}home_stl_dot_{{ i }}_x{% endcapture %}
+                      {% capture home_stl_y_key %}home_stl_dot_{{ i }}_y{% endcapture %}
+                      {% capture home_stl_label_key %}home_stl_dot_{{ i }}_label{% endcapture %}
+                      {% assign home_stl_dot_x = settings[home_stl_x_key] | default: 50 %}
+                      {% assign home_stl_dot_y = settings[home_stl_y_key] | default: 50 %}
+                      {% assign home_stl_dot_label = settings[home_stl_label_key] | default: home_stl_product.title %}
+                      <button
+                        class="shop-the-look__dot{% if home_stl_dot_index == 0 %} is-active{% endif %}"
+                        type="button"
+                        data-stl-dot
+                        data-index="{{ home_stl_dot_index }}"
+                        aria-label="Show {{ home_stl_dot_label | escape }}"
+                        aria-pressed="{% if home_stl_dot_index == 0 %}true{% else %}false{% endif %}"
+                        style="left: {{ home_stl_dot_x | at_least: 0 | at_most: 100 }}%; top: {{ home_stl_dot_y | at_least: 0 | at_most: 100 }}%;"
+                      >
+                        <span class="shop-the-look__dot-core" aria-hidden="true"></span>
+                      </button>
+                      {% assign home_stl_dot_index = home_stl_dot_index | plus: 1 %}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
               </div>
             </div>
           </div>
 
           <div class="shop-the-look__panel">
             {% assign home_stl_card_index = 0 %}
-            {% for i in (1..4) %}
-              {% capture home_stl_product_key %}home_stl_product_{{ i }}{% endcapture %}
-              {% assign home_stl_setting = settings[home_stl_product_key] %}
-              {% assign home_stl_product = all_products[home_stl_setting] %}
-              {% if home_stl_product == blank and home_stl_setting != blank and home_stl_setting.title != blank %}
-                {% assign home_stl_product = home_stl_setting %}
-              {% endif %}
-              {% if home_stl_product != blank %}
-                {% assign home_stl_active = false %}
-                {% if home_stl_card_index == 0 %}
-                  {% assign home_stl_active = true %}
-                {% endif %}
-                {% assign home_stl_variant = home_stl_product.selected_or_first_available_variant | default: home_stl_product.variants.first %}
-                {% assign home_stl_product_image = home_stl_product.featured_image | default: home_stl_product.images.first %}
-                {% capture home_stl_variant_select_id %}homeStlVariant-{{ i }}{% endcapture %}
-                <article
-                  class="shop-the-look__card{% if home_stl_active %} is-active{% endif %}"
-                  data-stl-card
-                  data-index="{{ home_stl_card_index }}"
-                >
-                  <a class="shop-the-look__card-media" href="{{ home_stl_product.url }}">
-                    {% if home_stl_product_image != blank %}
-                      <img
-                        src="{{ home_stl_product_image | image_url: width: 1000 }}"
-                        alt="{{ home_stl_product_image.alt | default: home_stl_product.title | escape }}"
-                        loading="lazy"
-                        width="{{ home_stl_product_image.width | default: 900 }}"
-                        height="{{ home_stl_product_image.height | default: 900 }}"
-                      >
-                    {% else %}
-                      <span class="shop-the-look__media-fallback" aria-hidden="true"></span>
-                    {% endif %}
-                  </a>
-
-                  <div class="shop-the-look__card-meta">
-                    {% if home_stl_product.vendor != blank %}
-                      <p class="shop-the-look__vendor">{{ home_stl_product.vendor }}</p>
-                    {% endif %}
-                    <h3 class="shop-the-look__product-title"><a href="{{ home_stl_product.url }}">{{ home_stl_product.title }}</a></h3>
-                    <div class="shop-the-look__price-line">
-                      <span class="shop-the-look__price-value" data-stl-price>{{ home_stl_variant.price | money }}</span>
-                      <span
-                        class="shop-the-look__price-compare"
-                        data-stl-compare
-                        {% if home_stl_variant.compare_at_price <= home_stl_variant.price %}hidden{% endif %}
-                      >
-                        {{ home_stl_variant.compare_at_price | money }}
-                      </span>
-                    </div>
-
-                    <form method="post" action="/cart/add" class="shop-the-look__form">
-                      {% if home_stl_product.variants.size > 1 %}
-                        <label class="shop-the-look__label" for="{{ home_stl_variant_select_id }}">Choose option</label>
-                        <select class="shop-the-look__select" id="{{ home_stl_variant_select_id }}" data-stl-variant-select>
-                          {% for variant in home_stl_product.variants %}
-                            <option
-                              value="{{ variant.id }}"
-                              data-price="{{ variant.price | money }}"
-                              data-compare="{{ variant.compare_at_price | money }}"
-                              data-price-amount="{{ variant.price }}"
-                              data-compare-amount="{{ variant.compare_at_price }}"
-                              data-available="{{ variant.available }}"
-                              {% if variant.id == home_stl_variant.id %}selected{% endif %}
-                              {% unless variant.available %}disabled{% endunless %}
-                            >
-                              {{ variant.title }}
-                            </option>
-                          {% endfor %}
-                        </select>
+            {% if home_stl_products != blank %}
+              {% for home_stl_product in home_stl_products limit: 4 %}
+                {% if home_stl_product != blank %}
+                  {% assign home_stl_active = false %}
+                  {% if home_stl_card_index == 0 %}
+                    {% assign home_stl_active = true %}
+                  {% endif %}
+                  {% assign home_stl_variant = home_stl_product.selected_or_first_available_variant | default: home_stl_product.variants.first %}
+                  {% assign home_stl_product_image = home_stl_product.featured_image | default: home_stl_product.images.first %}
+                  {% capture home_stl_variant_select_id %}homeStlVariantMeta-{{ home_stl_card_index }}{% endcapture %}
+                  <article
+                    class="shop-the-look__card{% if home_stl_active %} is-active{% endif %}"
+                    data-stl-card
+                    data-index="{{ home_stl_card_index }}"
+                  >
+                    <a class="shop-the-look__card-media" href="{{ home_stl_product.url }}">
+                      {% if home_stl_product_image != blank %}
+                        <img
+                          src="{{ home_stl_product_image | image_url: width: 1000 }}"
+                          alt="{{ home_stl_product_image.alt | default: home_stl_product.title | escape }}"
+                          loading="lazy"
+                          width="{{ home_stl_product_image.width | default: 900 }}"
+                          height="{{ home_stl_product_image.height | default: 900 }}"
+                        >
+                      {% else %}
+                        <span class="shop-the-look__media-fallback" aria-hidden="true"></span>
                       {% endif %}
+                    </a>
 
-                      <input type="hidden" name="id" value="{{ home_stl_variant.id }}" data-stl-variant-id>
-                      <button
-                        type="submit"
-                        class="btn shop-the-look__add"
-                        data-stl-add-button
-                        {% unless home_stl_variant.available %}disabled{% endunless %}
-                      >
-                        <span data-stl-add-text>{% if home_stl_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
-                      </button>
-                    </form>
-                  </div>
-                </article>
-                {% assign home_stl_card_index = home_stl_card_index | plus: 1 %}
-              {% endif %}
-            {% endfor %}
+                    <div class="shop-the-look__card-meta">
+                      {% if home_stl_product.vendor != blank %}
+                        <p class="shop-the-look__vendor">{{ home_stl_product.vendor }}</p>
+                      {% endif %}
+                      <h3 class="shop-the-look__product-title"><a href="{{ home_stl_product.url }}">{{ home_stl_product.title }}</a></h3>
+                      <div class="shop-the-look__price-line">
+                        <span class="shop-the-look__price-value" data-stl-price>{{ home_stl_variant.price | money }}</span>
+                        <span
+                          class="shop-the-look__price-compare"
+                          data-stl-compare
+                          {% if home_stl_variant.compare_at_price <= home_stl_variant.price %}hidden{% endif %}
+                        >
+                          {{ home_stl_variant.compare_at_price | money }}
+                        </span>
+                      </div>
+
+                      <form method="post" action="/cart/add" class="shop-the-look__form">
+                        {% if home_stl_product.variants.size > 1 %}
+                          <label class="shop-the-look__label" for="{{ home_stl_variant_select_id }}">Choose option</label>
+                          <select class="shop-the-look__select" id="{{ home_stl_variant_select_id }}" data-stl-variant-select>
+                            {% for variant in home_stl_product.variants %}
+                              <option
+                                value="{{ variant.id }}"
+                                data-price="{{ variant.price | money }}"
+                                data-compare="{{ variant.compare_at_price | money }}"
+                                data-price-amount="{{ variant.price }}"
+                                data-compare-amount="{{ variant.compare_at_price }}"
+                                data-available="{{ variant.available }}"
+                                {% if variant.id == home_stl_variant.id %}selected{% endif %}
+                                {% unless variant.available %}disabled{% endunless %}
+                              >
+                                {{ variant.title }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                        {% endif %}
+
+                        <input type="hidden" name="id" value="{{ home_stl_variant.id }}" data-stl-variant-id>
+                        <button
+                          type="submit"
+                          class="btn shop-the-look__add"
+                          data-stl-add-button
+                          {% unless home_stl_variant.available %}disabled{% endunless %}
+                        >
+                          <span data-stl-add-text>{% if home_stl_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
+                        </button>
+                      </form>
+                    </div>
+                  </article>
+                  {% assign home_stl_card_index = home_stl_card_index | plus: 1 %}
+                {% endif %}
+              {% endfor %}
+            {% else %}
+              {% for i in (1..4) %}
+                {% capture home_stl_product_key %}home_stl_product_{{ i }}{% endcapture %}
+                {% assign home_stl_setting = settings[home_stl_product_key] %}
+                {% assign home_stl_product = all_products[home_stl_setting] %}
+                {% if home_stl_product == blank and home_stl_setting != blank and home_stl_setting.title != blank %}
+                  {% assign home_stl_product = home_stl_setting %}
+                {% endif %}
+                {% if home_stl_product != blank %}
+                  {% assign home_stl_active = false %}
+                  {% if home_stl_card_index == 0 %}
+                    {% assign home_stl_active = true %}
+                  {% endif %}
+                  {% assign home_stl_variant = home_stl_product.selected_or_first_available_variant | default: home_stl_product.variants.first %}
+                  {% assign home_stl_product_image = home_stl_product.featured_image | default: home_stl_product.images.first %}
+                  {% capture home_stl_variant_select_id %}homeStlVariant-{{ i }}{% endcapture %}
+                  <article
+                    class="shop-the-look__card{% if home_stl_active %} is-active{% endif %}"
+                    data-stl-card
+                    data-index="{{ home_stl_card_index }}"
+                  >
+                    <a class="shop-the-look__card-media" href="{{ home_stl_product.url }}">
+                      {% if home_stl_product_image != blank %}
+                        <img
+                          src="{{ home_stl_product_image | image_url: width: 1000 }}"
+                          alt="{{ home_stl_product_image.alt | default: home_stl_product.title | escape }}"
+                          loading="lazy"
+                          width="{{ home_stl_product_image.width | default: 900 }}"
+                          height="{{ home_stl_product_image.height | default: 900 }}"
+                        >
+                      {% else %}
+                        <span class="shop-the-look__media-fallback" aria-hidden="true"></span>
+                      {% endif %}
+                    </a>
+
+                    <div class="shop-the-look__card-meta">
+                      {% if home_stl_product.vendor != blank %}
+                        <p class="shop-the-look__vendor">{{ home_stl_product.vendor }}</p>
+                      {% endif %}
+                      <h3 class="shop-the-look__product-title"><a href="{{ home_stl_product.url }}">{{ home_stl_product.title }}</a></h3>
+                      <div class="shop-the-look__price-line">
+                        <span class="shop-the-look__price-value" data-stl-price>{{ home_stl_variant.price | money }}</span>
+                        <span
+                          class="shop-the-look__price-compare"
+                          data-stl-compare
+                          {% if home_stl_variant.compare_at_price <= home_stl_variant.price %}hidden{% endif %}
+                        >
+                          {{ home_stl_variant.compare_at_price | money }}
+                        </span>
+                      </div>
+
+                      <form method="post" action="/cart/add" class="shop-the-look__form">
+                        {% if home_stl_product.variants.size > 1 %}
+                          <label class="shop-the-look__label" for="{{ home_stl_variant_select_id }}">Choose option</label>
+                          <select class="shop-the-look__select" id="{{ home_stl_variant_select_id }}" data-stl-variant-select>
+                            {% for variant in home_stl_product.variants %}
+                              <option
+                                value="{{ variant.id }}"
+                                data-price="{{ variant.price | money }}"
+                                data-compare="{{ variant.compare_at_price | money }}"
+                                data-price-amount="{{ variant.price }}"
+                                data-compare-amount="{{ variant.compare_at_price }}"
+                                data-available="{{ variant.available }}"
+                                {% if variant.id == home_stl_variant.id %}selected{% endif %}
+                                {% unless variant.available %}disabled{% endunless %}
+                              >
+                                {{ variant.title }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                        {% endif %}
+
+                        <input type="hidden" name="id" value="{{ home_stl_variant.id }}" data-stl-variant-id>
+                        <button
+                          type="submit"
+                          class="btn shop-the-look__add"
+                          data-stl-add-button
+                          {% unless home_stl_variant.available %}disabled{% endunless %}
+                        >
+                          <span data-stl-add-text>{% if home_stl_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
+                        </button>
+                      </form>
+                    </div>
+                  </article>
+                  {% assign home_stl_card_index = home_stl_card_index | plus: 1 %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
           </div>
         </div>
       </div>
