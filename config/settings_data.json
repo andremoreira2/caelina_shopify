@@ -9,21 +9,6 @@
  */
 {
   "current": {
-    "home_stl_enabled": true,
-    "home_stl_image": "shopify://shop_images/beee8226-e441-4ac0-919d-f0e53026ee5b.jpg",
-    "home_stl_product_1": "top-quality-moissanite-luxury-and-fashionable-light-luxury-jewelry-silver-stud-earrings-s925-silver-plated-platinum-1",
-    "home_stl_dot_1_x": 40,
-    "home_stl_dot_1_y": 15,
-    "home_stl_dot_1_label": "dot label test 1",
-    "home_stl_product_2": "set-with-top-quality-moissanite-this-luxurious-and-fashionable-light-luxury-trend-jewelry-and-silver-pendant-is-s925-silver-plated-with-gold",
-    "home_stl_dot_2_x": 45,
-    "home_stl_dot_2_y": 79,
-    "home_stl_dot_2_label": "dot label test 2",
-    "home_stl_product_3": "top-quality-moissanite-luxury-and-fashionable-light-luxury-jewelry-silver-stud-earrings-s925-silver-plated-platinum-2",
-    "home_stl_dot_3_label": "dot label test 3",
-    "home_stl_product_4": "hollow-waterdrop-pendant-gold-earrings-fashionable-style",
-    "home_stl_dot_4_y": 43,
-    "home_stl_dot_4_label": "dot label test 4",
     "content_for_index": []
   }
 }
