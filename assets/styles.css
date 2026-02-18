@@ -2365,10 +2365,12 @@ kbd {
     opacity: 0.85;
     transform: scale(0.92);
   }
+
   80% {
     opacity: 0;
     transform: scale(1.9);
   }
+
   100% {
     opacity: 0;
     transform: scale(1.9);
@@ -2376,16 +2378,19 @@ kbd {
 }
 
 @keyframes stl-dot-core-pulse {
+
   0%,
   100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.22);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .shop-the-look__dot.is-active::before,
   .shop-the-look__dot.is-active::after,
   .shop-the-look__dot.is-active .shop-the-look__dot-core {
@@ -2438,13 +2443,11 @@ kbd {
   display: block;
   width: 100%;
   aspect-ratio: 4 / 5;
-  background: repeating-linear-gradient(
-    -45deg,
-    #ece8e2,
-    #ece8e2 10px,
-    #f5f2ed 10px,
-    #f5f2ed 20px
-  );
+  background: repeating-linear-gradient(-45deg,
+      #ece8e2,
+      #ece8e2 10px,
+      #f5f2ed 10px,
+      #f5f2ed 20px);
 }
 
 .shop-the-look__card-meta {
@@ -2572,13 +2575,106 @@ kbd {
 
   .shop-the-look__panel {
     min-height: 0;
-    gap: 20px;
     padding-top: 0;
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .shop-the-look__panel::-webkit-scrollbar {
+    display: none;
   }
 
   .shop-the-look__card {
-    padding-bottom: 16px;
+    flex: 0 0 min(84vw, 420px);
+    padding-bottom: 14px;
+    padding-right: 2px;
     transform: none;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    opacity: 1;
+    filter: none;
+    border-bottom-color: rgba(26, 26, 26, 0.25);
+  }
+
+  /* Sticky Scroll Logic for Mobile */
+  .shop-the-look--sticky-enabled {
+    /* Height will be set by JS */
+    min-height: 100vh;
+  }
+
+  .shop-the-look--sticky-enabled .shop-the-look__inner {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .shop-the-look--sticky-enabled .shop-the-look__layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100vh;
+  }
+
+  .shop-the-look--sticky-enabled .shop-the-look__media-column {
+    flex: 0 0 auto;
+    max-height: 55vh;
+    /* Limit image height to allow space for products */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .shop-the-look--sticky-enabled .shop-the-look__header {
+    margin-bottom: 12px;
+    flex-shrink: 0;
+  }
+
+  .shop-the-look--sticky-enabled .shop-the-look__media-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+
+  .shop-the-look--sticky-enabled .shop-the-look__image {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .shop-the-look--sticky-enabled .shop-the-look__panel {
+    flex: 0 0 auto;
+    padding-top: 16px;
+    padding-bottom: 20px;
+    display: flex;
+    gap: 16px;
+    overflow: visible;
+    /* Let __inner handle clipping — hidden here clips cards to 100vw */
+    scroll-snap-type: none;
+    /* Override inherited snap from non-sticky mobile rule */
+    width: 100%;
+    /* Ensure hardware acceleration for smooth transform */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+  }
+
+  .shop-the-look--sticky-enabled .shop-the-look__card {
+    flex: 0 0 85vw;
+    /* Slightly wider cards for better focus */
+    max-width: 380px;
+  }
+
+  .shop-the-look__card.is-active {
+    border-bottom-color: rgba(26, 26, 26, 0.65);
   }
 
   .shop-the-look__dot {
