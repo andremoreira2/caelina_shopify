@@ -199,6 +199,100 @@ body.cart-drawer-open {
   }
 }
 
+.home-story {
+  position: relative;
+  z-index: 2;
+  min-height: 600vh;
+  margin-top: 0;
+  background: #020207;
+}
+
+.home-story__sticky {
+  position: sticky;
+  top: var(--site-header-offset, 0px);
+  min-height: calc(100svh - var(--site-header-offset, 0px));
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(16px, 2.2vw, 36px);
+  padding: clamp(18px, 3vh, 44px) clamp(18px, 4vw, 48px) clamp(18px, 3vh, 44px);
+}
+
+.home-story__pronunciation {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  font-size: clamp(12px, 1vw, 14px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(26, 26, 31);
+  transition: color 0.14s linear;
+}
+
+.home-story__name {
+  margin: 0;
+  font-family: "Mayonice", "Snell Roundhand", "Lucida Handwriting", "Brush Script MT", "Segoe Script", cursive;
+  font-size: clamp(70px, 8.4vw, 126px);
+  line-height: 0.92;
+  letter-spacing: 0.015em;
+  text-transform: none;
+  color: rgb(26, 26, 31);
+  transition: color 0.14s linear;
+}
+
+.home-story__text {
+  margin: 0;
+  max-width: min(1140px, 92vw);
+  text-align: center;
+  font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(22px, 4.4vw, 36px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+}
+
+.home-story__word {
+  color: rgb(26, 26, 31);
+  transition: color 0.14s linear;
+}
+
+.home-story__word--typewriter {
+  font-family: "Courier Prime", "Courier New", "Nimbus Mono PS", "Liberation Mono", monospace;
+  font-size: 0.92em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.home-story__word--typewriter-italic {
+  font-style: italic;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-story {
+    min-height: auto;
+  }
+
+  .home-story__sticky {
+    position: relative;
+    min-height: auto;
+  }
+
+  .home-story__word {
+    color: rgb(244, 244, 248);
+  }
+
+  .home-story__pronunciation {
+    color: rgb(244, 244, 248);
+  }
+
+  .home-story__name {
+    color: rgb(244, 244, 248);
+  }
+}
+
 .home-collections {
   position: relative;
   z-index: 2;
@@ -2236,7 +2330,7 @@ kbd {
 
 .shop-the-look--home {
   background: var(--home-bg);
-  padding: clamp(28px, 6vw, 72px) clamp(16px, 4vw, 56px);
+  padding: clamp(28px, 6vw, 72px) clamp(16px, 4vw, 56px) clamp(6px, 1vw, 18px);
   position: relative;
   z-index: 2;
   --stl-sticky-line: max(120px, calc(var(--site-header-offset, 150px) + 18px));
@@ -2560,7 +2654,7 @@ kbd {
   }
 
   .shop-the-look--home {
-    padding: 28px 16px 48px;
+    padding: 28px 16px 12px;
   }
 
   .shop-the-look__layout {

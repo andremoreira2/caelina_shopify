@@ -1,3 +1,15 @@
+<style>
+  @font-face {
+    font-family: "Mayonice";
+    src:
+      url("{{ 'Mayonice.woff2' | asset_url }}") format("woff2"),
+      url("{{ 'Mayonice.ttf' | asset_url }}") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+</style>
+
 <section class="home-page home-page--minimal">
   <div class="home-page__media">
     <video class="home-page__video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
@@ -262,17 +274,18 @@
     </section>
   {% endif %}
 
-  <div class="home-page__definition home-page__definition--hero">
-    <div class="home-page__pronunciation">
-      <span class="home-page__ipa">/keɪˈliːnə/</span>
-      <span class="home-page__phonetic">· [kay·LEE·nah]</span>
+  <section class="home-story" data-home-story>
+    <div class="home-story__sticky">
+      <div class="home-story__pronunciation">
+        <span class="home-story__ipa">/keɪˈliːnə/</span>
+        <span class="home-story__phonetic">[kay·LEE·nah]</span>
+      </div>
+      <div class="home-story__name" data-home-story-name>Caelina</div>
+      <p class="home-story__text" data-home-story-text>
+        A name from Latin CAELUM &mdash; sky; heaven, evoking grace, divine elegance, and celestial beauty.
+      </p>
     </div>
-    <div class="home-page__name">CAELINA</div>
-    <p class="home-page__meaning">
-      &ldquo;A name from Latin <strong><em>caelum</em></strong> &mdash; <em>sky; heaven</em>, evoking grace, divine elegance,<br>
-      and celestial beauty.&rdquo;
-    </p>
-  </div>
+  </section>
 </section>
 
 <script>
@@ -549,5 +562,150 @@
       updateControls();
       startTimer();
     });
+  })();
+</script>
+
+<script>
+  (function initHomeStoryReveal() {
+    var sections = document.querySelectorAll("[data-home-story]");
+    if (!sections.length) return;
+
+    var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var darkColor = [26, 26, 31];
+    var lightColor = [244, 244, 248];
+    var revealLead = 0.9;
+    var entries = [];
+    var ticking = false;
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function mixChannel(start, end, amount) {
+      return Math.round(start + (end - start) * amount);
+    }
+
+    function toRgb(amount) {
+      var r = mixChannel(darkColor[0], lightColor[0], amount);
+      var g = mixChannel(darkColor[1], lightColor[1], amount);
+      var b = mixChannel(darkColor[2], lightColor[2], amount);
+      return "rgb(" + r + ", " + g + ", " + b + ")";
+    }
+
+    function buildWords(textNode) {
+      var text = textNode.textContent.replace(/\s+/g, " ").trim();
+      if (!text) return [];
+
+      var words = text.split(" ");
+      var fragment = document.createDocumentFragment();
+      var spans = [];
+      var forcedBreakAfter = {
+        latin: 0,
+        heaven: 0,
+        grace: 0,
+        elegance: 0
+      };
+
+      words.forEach(function (word, index) {
+        var span = document.createElement("span");
+        var normalizedWord = word.toLowerCase().replace(/[^a-z0-9]+/g, "");
+        span.className = "home-story__word home-story__word--typewriter";
+        if (normalizedWord === "sky" || normalizedWord === "heaven") {
+          span.classList.add("home-story__word--typewriter-italic");
+        }
+        span.textContent = word;
+        fragment.appendChild(span);
+        if (index < words.length - 1) {
+          if (Object.prototype.hasOwnProperty.call(forcedBreakAfter, normalizedWord) && forcedBreakAfter[normalizedWord] === 0) {
+            forcedBreakAfter[normalizedWord] = 1;
+            fragment.appendChild(document.createElement("br"));
+          } else {
+            fragment.appendChild(document.createTextNode(" "));
+          }
+        }
+        spans.push(span);
+      });
+
+      textNode.textContent = "";
+      textNode.appendChild(fragment);
+      return spans;
+    }
+
+    function buildEntries() {
+      entries = [];
+      sections.forEach(function (section) {
+        var textNode = section.querySelector("[data-home-story-text]");
+        var pronunciationNodes = section.querySelectorAll(".home-story__pronunciation span");
+        var nameNode = section.querySelector("[data-home-story-name]");
+        if (!textNode) return;
+
+        entries.push({
+          section: section,
+          words: buildWords(textNode),
+          pronunciationNodes: pronunciationNodes,
+          nameNode: nameNode,
+          lastProgress: -1
+        });
+      });
+    }
+
+    function getProgress(section) {
+      var rect = section.getBoundingClientRect();
+      var travel = Math.max(1, rect.height - window.innerHeight);
+      return clamp((-rect.top) / travel, 0, 1);
+    }
+
+    function renderEntry(entry, progress) {
+      var revealProgress = clamp(Math.pow(progress, 0.8), 0, 1);
+      var revealPosition = revealProgress * (entry.words.length + revealLead);
+      var pronunciationAmount = clamp(revealProgress * 1.15, 0, 1);
+      var nameAmount = clamp((revealProgress - 0.02) * 20, 0, 1);
+
+      entry.words.forEach(function (word, index) {
+        var amount = clamp(revealPosition - index, 0, 1);
+        word.style.color = toRgb(amount);
+      });
+
+      if (entry.pronunciationNodes && entry.pronunciationNodes.length) {
+        entry.pronunciationNodes.forEach(function (node) {
+          node.style.color = toRgb(pronunciationAmount);
+        });
+      }
+
+      if (entry.nameNode) {
+        entry.nameNode.style.color = toRgb(nameAmount);
+      }
+    }
+
+    function update() {
+      ticking = false;
+
+      entries.forEach(function (entry) {
+        var progress = prefersReducedMotion.matches ? 1 : getProgress(entry.section);
+        if (Math.abs(progress - entry.lastProgress) < 0.001) return;
+        entry.lastProgress = progress;
+        renderEntry(entry, progress);
+      });
+    }
+
+    function requestUpdate() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+
+    buildEntries();
+    requestUpdate();
+
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+    window.addEventListener("load", requestUpdate);
+    document.addEventListener("visibilitychange", requestUpdate);
+
+    if (typeof prefersReducedMotion.addEventListener === "function") {
+      prefersReducedMotion.addEventListener("change", requestUpdate);
+    } else if (typeof prefersReducedMotion.addListener === "function") {
+      prefersReducedMotion.addListener(requestUpdate);
+    }
   })();
 </script>
