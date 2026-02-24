@@ -9,10 +9,151 @@
     return Number.isFinite(parsed) ? parsed : 0;
   };
 
+  const isOptionAvailable = (option) => option?.dataset?.available === "true";
+
+  let variantModalInstance = null;
+  let variantModalContext = null;
+
+  const ensureVariantModal = () => {
+    if (variantModalInstance) return variantModalInstance;
+
+    const modalRoot = document.createElement("div");
+    modalRoot.className = "shop-the-look-variant-modal";
+    modalRoot.hidden = true;
+    modalRoot.innerHTML = `
+      <button type="button" class="shop-the-look-variant-modal__backdrop" data-stl-modal-close aria-label="Close"></button>
+      <div class="shop-the-look-variant-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="stlVariantModalTitle">
+        <button type="button" class="shop-the-look-variant-modal__close" data-stl-modal-close aria-label="Close">×</button>
+        <p class="shop-the-look-variant-modal__eyebrow">Choose option</p>
+        <h3 id="stlVariantModalTitle" class="shop-the-look-variant-modal__title" data-stl-modal-title></h3>
+        <label class="shop-the-look-variant-modal__label" for="stlVariantModalSelect">Option</label>
+        <select id="stlVariantModalSelect" class="shop-the-look__select shop-the-look-variant-modal__select" data-stl-modal-select></select>
+        <div class="shop-the-look__price-line shop-the-look-variant-modal__price-line">
+          <span class="shop-the-look__price-value" data-stl-modal-price></span>
+          <span class="shop-the-look__price-compare" data-stl-modal-compare hidden></span>
+        </div>
+        <button type="button" class="btn shop-the-look__add shop-the-look-variant-modal__add" data-stl-modal-add>Add to cart</button>
+      </div>
+    `;
+    document.body.appendChild(modalRoot);
+
+    const modalTitle = modalRoot.querySelector("[data-stl-modal-title]");
+    const modalSelect = modalRoot.querySelector("[data-stl-modal-select]");
+    const modalPrice = modalRoot.querySelector("[data-stl-modal-price]");
+    const modalCompare = modalRoot.querySelector("[data-stl-modal-compare]");
+    const modalAddButton = modalRoot.querySelector("[data-stl-modal-add]");
+    const closeButtons = [...modalRoot.querySelectorAll("[data-stl-modal-close]")];
+
+    const syncModalVariant = () => {
+      if (!variantModalContext) return;
+      const selected = modalSelect.selectedOptions ? modalSelect.selectedOptions[0] : null;
+      if (!selected) return;
+
+      if (modalPrice && selected.dataset.price) {
+        modalPrice.textContent = selected.dataset.price;
+      }
+
+      if (modalCompare) {
+        const priceAmount = toNumber(selected.dataset.priceAmount);
+        const compareAmount = toNumber(selected.dataset.compareAmount);
+        if (compareAmount > priceAmount && selected.dataset.compare) {
+          modalCompare.textContent = selected.dataset.compare;
+          modalCompare.hidden = false;
+        } else {
+          modalCompare.hidden = true;
+        }
+      }
+
+      const available = isOptionAvailable(selected);
+      modalAddButton.disabled = !available;
+      modalAddButton.textContent = available ? "Add to cart" : "Sold out";
+    };
+
+    const closeModal = () => {
+      if (modalRoot.hidden) return;
+      modalRoot.hidden = true;
+      document.body.classList.remove("shop-the-look-modal-open");
+
+      if (variantModalContext?.triggerButton) {
+        variantModalContext.triggerButton.focus({ preventScroll: true });
+      }
+      variantModalContext = null;
+    };
+
+    const openModal = (context) => {
+      variantModalContext = context;
+      modalTitle.textContent = context.productTitle || "Choose option";
+      modalSelect.innerHTML = "";
+
+      [...context.sourceSelect.options].forEach((option) => {
+        const clone = option.cloneNode(true);
+        clone.disabled = option.disabled;
+        modalSelect.appendChild(clone);
+      });
+
+      if (context.sourceSelect.value) {
+        modalSelect.value = context.sourceSelect.value;
+      }
+
+      if (!modalSelect.value && modalSelect.options.length) {
+        const firstAvailable = [...modalSelect.options].find((option) => !option.disabled);
+        modalSelect.value = (firstAvailable || modalSelect.options[0]).value;
+      }
+
+      modalRoot.hidden = false;
+      document.body.classList.add("shop-the-look-modal-open");
+      syncModalVariant();
+
+      window.requestAnimationFrame(() => {
+        modalSelect.focus();
+      });
+    };
+
+    closeButtons.forEach((button) => {
+      button.addEventListener("click", closeModal);
+    });
+
+    modalSelect.addEventListener("change", syncModalVariant);
+
+    modalAddButton.addEventListener("click", () => {
+      if (!variantModalContext) return;
+
+      const selected = modalSelect.selectedOptions ? modalSelect.selectedOptions[0] : null;
+      if (!selected || !isOptionAvailable(selected)) return;
+
+      const { form, sourceSelect, variantIdInput } = variantModalContext;
+      sourceSelect.value = selected.value;
+      sourceSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      if (variantIdInput) variantIdInput.value = selected.value;
+
+      closeModal();
+      form.dataset.stlBypassModal = "true";
+      if (typeof form.requestSubmit === "function") {
+        form.requestSubmit();
+      } else {
+        form.submit();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    });
+
+    variantModalInstance = {
+      open: openModal,
+    };
+
+    return variantModalInstance;
+  };
+
   roots.forEach((root) => {
     const dots = [...root.querySelectorAll("[data-stl-dot]")];
     const cards = [...root.querySelectorAll("[data-stl-card]")];
     const panel = root.querySelector(".shop-the-look__panel");
+    const mediaWrap = root.querySelector(".shop-the-look__media-wrap");
+    const inner = root.querySelector(".shop-the-look__inner");
     if (!dots.length || !cards.length) return;
 
     let activeIndex = -1;
@@ -84,16 +225,14 @@
 
       if (mobileLayout.matches && panel) {
         if (root.classList.contains("shop-the-look--sticky-enabled")) {
-          // Sticky mode: scroll window to the point where this card is visible
-          // The mapping is: scrollTop = rootTop + translateX
-          // translateX needed: target.offsetLeft
           const rootTop = window.scrollY + root.getBoundingClientRect().top;
-          const targetOffset = target.offsetLeft;
-          // Center the card if possible? 
-          // The logic maps scroll 1:1. 
-          // So if we scroll to rootTop + targetOffset, the panel translates by targetOffset.
-          // Then target is at left edge of visibility.
-          const targetScrollY = rootTop + targetOffset;
+          const maxDistance = Number.isFinite(root._mobileScrollDistance) ? root._mobileScrollDistance : 0;
+          const firstCardCenter = Number.isFinite(root._mobileFirstCardCenter)
+            ? root._mobileFirstCardCenter
+            : cards[0].offsetLeft + (cards[0].offsetWidth / 2);
+          const targetCenter = target.offsetLeft + (target.offsetWidth / 2);
+          const targetProgress = Math.max(0, Math.min(maxDistance, targetCenter - firstCardCenter));
+          const targetScrollY = rootTop + targetProgress;
 
           window.scrollTo({
             top: Math.max(0, targetScrollY),
@@ -123,15 +262,23 @@
 
       // If sticky mode, we calculate generic active index based on transform/scroll
       if (mobileLayout.matches && root.classList.contains("shop-the-look--sticky-enabled")) {
+        const maxStickyDistance = Number.isFinite(root._mobileScrollDistance)
+          ? root._mobileScrollDistance
+          : Infinity;
         // Calculate based on current translate
         // currentOffset = -rect.top basically
-        const currentOffset = Math.max(0, -sectionRect.top);
+        const currentOffset = Math.max(0, Math.min(maxStickyDistance, -sectionRect.top));
+        const firstCardCenter = Number.isFinite(root._mobileFirstCardCenter)
+          ? root._mobileFirstCardCenter
+          : cards[0].offsetLeft + (cards[0].offsetWidth / 2);
+        const targetCenter = firstCardCenter + currentOffset;
 
         let bestIndex = -1;
         let bestDiff = Infinity;
 
         cards.forEach((card) => {
-          const diff = Math.abs(card.offsetLeft - currentOffset);
+          const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
+          const diff = Math.abs(cardCenter - targetCenter);
           if (diff < bestDiff) {
             bestDiff = diff;
             bestIndex = toNumber(card.dataset.index);
@@ -240,6 +387,10 @@
     root.addEventListener("wheel", onWheel, { passive: true });
 
     cards.forEach((card) => {
+      const form = card.querySelector(".shop-the-look__form");
+      if (!form) return;
+
+      const requiresChoice = form.dataset.stlRequiresChoice === "true";
       const select = card.querySelector("[data-stl-variant-select]");
       if (!select) return;
 
@@ -250,20 +401,30 @@
       const compareValue = card.querySelector("[data-stl-compare]");
 
       const syncVariant = () => {
-        const selected = select.selectedOptions ? select.selectedOptions[0] : null;
-        if (!selected) return;
+        const selected = select?.selectedOptions ? select.selectedOptions[0] : null;
+        if (selected && variantIdInput) {
+          variantIdInput.value = selected.value;
+        }
 
-        if (variantIdInput) variantIdInput.value = selected.value;
+        const selectedAvailable = isOptionAvailable(selected);
+        const hasAnyAvailableOption = select
+          ? [...select.options].some((option) => isOptionAvailable(option))
+          : selectedAvailable;
 
-        const available = selected.dataset.available === "true";
-        if (addButton) addButton.disabled = !available;
-        if (addText) addText.textContent = available ? "Add to cart" : "Sold out";
+        if (addButton) {
+          addButton.disabled = requiresChoice ? !hasAnyAvailableOption : !selectedAvailable;
+        }
+        if (addText) {
+          addText.textContent = requiresChoice
+            ? (hasAnyAvailableOption ? "Choose options" : "Sold out")
+            : (selectedAvailable ? "Add to cart" : "Sold out");
+        }
 
-        if (priceValue && selected.dataset.price) {
+        if (selected && priceValue && selected.dataset.price) {
           priceValue.textContent = selected.dataset.price;
         }
 
-        if (compareValue) {
+        if (selected && compareValue) {
           const priceAmount = toNumber(selected.dataset.priceAmount);
           const compareAmount = toNumber(selected.dataset.compareAmount);
           if (compareAmount > priceAmount && selected.dataset.compare) {
@@ -275,49 +436,112 @@
         }
       };
 
-      select.addEventListener("change", syncVariant);
+      if (select) {
+        select.addEventListener("change", syncVariant);
+      }
       syncVariant();
+
+      if (requiresChoice && select) {
+        form.addEventListener("submit", (event) => {
+          if (form.dataset.stlBypassModal === "true") {
+            form.dataset.stlBypassModal = "";
+            return;
+          }
+
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          event.stopPropagation();
+          if (addButton?.disabled) return;
+
+          ensureVariantModal().open({
+            form,
+            sourceSelect: select,
+            variantIdInput,
+            triggerButton: addButton,
+            productTitle: form.dataset.stlProductTitle || "Choose option",
+          });
+        }, true);
+      }
     });
 
     /* =========================================
        Mobile Scroll Hijacking (Sticky Behavior)
        ========================================= */
+    const removeMobileScrollHandler = () => {
+      if (root._mobileScrollHandler) {
+        window.removeEventListener("scroll", root._mobileScrollHandler);
+        root._mobileScrollHandler = null;
+      }
+    };
+
     const initMobileScroll = () => {
       if (!mobileLayout.matches) {
+        removeMobileScrollHandler();
         root.classList.remove("shop-the-look--sticky-enabled");
         root.style.height = "";
         panel.style.transform = "";
+        root.style.removeProperty("--stl-title-center-shift");
+        root._mobileScrollDistance = 0;
+        root._mobileFirstCardCenter = 0;
         return;
       }
 
-      // 1. Reset sticky class before measuring so scrollWidth is accurate
+      removeMobileScrollHandler();
+
+      // 1. Reset sticky class before measuring
       root.classList.remove("shop-the-look--sticky-enabled");
       root.style.height = "";
       panel.style.transform = "";
+      root.style.removeProperty("--stl-title-center-shift");
+      root._mobileScrollDistance = 0;
+      root._mobileFirstCardCenter = 0;
 
       // Force a layout reflow so the browser recalculates dimensions
       // without the sticky CSS applied
       void panel.offsetWidth;
 
-      const scrollWidth = panel.scrollWidth;
-      const clientWidth = panel.clientWidth;
-      const scrollableDistance = scrollWidth - clientWidth;
+      // 2. Enable Sticky Mode to measure final layout geometry
+      root.classList.add("shop-the-look--sticky-enabled");
+      panel.style.transform = "translate3d(0px, 0, 0)";
+      void panel.offsetWidth;
+
+      const panelRect = panel.getBoundingClientRect();
+      const mediaRect = mediaWrap ? mediaWrap.getBoundingClientRect() : null;
+      const innerRect = inner ? inner.getBoundingClientRect() : null;
+      const mediaCenter = mediaRect
+        ? (mediaRect.left - panelRect.left) + (mediaRect.width / 2)
+        : (panelRect.width / 2);
+
+      if (mediaRect && innerRect) {
+        const mediaCenterX = mediaRect.left + (mediaRect.width / 2);
+        const innerCenterX = innerRect.left + (innerRect.width / 2);
+        const titleCenterShift = mediaCenterX - innerCenterX;
+        root.style.setProperty("--stl-title-center-shift", `${titleCenterShift}px`);
+      } else {
+        root.style.setProperty("--stl-title-center-shift", "0px");
+      }
+
+      const firstCard = cards[0];
+      const lastCard = cards[cards.length - 1];
+      const firstCardCenter = firstCard.offsetLeft + (firstCard.offsetWidth / 2);
+      const lastCardCenter = lastCard.offsetLeft + (lastCard.offsetWidth / 2);
+      const startTranslate = mediaCenter - firstCardCenter;
+      const endTranslate = mediaCenter - lastCardCenter;
+      const scrollableDistance = Math.max(0, startTranslate - endTranslate);
 
       // If content fits, no need to hijack
       if (scrollableDistance <= 0) {
-        // Remove stale handler if any
-        if (root._mobileScrollHandler) {
-          window.removeEventListener("scroll", root._mobileScrollHandler);
-          root._mobileScrollHandler = null;
-        }
+        root.classList.remove("shop-the-look--sticky-enabled");
+        panel.style.transform = "";
+        root.style.removeProperty("--stl-title-center-shift");
+        root._mobileFirstCardCenter = 0;
         return;
       }
 
-      // 2. Enable Sticky Mode
-      root.classList.add("shop-the-look--sticky-enabled");
-
       // Force reset any native scroll that might have happened
       panel.scrollLeft = 0;
+      root._mobileScrollDistance = scrollableDistance;
+      root._mobileFirstCardCenter = firstCardCenter;
 
       // 3. Set Section Height
       // height = viewport height (sticky "screen") + scrollable distance
@@ -331,15 +555,12 @@
         if (!mobileLayout.matches) return;
         const rect = root.getBoundingClientRect();
         const offset = -rect.top;
-        const translateX = Math.max(0, Math.min(scrollableDistance, offset));
-        panel.style.transform = `translate3d(-${translateX}px, 0, 0)`;
+        const progress = Math.max(0, Math.min(scrollableDistance, offset));
+        panel.style.transform = `translate3d(${startTranslate - progress}px, 0, 0)`;
       };
 
       // Remove any previously registered handler before adding the new one
       // (important on resize: scrollableDistance changes, so we need a fresh closure)
-      if (root._mobileScrollHandler) {
-        window.removeEventListener("scroll", root._mobileScrollHandler);
-      }
       root._mobileScrollHandler = onGlobalScroll;
       window.addEventListener("scroll", onGlobalScroll, { passive: true });
 

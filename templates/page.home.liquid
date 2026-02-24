@@ -124,7 +124,7 @@
             <div class="shop-the-look__header">
               <h2 class="shop-the-look__title">{{ home_stl_title }}</h2>
             </div>
-            <div class="shop-the-look__media-wrap">
+            <div class="shop-the-look__media-wrap" style="--stl-image-ratio: {{ home_stl_image.aspect_ratio | default: 0.8571428571 }};">
               <img
                 class="shop-the-look__image"
                 src="{{ home_stl_image | image_url: width: 1800 }}"
@@ -218,9 +218,6 @@
                   </a>
 
                   <div class="shop-the-look__card-meta">
-                    {% if home_stl_product.vendor != blank %}
-                      <p class="shop-the-look__vendor">{{ home_stl_product.vendor }}</p>
-                    {% endif %}
                     <h3 class="shop-the-look__product-title"><a href="{{ home_stl_product.url }}">{{ home_stl_product.title }}</a></h3>
                     <div class="shop-the-look__price-line">
                       <span class="shop-the-look__price-value" data-stl-price>{{ home_stl_variant.price | money }}</span>
@@ -233,25 +230,33 @@
                       </span>
                     </div>
 
-                    <form method="post" action="/cart/add" class="shop-the-look__form">
+                    <form
+                      method="post"
+                      action="/cart/add"
+                      class="shop-the-look__form"
+                      data-stl-product-title="{{ home_stl_product.title | escape }}"
+                      data-stl-requires-choice="{% if home_stl_product.variants.size > 1 %}true{% else %}false{% endif %}"
+                    >
                       {% if home_stl_product.variants.size > 1 %}
-                        <label class="shop-the-look__label" for="{{ home_stl_variant_select_id }}">Choose option</label>
-                        <select class="shop-the-look__select" id="{{ home_stl_variant_select_id }}" data-stl-variant-select>
-                          {% for variant in home_stl_product.variants %}
-                            <option
-                              value="{{ variant.id }}"
-                              data-price="{{ variant.price | money }}"
-                              data-compare="{{ variant.compare_at_price | money }}"
-                              data-price-amount="{{ variant.price }}"
-                              data-compare-amount="{{ variant.compare_at_price }}"
-                              data-available="{{ variant.available }}"
-                              {% if variant.id == home_stl_variant.id %}selected{% endif %}
-                              {% unless variant.available %}disabled{% endunless %}
-                            >
-                              {{ variant.title }}
-                            </option>
-                          {% endfor %}
-                        </select>
+                        <div class="shop-the-look__option-slot shop-the-look__option-slot--hidden">
+                          <label class="shop-the-look__label" for="{{ home_stl_variant_select_id }}">Choose option</label>
+                          <select class="shop-the-look__select" id="{{ home_stl_variant_select_id }}" data-stl-variant-select>
+                            {% for variant in home_stl_product.variants %}
+                              <option
+                                value="{{ variant.id }}"
+                                data-price="{{ variant.price | money }}"
+                                data-compare="{{ variant.compare_at_price | money }}"
+                                data-price-amount="{{ variant.price }}"
+                                data-compare-amount="{{ variant.compare_at_price }}"
+                                data-available="{{ variant.available }}"
+                                {% if variant.id == home_stl_variant.id %}selected{% endif %}
+                                {% unless variant.available %}disabled{% endunless %}
+                              >
+                                {{ variant.title }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                        </div>
                       {% endif %}
 
                       <input type="hidden" name="id" value="{{ home_stl_variant.id }}" data-stl-variant-id>
@@ -259,9 +264,19 @@
                         type="submit"
                         class="btn shop-the-look__add"
                         data-stl-add-button
-                        {% unless home_stl_variant.available %}disabled{% endunless %}
+                        {% if home_stl_product.variants.size > 1 %}
+                          {% unless home_stl_product.available %}disabled{% endunless %}
+                        {% else %}
+                          {% unless home_stl_variant.available %}disabled{% endunless %}
+                        {% endif %}
                       >
-                        <span data-stl-add-text>{% if home_stl_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
+                        <span data-stl-add-text>
+                          {% if home_stl_product.variants.size > 1 %}
+                            {% if home_stl_product.available %}Choose options{% else %}Sold out{% endif %}
+                          {% else %}
+                            {% if home_stl_variant.available %}Add to cart{% else %}Sold out{% endif %}
+                          {% endif %}
+                        </span>
                       </button>
                     </form>
                   </div>
