@@ -77,17 +77,19 @@
       </aside>
 
       <div class="collection-grid">
-        {% if collection.products_count == 0 %}
+        {% if paginate.items == 0 or collection.products.size == 0 %}
           <div class="collection-empty">No products found in this collection.</div>
         {% else %}
           {% for product in collection.products %}
             <a class="collection-card" href="{{ product.url }}">
               {% if product.featured_image %}
-                <img
-                  src="{{ product.featured_image | image_url: width: 600 }}"
-                  alt="{{ product.featured_image.alt | escape }}"
-                  loading="lazy"
-                >
+                <div class="collection-card__image-wrapper">
+                  <img
+                    src="{{ product.featured_image | image_url: width: 600 }}"
+                    alt="{{ product.featured_image.alt | escape }}"
+                    loading="lazy"
+                  >
+                </div>
               {% endif %}
               <div class="collection-card__info">
                 <span class="collection-card__title">{{ product.title }}</span>
