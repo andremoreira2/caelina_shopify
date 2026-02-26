@@ -2103,7 +2103,7 @@ kbd {
   color: #1a1a1a;
   border-radius: 0;
   max-width: 100%;
-  padding: 80px 60px;
+  padding: clamp(28px, 7vw, 80px) clamp(16px, 5vw, 60px);
   min-height: 100vh;
 }
 
@@ -2122,6 +2122,7 @@ kbd {
   width: 100%;
   height: var(--product-cta-height, 48px);
   box-sizing: border-box;
+  white-space: nowrap;
 }
 
 .product-form .btn .btn-icon {
@@ -2142,6 +2143,7 @@ kbd {
 .product-form .btn .btn-text {
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
 }
 
 .product-form .btn:hover {
@@ -3729,7 +3731,7 @@ body.shop-the-look-modal-open {
   display: block;
   width: 100%;
   text-align: center;
-  color: #eaeaf2;
+  color: rgba(242, 241, 234, 0.512);
   font-family: "Times New Roman", Times, serif;
   text-transform: uppercase;
   font-weight: 400;
