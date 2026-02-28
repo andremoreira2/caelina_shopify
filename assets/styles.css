@@ -1,7 +1,7 @@
 :root {
   --bg: #0b0b0f;
   --fg: #eaeaf2;
-  --home-bg: #f3f2ee;
+  --home-bg: #fdfaf5;
 }
 
 html,
@@ -23,6 +23,11 @@ body.template-index {
 }
 
 body.template-collection {
+  background: #fdfaf5;
+  color: #1a1a1a;
+}
+
+body.template-product {
   background: #fdfaf5;
   color: #1a1a1a;
 }
@@ -1389,6 +1394,7 @@ kbd {
 .product-info {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .product-title {
@@ -1557,6 +1563,7 @@ kbd {
 .product-form {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .product-qty {
@@ -2187,23 +2194,22 @@ kbd {
   /* Off-white background from image */
   color: #1a1a1a;
   border-radius: 0;
-  max-width: 100%;
   padding: clamp(28px, 7vw, 80px) clamp(16px, 5vw, 60px);
   min-height: 100vh;
 }
 
 /* Update Button Styles for Product Page */
 .product-form .btn {
-  background: #000000;
-  color: #ffffff;
-  border: 1px solid #000000;
+  background: #17171f;
+  color: #f1f1f6;
+  border: 1px solid #17171f;
   border-radius: 0;
   text-transform: none;
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.05em;
   padding: 0 24px;
-  transition: opacity 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   width: 100%;
   height: var(--product-cta-height, 48px);
   box-sizing: border-box;
@@ -2231,26 +2237,33 @@ kbd {
   white-space: nowrap;
 }
 
-.product-form .btn:hover {
-  opacity: 0.8;
+.product-form .btn:not([disabled]):hover,
+.product-form .btn:not([disabled]):focus-visible {
+  background: #ffffff;
+  color: #0b0b0f;
+  border-color: #17171f;
 }
 
 .product-form .btn.secondary {
-  background: #000000;
-  color: #ffffff;
-  border: 1px solid #000000;
   margin-top: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Quantity and Add to Cart Row */
 /* Fix Layout for Quantity + Add to Cart */
 .product-form-row {
   display: grid;
-  grid-template-columns: min-content 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 12px;
   margin-top: 24px;
   align-items: stretch;
   --product-cta-height: 48px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .product-form-row.is-sold-out {
@@ -2373,6 +2386,18 @@ kbd {
   opacity: 0.8;
   font-size: 14px;
   line-height: 1.6;
+}
+
+.accordion-content img {
+  max-width: 100%;
+  height: auto;
+  display: none;
+  /* hide images from description that are decorative/layout */
+}
+
+#product-description-raw img {
+  max-width: 100%;
+  height: auto;
 }
 
 .accordion-content.is-open {

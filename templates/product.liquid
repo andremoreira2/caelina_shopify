@@ -135,8 +135,43 @@
         <button type="button" class="btn secondary">Buy it now</button>
       {% endif %}
 
+      <!-- Hidden raw description for JS parsing -->
+      {% if product.description != blank %}
+        <div id="product-description-raw" hidden>{{ product.description }}</div>
+      {% endif %}
+
       <!-- Accordions -->
       <div class="product-accordions">
+        <div class="accordion-item">
+            <button class="accordion-header" type="button" aria-expanded="false">
+                Description
+                <span class="accordion-icon">+</span>
+            </button>
+            <div class="accordion-content" id="accordion-description">
+                {% unless product.description != blank %}
+                  <p>No description available.</p>
+                {% endunless %}
+            </div>
+        </div>
+        <div class="accordion-item" id="accordion-item-details">
+            <button class="accordion-header" type="button" aria-expanded="false">
+                Details
+                <span class="accordion-icon">+</span>
+            </button>
+            <div class="accordion-content" id="accordion-details">
+            </div>
+        </div>
+        <div class="accordion-item" id="accordion-item-materials">
+            <button class="accordion-header" type="button" aria-expanded="false">
+                Materials
+                <span class="accordion-icon">+</span>
+            </button>
+            <div class="accordion-content" id="accordion-materials">
+                {% unless product.description != blank %}
+                  <p>Premium sterling silver or 14k gold vermeil.</p>
+                {% endunless %}
+            </div>
+        </div>
         <div class="accordion-item">
             <button class="accordion-header" type="button" aria-expanded="false">
                 Care & Maintenance
@@ -153,19 +188,6 @@
             </button>
             <div class="accordion-content">
                 <p>Free shipping on orders over $100. Returns accepted within 30 days.</p>
-            </div>
-        </div>
-        <div class="accordion-item">
-            <button class="accordion-header" type="button" aria-expanded="false">
-                Material
-                <span class="accordion-icon">+</span>
-            </button>
-            <div class="accordion-content">
-                {% if product.description != blank %}
-                  <div class="product-description">{{ product.description }}</div>
-                {% else %}
-                  <p>Premium sterling silver or 14k gold vermeil.</p>
-                {% endif %}
             </div>
         </div>
       </div>
@@ -588,6 +610,74 @@
             header.querySelector(".accordion-icon").textContent = isOpen ? "+" : "-";
         });
     });
+
+    // Description Section Parser
+    // Branvas exports product.description as structured HTML with <h3><strong>SectionName</strong></h3> headers.
+    // We parse those headers and distribute content into the correct accordion panels.
+    (() => {
+      const rawEl = document.getElementById('product-description-raw');
+      if (!rawEl) return;
+
+      const descAccordion = document.getElementById('accordion-description');
+      const detailsAccordion = document.getElementById('accordion-details');
+      const materialsAccordion = document.getElementById('accordion-materials');
+      const detailsItem = document.getElementById('accordion-item-details');
+      const materialsItem = document.getElementById('accordion-item-materials');
+
+      // Parse the raw HTML into a temporary container
+      const temp = document.createElement('div');
+      temp.innerHTML = rawEl.innerHTML;
+
+      const sections = { description: [], details: [], materials: [] };
+      let currentSection = 'description';
+
+      // Walk through child nodes and bucket them by section
+      temp.childNodes.forEach(node => {
+        // Detect section header: <h3><strong>SectionName</strong></h3>
+        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'H3') {
+          const headerText = node.textContent.trim().toLowerCase();
+          if (headerText === 'description') {
+            currentSection = 'description';
+            return; // skip the header itself
+          } else if (headerText === 'details') {
+            currentSection = 'details';
+            return;
+          } else if (headerText === 'materials') {
+            currentSection = 'materials';
+            return;
+          }
+        }
+        sections[currentSection].push(node.cloneNode(true));
+      });
+
+      // Helper: inject nodes into a target element
+      const inject = (target, nodes) => {
+        if (!target) return;
+        // Clear any Liquid-rendered placeholder content
+        target.innerHTML = '';
+        nodes.forEach(n => target.appendChild(n));
+      };
+
+      if (sections.description.length && descAccordion) {
+        inject(descAccordion, sections.description);
+      }
+
+      if (sections.details.length && detailsAccordion) {
+        inject(detailsAccordion, sections.details);
+        if (detailsItem) detailsItem.style.display = '';
+      } else if (detailsItem) {
+        // Hide the Details accordion if no content
+        detailsItem.style.display = 'none';
+      }
+
+      if (sections.materials.length && materialsAccordion) {
+        inject(materialsAccordion, sections.materials);
+        if (materialsItem) materialsItem.style.display = '';
+      } else if (materialsItem) {
+        // Hide the Materials accordion if no content
+        materialsItem.style.display = 'none';
+      }
+    })();
 
     // Quantity Logic
     const qtyInput = document.getElementById("quantity");
