@@ -1,26 +1,25 @@
 <section class="product-page">
   <div class="product-media">
-    {% assign image_count = 0 %}
-    <div class="product-gallery-grid">
-      {% for media in product.media %}
-        {% if media.media_type == "image" %}
-          <button
-            class="product-gallery-grid__item"
-            type="button"
-            data-gallery-image
-            data-index="{{ image_count }}"
-            data-zoom="{{ media | image_url: width: 2200 }}"
-            data-alt="{{ media.alt | escape }}"
-            aria-label="Open image {{ image_count | plus: 1 }}"
+    {% assign gallery_images = product.media | where: "media_type", "image" %}
+    {% assign image_count = gallery_images.size %}
+    {% assign image_remainder = image_count | modulo: 2 %}
+    <div class="product-gallery-grid{% if image_count > 1 and image_remainder == 1 %} product-gallery-grid--odd{% endif %}">
+      {% for media in gallery_images %}
+        <button
+          class="product-gallery-grid__item"
+          type="button"
+          data-gallery-image
+          data-index="{{ forloop.index0 }}"
+          data-zoom="{{ media | image_url: width: 2200 }}"
+          data-alt="{{ media.alt | escape }}"
+          aria-label="Open image {{ forloop.index }}"
+        >
+          <img
+            src="{{ media | image_url: width: 1200 }}"
+            alt="{{ media.alt | escape }}"
+            loading="{% if forloop.index0 < 2 %}eager{% else %}lazy{% endif %}"
           >
-            <img
-              src="{{ media | image_url: width: 1200 }}"
-              alt="{{ media.alt | escape }}"
-              loading="{% if image_count < 2 %}eager{% else %}lazy{% endif %}"
-            >
-          </button>
-          {% assign image_count = image_count | plus: 1 %}
-        {% endif %}
+        </button>
       {% endfor %}
     </div>
     {% if image_count == 0 %}
