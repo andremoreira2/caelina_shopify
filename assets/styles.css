@@ -339,8 +339,21 @@ body.cart-drawer-open {
 .home-collections {
   position: relative;
   z-index: 2;
+  isolation: isolate;
   padding: clamp(28px, 5vw, 58px) clamp(12px, 1.8vw, 22px) clamp(56px, 8vw, 96px);
   background: var(--home-bg);
+}
+
+.home-collections::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: clamp(42px, 7vw, 72px);
+  transform: translateY(-100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0));
+  pointer-events: none;
 }
 
 .home-collections__top {
