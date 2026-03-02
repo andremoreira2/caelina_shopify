@@ -1,4 +1,5 @@
 <section class="product-page">
+  <h1 class="product-title product-title--mobile">{{ product.title }}</h1>
   <div class="product-media">
     {% assign gallery_images = product.media | where: "media_type", "image" %}
     {% assign image_count = gallery_images.size %}
