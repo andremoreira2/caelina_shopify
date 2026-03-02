@@ -1,54 +1,29 @@
 <section class="product-page">
   <div class="product-media">
-    {% if product.media.size > 0 %}
-      {% assign main_image = nil %}
+    {% assign image_count = 0 %}
+    <div class="product-gallery-grid">
       {% for media in product.media %}
         {% if media.media_type == "image" %}
-          {% assign main_image = media %}
-          {% break %}
+          <button
+            class="product-gallery-grid__item"
+            type="button"
+            data-gallery-image
+            data-index="{{ image_count }}"
+            data-zoom="{{ media | image_url: width: 2200 }}"
+            data-alt="{{ media.alt | escape }}"
+            aria-label="Open image {{ image_count | plus: 1 }}"
+          >
+            <img
+              src="{{ media | image_url: width: 1200 }}"
+              alt="{{ media.alt | escape }}"
+              loading="{% if image_count < 2 %}eager{% else %}lazy{% endif %}"
+            >
+          </button>
+          {% assign image_count = image_count | plus: 1 %}
         {% endif %}
       {% endfor %}
-      {% if main_image %}
-        <div class="product-gallery" data-gallery>
-          <div class="product-main">
-            <img
-              src="{{ main_image | image_url: width: 1200 }}"
-              alt="{{ main_image.alt | escape }}"
-              loading="lazy"
-              data-main-image
-              data-zoom="{{ main_image | image_url: width: 2000 }}"
-            >
-          </div>
-          <!-- Thumbnails kept but simplified by CSS -->
-          <div class="product-thumbs">
-            {% assign thumb_index = 0 %}
-            {% for media in product.media %}
-              {% if media.media_type == "image" %}
-                <button
-                  class="product-thumb{% if thumb_index == 0 %} is-active{% endif %}"
-                  type="button"
-                  data-thumb
-                  data-index="{{ thumb_index }}"
-                  data-large="{{ media | image_url: width: 900 }}"
-                  data-zoom="{{ media | image_url: width: 1600 }}"
-                  data-alt="{{ media.alt | escape }}"
-                  aria-label="View image {{ thumb_index | plus: 1 }}"
-                >
-                  <img
-                    src="{{ media | image_url: width: 200 }}"
-                    alt="{{ media.alt | escape }}"
-                    loading="lazy"
-                  >
-                </button>
-                {% assign thumb_index = thumb_index | plus: 1 %}
-              {% endif %}
-            {% endfor %}
-          </div>
-        </div>
-      {% else %}
-        <div class="product-placeholder">No images yet.</div>
-      {% endif %}
-    {% else %}
+    </div>
+    {% if image_count == 0 %}
       <div class="product-placeholder">No images yet.</div>
     {% endif %}
   </div>
@@ -196,6 +171,44 @@
     <a class="cart-link" href="/cart">View cart</a>
   </div>
 </section>
+
+{% assign floating_variant = product.selected_or_first_available_variant %}
+{% assign floating_image = product.featured_image | default: product.images.first %}
+<div class="product-floating-atc" data-floating-atc aria-hidden="true">
+  <div class="product-floating-atc__inner">
+    <div class="product-floating-atc__left">
+      {% if floating_image != blank %}
+        <div class="product-floating-atc__image-wrap" aria-hidden="true">
+          <img
+            class="product-floating-atc__image"
+            src="{{ floating_image | image_url: width: 160 }}"
+            alt="{{ floating_image.alt | default: product.title | escape }}"
+            loading="lazy"
+            width="80"
+            height="80"
+          >
+        </div>
+      {% endif %}
+      <div class="product-floating-atc__meta">
+        <p class="product-floating-atc__title">{{ product.title }}</p>
+        <p class="product-floating-atc__price" data-floating-price>{{ floating_variant.price | money }}</p>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="btn product-floating-atc__btn"
+      data-floating-add-to-cart
+      {% unless floating_variant.available %}disabled{% endunless %}
+    >
+      <span class="product-floating-atc__btn-icon" data-floating-add-icon aria-hidden="true" {% unless floating_variant.available %}hidden{% endunless %}>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+        </svg>
+      </span>
+      <span data-floating-add-text>{% if floating_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
+    </button>
+  </div>
+</div>
 
 {% assign stl_enabled = product.metafields.custom.shop_the_look_enabled.value %}
 {% assign stl_title = product.metafields.custom.shop_the_look_title.value | default: 'Shop The Look' %}
@@ -420,56 +433,32 @@
 <script>
   (() => {
     const variants = {{ product.variants | json }};
-    const gallery = document.querySelector("[data-gallery]");
-    const mainImage = gallery?.querySelector("[data-main-image]");
-    const thumbs = gallery ? [...gallery.querySelectorAll("[data-thumb]")] : [];
-
-    if (gallery && mainImage && thumbs.length > 0) {
-      const setActive = (btn) => {
-        if (!btn) return;
-        const nextSrc = btn.dataset.large;
-        const nextAlt = btn.dataset.alt || "";
-        const nextZoom = btn.dataset.zoom || nextSrc;
-        if (nextSrc) mainImage.src = nextSrc;
-        mainImage.alt = nextAlt;
-        if (nextZoom) mainImage.dataset.zoom = nextZoom;
-        thumbs.forEach((thumb) => {
-          thumb.classList.toggle("is-active", thumb === btn);
-        });
+    const galleryImages = [...document.querySelectorAll("[data-gallery-image]")];
+    const gallerySources = galleryImages.map((item) => {
+      const img = item.querySelector("img");
+      return {
+        zoom: item.dataset.zoom || img?.src || "",
+        alt: item.dataset.alt || img?.alt || "",
       };
-
-      thumbs.forEach((btn) => {
-        btn.addEventListener("click", () => setActive(btn));
-      });
-
-      if (thumbs.length <= 1) {
-        gallery.classList.add("is-single");
-      }
-    }
+    });
 
     const lightbox = document.querySelector("[data-lightbox]");
     const lightboxImg = lightbox?.querySelector("[data-lightbox-image]");
     const lightboxClose = lightbox?.querySelector("[data-lightbox-close]");
     const lightboxPrev = lightbox?.querySelector("[data-lightbox-prev]");
     const lightboxNext = lightbox?.querySelector("[data-lightbox-next]");
-    if (lightbox && lightboxImg && mainImage) {
-      const sources = thumbs.map((btn) => ({
-        zoom: btn.dataset.zoom || btn.dataset.large,
-        alt: btn.dataset.alt || "",
-      }));
-      let currentIndex = thumbs.findIndex((btn) => btn.classList.contains("is-active"));
+    if (lightbox && lightboxImg && gallerySources.length > 0) {
+      let currentIndex = 0;
 
       const showAt = (idx) => {
-        if (!sources.length) return;
-        currentIndex = (idx + sources.length) % sources.length;
-        const next = sources[currentIndex];
+        currentIndex = (idx + gallerySources.length) % gallerySources.length;
+        const next = gallerySources[currentIndex];
         lightboxImg.src = next.zoom;
         lightboxImg.alt = next.alt;
       };
 
-      const openLightbox = () => {
-        const activeIndex = thumbs.findIndex((btn) => btn.classList.contains("is-active"));
-        showAt(activeIndex >= 0 ? activeIndex : 0);
+      const openLightbox = (index) => {
+        showAt(index);
         lightbox.classList.add("is-open");
         lightbox.setAttribute("aria-hidden", "false");
       };
@@ -478,7 +467,10 @@
         lightbox.setAttribute("aria-hidden", "true");
       };
 
-      mainImage.addEventListener("click", openLightbox);
+      galleryImages.forEach((item, index) => {
+        item.addEventListener("click", () => openLightbox(index));
+      });
+
       lightbox.addEventListener("click", (e) => {
         if (e.target === lightbox) closeLightbox();
       });
@@ -501,21 +493,93 @@
     }
 
     const variantSelect = document.getElementById("variantSelect");
+    const productForm = document.querySelector(".product-form");
+    const priceWrap = document.querySelector("[data-product-price]");
+    const priceValue = priceWrap?.querySelector(".product-price-value");
+    const compareValue = priceWrap?.querySelector(".product-compare");
+    const addBtn = document.querySelector("[data-add-to-cart]");
+    const addBtnText = addBtn?.querySelector(".btn-text");
+    const addBtnIcon = addBtn?.querySelector(".btn-icon");
+    const qtyWrapper = document.querySelector("[data-qty-wrapper]");
+    const formRow = document.querySelector(".product-form-row");
+    const optionGroups = document.querySelectorAll("[data-option-index]");
+    const floatingBar = document.querySelector("[data-floating-atc]");
+    const floatingPrice = floatingBar?.querySelector("[data-floating-price]");
+    const floatingAddBtn = floatingBar?.querySelector("[data-floating-add-to-cart]");
+    const floatingAddText = floatingBar?.querySelector("[data-floating-add-text]");
+    const floatingAddIcon = floatingBar?.querySelector("[data-floating-add-icon]");
+
+    const syncFloatingState = (available, price) => {
+      if (floatingPrice && price) {
+        floatingPrice.textContent = price;
+      }
+      if (floatingAddBtn) {
+        floatingAddBtn.disabled = !available;
+        if (floatingAddText) {
+          floatingAddText.textContent = available ? "Add to cart" : "Sold out";
+        } else {
+          floatingAddBtn.textContent = available ? "Add to cart" : "Sold out";
+        }
+      }
+      if (floatingAddIcon) {
+        floatingAddIcon.hidden = !available;
+      }
+    };
+
+    const setFloatingVisibility = (visible) => {
+      if (!floatingBar) return;
+      floatingBar.classList.toggle("is-visible", visible);
+      floatingBar.setAttribute("aria-hidden", visible ? "false" : "true");
+    };
+
+    if (floatingAddBtn && addBtn && productForm) {
+      floatingAddBtn.addEventListener("click", () => {
+        if (addBtn.disabled) return;
+        if (typeof productForm.requestSubmit === "function") {
+          productForm.requestSubmit(addBtn);
+        } else {
+          addBtn.click();
+        }
+      });
+    }
+
+    if (floatingBar) {
+      floatingBar.addEventListener("click", (e) => {
+        if (e.target.closest("[data-floating-add-to-cart]")) return;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
+
+    if (floatingBar && addBtn) {
+      const checkVisibility = () => {
+        const rect = addBtn.getBoundingClientRect();
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const inView = rect.top < viewportHeight && rect.bottom > 0;
+        setFloatingVisibility(!inView && !addBtn.disabled);
+      };
+
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            const entry = entries[0];
+            setFloatingVisibility(!entry.isIntersecting && !addBtn.disabled);
+          },
+          { threshold: 0.4 }
+        );
+        observer.observe(addBtn);
+        window.addEventListener("resize", checkVisibility);
+      } else {
+        window.addEventListener("scroll", checkVisibility, { passive: true });
+        window.addEventListener("resize", checkVisibility);
+      }
+      checkVisibility();
+    }
 
     if (variantSelect) {
-      const priceWrap = document.querySelector("[data-product-price]");
-      const priceValue = priceWrap?.querySelector(".product-price-value");
-      const compareValue = priceWrap?.querySelector(".product-compare");
-      const addBtn = document.querySelector("[data-add-to-cart]");
-      const addBtnText = addBtn?.querySelector(".btn-text");
-      const addBtnIcon = addBtn?.querySelector(".btn-icon");
-      const qtyWrapper = document.querySelector("[data-qty-wrapper]");
-      const formRow = document.querySelector(".product-form-row");
-      const optionGroups = document.querySelectorAll("[data-option-index]");
-
       function updateFromOption(option){
         if (!option) return;
-        if (priceValue) priceValue.textContent = option.dataset.price || "";
+        const optionPrice = option.dataset.price || "";
+        if (priceValue) priceValue.textContent = optionPrice;
 
         if (compareValue) {
           const priceAmount = Number(option.dataset.priceAmount || 0);
@@ -539,6 +603,7 @@
           } else {
             addBtn.textContent = available ? "Add to cart" : "Sold out";
           }
+          syncFloatingState(available, optionPrice);
         }
       }
 
@@ -588,6 +653,8 @@
           syncButtons();
         });
       }
+    } else {
+      syncFloatingState(!addBtn?.disabled, priceValue?.textContent?.trim());
     }
 
     // Accordion Logic

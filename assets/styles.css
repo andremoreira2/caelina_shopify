@@ -1320,81 +1320,67 @@ kbd {
 
 .product-page {
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  align-items: start;
 }
 
-.product-gallery {
+.product-gallery-grid {
   display: grid;
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
 }
 
-.product-main {
-  aspect-ratio: 4 / 3;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
-}
-
-.product-main img {
-  width: 100%;
-  height: 100%;
-  display: block;
+.product-gallery-grid__item {
+  appearance: none;
+  border: 0;
   border-radius: 0;
-  object-fit: cover;
+  padding: 0;
+  margin: 0;
+  background: #f3f1eb;
+  width: 100%;
   cursor: zoom-in;
+  overflow: hidden;
+}
+
+.product-gallery-grid__item img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
   transition: transform 0.25s ease;
 }
 
-.product-main img:hover {
+.product-gallery-grid__item:hover img {
   transform: scale(1.01);
 }
 
-.product-thumbs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-  gap: 10px;
-}
-
-.product-thumb {
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
-  padding: 0;
-  background: rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-  cursor: pointer;
-  transition: border-color 0.2s ease, transform 0.2s ease;
-}
-
-.product-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.product-thumb:hover {
-  transform: translateY(-1px);
-}
-
-.product-thumb.is-active {
-  border-color: rgba(255, 255, 255, 0.55);
-}
-
-.product-gallery.is-single .product-thumbs {
-  display: none;
-}
-
 .product-placeholder {
-  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border: 1px dashed rgba(0, 0, 0, 0.2);
   border-radius: 14px;
   padding: 40px 20px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(26, 26, 26, 0.7);
+}
+
+@media (max-width: 640px) {
+  .product-gallery-grid {
+    gap: 8px;
+  }
 }
 
 .product-info {
   display: grid;
   gap: 14px;
   min-width: 0;
+  align-content: start;
+  align-self: start;
+}
+
+@media (min-width: 901px) {
+  .product-info {
+    position: sticky;
+    top: max(16px, calc(var(--site-header-offset, 0px) + 16px));
+  }
 }
 
 .product-title {
@@ -2251,6 +2237,162 @@ kbd {
   box-sizing: border-box;
 }
 
+.product-floating-atc {
+  position: fixed;
+  left: 50%;
+  bottom: calc(50px + env(safe-area-inset-bottom, 0px));
+  width: min(860px, calc(100% - 36px));
+  transform: translate(-50%, 20px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 180;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.product-floating-atc.is-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.product-floating-atc__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px;
+  background: rgba(253, 250, 245, 0.98);
+  border: 1px solid rgba(12, 12, 16, 0.16);
+  box-shadow: 0 10px 32px rgba(12, 12, 16, 0.18);
+  backdrop-filter: blur(6px);
+}
+
+.product-floating-atc__left {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.product-floating-atc__image-wrap {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  background: #f3f1eb;
+  overflow: hidden;
+}
+
+.product-floating-atc__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.product-floating-atc__meta {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.product-floating-atc__title,
+.product-floating-atc__price {
+  margin: 0;
+}
+
+.product-floating-atc__title {
+  font-size: 15px;
+  line-height: 1.25;
+  color: #131318;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-floating-atc__price {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.product-floating-atc__btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 196px;
+  height: 46px;
+  padding: 0 24px;
+  border-radius: 0;
+  border: 1px solid #17171f;
+  background: #17171f;
+  color: #f1f1f6;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.product-floating-atc__btn-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.product-floating-atc__btn-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.product-floating-atc__btn:hover,
+.product-floating-atc__btn:focus-visible {
+  border-color: #17171f;
+  background: #ffffff;
+  color: #0b0b0f;
+}
+
+.product-floating-atc__btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+body.cart-drawer-open .product-floating-atc {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .product-floating-atc {
+    width: calc(100% - 32px);
+    bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .product-floating-atc__inner {
+    padding: 8px;
+    gap: 10px;
+  }
+
+  .product-floating-atc__image-wrap {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
+  }
+
+  .product-floating-atc__title {
+    font-size: 13px;
+  }
+
+  .product-floating-atc__price {
+    font-size: 13px;
+  }
+
+  .product-floating-atc__btn {
+    min-width: 150px;
+    height: 42px;
+    padding: 0 16px;
+  }
+}
+
 /* Quantity and Add to Cart Row */
 /* Fix Layout for Quantity + Add to Cart */
 .product-form-row {
@@ -2411,33 +2553,12 @@ kbd {
 }
 
 /* Overrides for product layout in light mode */
-.product-main {
-  box-shadow: none;
-  background: transparent;
+.product-gallery-grid__item {
   border-radius: 0;
 }
 
-.product-main img {
+.product-gallery-grid__item img {
   border-radius: 0;
-  /* Ensure image is centered */
-  object-fit: contain;
-  max-height: 80vh;
-}
-
-.product-thumbs {
-  /* Hide thumbs as per minimalist design usually, or style them match */
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.product-thumb {
-  border-color: transparent;
-  background: transparent;
-  border-radius: 0;
-}
-
-.product-thumb.is-active {
-  border-color: #000;
 }
 
 /* Fix text colors */
