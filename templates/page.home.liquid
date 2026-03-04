@@ -264,6 +264,46 @@
     {% endif %}
   {% endif %}
 
+  {% if home_stl_total_looks == 0 and home_stl_fallback_set != blank %}
+    {% assign home_stl_sets = blank %}
+    {% assign home_stl_has_legacy_pair = false %}
+
+    {% assign home_stl_title = 'Shop The Look' %}
+    {% assign home_stl_image = blank %}
+    {% assign home_stl_products = blank %}
+    {% assign home_stl_hotspots = blank %}
+    {% assign home_stl_set_title = home_stl_fallback_set.shop_the_look_title.value | default: home_stl_fallback_set.title.value | default: home_stl_fallback_set.shop_the_look_title | default: home_stl_fallback_set.title %}
+    {% assign home_stl_set_image = home_stl_fallback_set.shop_the_look_image.value | default: home_stl_fallback_set.image.value | default: home_stl_fallback_set.shop_the_look_image | default: home_stl_fallback_set.image %}
+    {% assign home_stl_set_products = home_stl_fallback_set.shop_the_look_products.value | default: home_stl_fallback_set.products.value | default: home_stl_fallback_set.shop_the_look_products | default: home_stl_fallback_set.products %}
+    {% assign home_stl_set_hotspots = home_stl_fallback_set.shop_the_look_hotspots.value | default: home_stl_fallback_set.hotspots.value | default: home_stl_fallback_set.shop_the_look_hotspots | default: home_stl_fallback_set.hotspots %}
+
+    {% if home_stl_set_title != blank %}
+      {% assign home_stl_title = home_stl_set_title %}
+    {% endif %}
+    {% if home_stl_set_image != blank %}
+      {% assign home_stl_image = home_stl_set_image %}
+    {% endif %}
+    {% if home_stl_set_products != blank %}
+      {% assign home_stl_products = home_stl_set_products %}
+    {% endif %}
+    {% if home_stl_set_hotspots != blank %}
+      {% assign home_stl_hotspots = home_stl_set_hotspots %}
+    {% endif %}
+
+    {% assign home_stl_product_count = 0 %}
+    {% if home_stl_products != blank %}
+      {% for home_stl_product in home_stl_products limit: 4 %}
+        {% if home_stl_product != blank %}
+          {% assign home_stl_product_count = home_stl_product_count | plus: 1 %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% if home_stl_image != blank and home_stl_product_count > 0 %}
+      {% assign home_stl_total_looks = 1 %}
+    {% endif %}
+  {% endif %}
+
   {% if home_stl_total_looks > 0 %}
     <div class="shop-the-look-group" data-stl-group>
       {% if home_stl_total_looks > 1 %}
