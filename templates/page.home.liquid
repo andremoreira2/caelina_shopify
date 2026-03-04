@@ -120,6 +120,21 @@
     {% assign home_stl_sets = blank %}
   {% endif %}
 
+  {% if home_stl_editor_sets == blank and home_stl_has_legacy_pair == false and home_stl_sets_count < 2 %}
+    {% assign home_stl_auto_sets = '' | split: '' %}
+    {% for home_stl_auto_set in metaobjects.look_set.values limit: 2 %}
+      {% assign home_stl_auto_match = metaobjects.look_set.values | where: 'handle', home_stl_auto_set.handle | slice: 0, 1 %}
+      {% if home_stl_auto_match != blank %}
+        {% assign home_stl_auto_sets = home_stl_auto_sets | concat: home_stl_auto_match %}
+      {% endif %}
+    {% endfor %}
+
+    {% if home_stl_auto_sets != blank %}
+      {% assign home_stl_sets = home_stl_auto_sets %}
+      {% assign home_stl_sets_count = home_stl_sets.size %}
+    {% endif %}
+  {% endif %}
+
   {% assign home_stl_total_looks = 0 %}
   {% if home_stl_sets != blank %}
     {% for home_stl_set in home_stl_sets %}
