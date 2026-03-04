@@ -9,6 +9,10 @@
  */
 {
   "current": {
+    "accent_color": "#28e6c4",
     "content_for_index": []
+  },
+  "platform_customizations": {
+    "custom_css": []
   }
 }
