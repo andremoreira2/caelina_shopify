@@ -7,6 +7,20 @@
         "id": "accent_color",
         "label": "Accent color",
         "default": "#ffffff"
+      },
+      {
+        "type": "header",
+        "content": "Home Shop The Look"
+      },
+      {
+        "type": "paragraph",
+        "content": "Choose which look sets appear on /pages/home by entering look_set handles, one per line."
+      },
+      {
+        "type": "textarea",
+        "id": "home_stl_look_handles",
+        "label": "Look set handles (ordered)",
+        "info": "Example: home-page-shop-the-look"
       }
     ]
   }

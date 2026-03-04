@@ -596,4 +596,155 @@
       window.addEventListener("load", initMobileScroll, { once: true });
     }
   });
+
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const getGroupParts = (group) => {
+    const panels = [...group.querySelectorAll("[data-stl-look-panel]")];
+    const triggers = [...group.querySelectorAll("[data-stl-group-trigger]")];
+    return {
+      panels,
+      triggers,
+      previousButton: group.querySelector("[data-stl-group-prev]"),
+      nextButton: group.querySelector("[data-stl-group-next]"),
+      lookCount: Math.min(panels.length, triggers.length),
+    };
+  };
+
+  const getActiveLookPosition = ({ panels, triggers, lookCount }) => {
+    if (!lookCount) return 0;
+
+    const activeTriggerIndex = triggers.findIndex(
+      (trigger) => trigger.classList.contains("is-active") || trigger.getAttribute("aria-selected") === "true"
+    );
+    if (activeTriggerIndex >= 0) return activeTriggerIndex;
+
+    const visiblePanelIndex = panels.findIndex((panel) => !panel.hidden);
+    if (visiblePanelIndex >= 0) return visiblePanelIndex;
+
+    return 0;
+  };
+
+  const syncLookGroup = (group, requestedPosition) => {
+    const parts = getGroupParts(group);
+    if (parts.lookCount < 2) return null;
+
+    const fallbackPosition = getActiveLookPosition(parts);
+    let activePosition = Number.isFinite(requestedPosition) ? requestedPosition : fallbackPosition;
+    activePosition = Math.max(0, Math.min(parts.lookCount - 1, activePosition));
+
+    parts.panels.forEach((panel, index) => {
+      const active = index === activePosition;
+      panel.hidden = !active;
+      panel.classList.toggle("is-active", active);
+      panel.setAttribute("aria-hidden", active ? "false" : "true");
+    });
+
+    parts.triggers.forEach((trigger, index) => {
+      const active = index === activePosition;
+      trigger.classList.toggle("is-active", active);
+      trigger.setAttribute("aria-pressed", active ? "true" : "false");
+      trigger.setAttribute("aria-selected", active ? "true" : "false");
+      trigger.tabIndex = active ? 0 : -1;
+      trigger.dataset.lookIndex = `${index}`;
+    });
+
+    if (parts.previousButton) {
+      parts.previousButton.disabled = activePosition <= 0;
+    }
+    if (parts.nextButton) {
+      parts.nextButton.disabled = activePosition >= parts.lookCount - 1;
+    }
+
+    group.dataset.stlActivePosition = `${activePosition}`;
+    return {
+      activePosition,
+      activeTrigger: parts.triggers[activePosition] || null,
+      lookCount: parts.lookCount,
+    };
+  };
+
+  const activateLookAtPosition = (group, requestedPosition) => {
+    const nextPosition = toNumber(requestedPosition);
+    const state = syncLookGroup(group, nextPosition);
+    if (!state) return;
+
+    window.requestAnimationFrame(() => {
+      window.dispatchEvent(new Event("resize"));
+      window.dispatchEvent(new Event("scroll"));
+    });
+
+    if (state.activeTrigger) {
+      state.activeTrigger.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  };
+
+  const syncAllLookGroups = () => {
+    document.querySelectorAll("[data-stl-group]").forEach((group) => {
+      syncLookGroup(group);
+    });
+  };
+
+  syncAllLookGroups();
+
+  document.addEventListener("click", (event) => {
+    const trigger = event.target.closest("[data-stl-group-trigger]");
+    if (trigger) {
+      const group = trigger.closest("[data-stl-group]");
+      if (!group) return;
+
+      const parts = getGroupParts(group);
+      const triggerPosition = parts.triggers.indexOf(trigger);
+      if (triggerPosition < 0) return;
+      activateLookAtPosition(group, triggerPosition);
+      return;
+    }
+
+    const previousButton = event.target.closest("[data-stl-group-prev]");
+    if (previousButton) {
+      const group = previousButton.closest("[data-stl-group]");
+      if (!group) return;
+      const currentPosition = toNumber(group.dataset.stlActivePosition);
+      activateLookAtPosition(group, currentPosition - 1);
+      return;
+    }
+
+    const nextButton = event.target.closest("[data-stl-group-next]");
+    if (nextButton) {
+      const group = nextButton.closest("[data-stl-group]");
+      if (!group) return;
+      const currentPosition = toNumber(group.dataset.stlActivePosition);
+      activateLookAtPosition(group, currentPosition + 1);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    const trigger = event.target.closest("[data-stl-group-trigger]");
+    if (!trigger) return;
+
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+
+    const group = trigger.closest("[data-stl-group]");
+    if (!group) return;
+
+    const parts = getGroupParts(group);
+    const triggerPosition = parts.triggers.indexOf(trigger);
+    if (triggerPosition < 0) return;
+
+    event.preventDefault();
+    const nextPosition = event.key === "ArrowRight"
+      ? Math.min(parts.lookCount - 1, triggerPosition + 1)
+      : Math.max(0, triggerPosition - 1);
+
+    activateLookAtPosition(group, nextPosition);
+    const nextTrigger = parts.triggers[nextPosition];
+    nextTrigger?.focus();
+  });
+
+  document.addEventListener("shopify:section:load", syncAllLookGroups);
+  document.addEventListener("shopify:section:reorder", syncAllLookGroups);
 })();
