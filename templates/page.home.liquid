@@ -86,22 +86,22 @@
   {% assign home_stl_fallback_set = home_stl_primary_set | default: home_stl_secondary_set %}
 
   {% assign home_stl_editor_handles_raw = settings.home_stl_look_handles | default: '' %}
-  {% assign home_stl_editor_sets = '' | split: '' %}
+  {% assign home_stl_editor_handles = '' | split: '' %}
+  {% assign home_stl_uses_editor_handles = false %}
   {% if home_stl_editor_handles_raw != blank %}
     {% assign home_stl_editor_handles = home_stl_editor_handles_raw | newline_to_br | split: '<br />' %}
+    {% assign home_stl_editor_resolved_count = 0 %}
     {% for home_stl_editor_handle_line in home_stl_editor_handles %}
       {% assign home_stl_editor_handle = home_stl_editor_handle_line | strip %}
-      {% if home_stl_editor_handle != blank %}
-        {% assign home_stl_editor_matches = metaobjects.look_set.values | where: 'handle', home_stl_editor_handle %}
-        {% if home_stl_editor_matches != blank %}
-          {% assign home_stl_editor_first_match = home_stl_editor_matches | slice: 0, 1 %}
-          {% assign home_stl_editor_sets = home_stl_editor_sets | concat: home_stl_editor_first_match %}
-        {% endif %}
+      {% if home_stl_editor_handle != blank and metaobjects.look_set[home_stl_editor_handle] != blank %}
+        {% assign home_stl_editor_resolved_count = home_stl_editor_resolved_count | plus: 1 %}
       {% endif %}
     {% endfor %}
-  {% endif %}
-  {% if home_stl_editor_sets != blank %}
-    {% assign home_stl_sets = home_stl_editor_sets %}
+
+    {% if home_stl_editor_resolved_count > 0 %}
+      {% assign home_stl_sets = home_stl_editor_handles %}
+      {% assign home_stl_uses_editor_handles = true %}
+    {% endif %}
   {% endif %}
 
   {% assign home_stl_sets_count = 0 %}
@@ -115,12 +115,12 @@
   {% endif %}
 
   {% assign home_stl_has_legacy_pair = false %}
-  {% if home_stl_has_distinct_legacy and home_stl_sets_count < 2 %}
+  {% if home_stl_uses_editor_handles == false and home_stl_has_distinct_legacy and home_stl_sets_count < 2 %}
     {% assign home_stl_has_legacy_pair = true %}
     {% assign home_stl_sets = blank %}
   {% endif %}
 
-  {% if home_stl_editor_sets == blank and home_stl_has_legacy_pair == false and home_stl_sets_count < 2 %}
+  {% if home_stl_uses_editor_handles == false and home_stl_has_legacy_pair == false and home_stl_sets_count < 2 %}
     {% assign home_stl_auto_sets = '' | split: '' %}
     {% for home_stl_auto_set in metaobjects.look_set.values limit: 2 %}
       {% assign home_stl_auto_match = metaobjects.look_set.values | where: 'handle', home_stl_auto_set.handle | slice: 0, 1 %}
@@ -138,6 +138,15 @@
   {% assign home_stl_total_looks = 0 %}
   {% if home_stl_sets != blank %}
     {% for home_stl_set in home_stl_sets %}
+      {% if home_stl_uses_editor_handles %}
+        {% assign home_stl_set_handle = home_stl_set | strip %}
+        {% if home_stl_set_handle != blank %}
+          {% assign home_stl_set = metaobjects.look_set[home_stl_set_handle] %}
+        {% else %}
+          {% assign home_stl_set = blank %}
+        {% endif %}
+      {% endif %}
+
       {% assign home_stl_title = 'Shop The Look' %}
       {% assign home_stl_image = blank %}
       {% assign home_stl_products = blank %}
@@ -272,6 +281,15 @@
             {% assign home_stl_button_index = 0 %}
             {% if home_stl_sets != blank %}
               {% for home_stl_set in home_stl_sets %}
+                {% if home_stl_uses_editor_handles %}
+                  {% assign home_stl_set_handle = home_stl_set | strip %}
+                  {% if home_stl_set_handle != blank %}
+                    {% assign home_stl_set = metaobjects.look_set[home_stl_set_handle] %}
+                  {% else %}
+                    {% assign home_stl_set = blank %}
+                  {% endif %}
+                {% endif %}
+
                 {% assign home_stl_title = 'Shop The Look' %}
                 {% assign home_stl_image = blank %}
                 {% assign home_stl_products = blank %}
@@ -384,6 +402,15 @@
       {% if home_stl_sets != blank %}
         {% assign home_stl_render_index = 0 %}
         {% for home_stl_set in home_stl_sets %}
+          {% if home_stl_uses_editor_handles %}
+            {% assign home_stl_set_handle = home_stl_set | strip %}
+            {% if home_stl_set_handle != blank %}
+              {% assign home_stl_set = metaobjects.look_set[home_stl_set_handle] %}
+            {% else %}
+              {% assign home_stl_set = blank %}
+            {% endif %}
+          {% endif %}
+
           {% assign home_stl_title = 'Shop The Look' %}
           {% assign home_stl_image = blank %}
           {% assign home_stl_products = blank %}
