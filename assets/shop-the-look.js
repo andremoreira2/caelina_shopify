@@ -601,23 +601,19 @@
 
   const getGroupParts = (group) => {
     const panels = [...group.querySelectorAll("[data-stl-look-panel]")];
-    const triggers = [...group.querySelectorAll("[data-stl-group-trigger]")];
     return {
       panels,
-      triggers,
-      previousButton: group.querySelector("[data-stl-group-prev]"),
-      nextButton: group.querySelector("[data-stl-group-next]"),
-      lookCount: Math.min(panels.length, triggers.length),
+      lookCount: panels.length,
     };
   };
 
-  const getActiveLookPosition = ({ panels, triggers, lookCount }) => {
+  const getActiveLookPosition = ({ panels, lookCount }, group) => {
     if (!lookCount) return 0;
 
-    const activeTriggerIndex = triggers.findIndex(
-      (trigger) => trigger.classList.contains("is-active") || trigger.getAttribute("aria-selected") === "true"
-    );
-    if (activeTriggerIndex >= 0) return activeTriggerIndex;
+    const storedPosition = Number(group?.dataset?.stlActivePosition);
+    if (Number.isFinite(storedPosition)) {
+      return Math.max(0, Math.min(lookCount - 1, storedPosition));
+    }
 
     const visiblePanelIndex = panels.findIndex((panel) => !panel.hidden);
     if (visiblePanelIndex >= 0) return visiblePanelIndex;
@@ -629,37 +625,45 @@
     const parts = getGroupParts(group);
     if (parts.lookCount < 2) return null;
 
-    const fallbackPosition = getActiveLookPosition(parts);
+    const fallbackPosition = getActiveLookPosition(parts, group);
     let activePosition = Number.isFinite(requestedPosition) ? requestedPosition : fallbackPosition;
     activePosition = Math.max(0, Math.min(parts.lookCount - 1, activePosition));
+
+    let activeTrigger = null;
 
     parts.panels.forEach((panel, index) => {
       const active = index === activePosition;
       panel.hidden = !active;
       panel.classList.toggle("is-active", active);
       panel.setAttribute("aria-hidden", active ? "false" : "true");
-    });
 
-    parts.triggers.forEach((trigger, index) => {
-      const active = index === activePosition;
-      trigger.classList.toggle("is-active", active);
-      trigger.setAttribute("aria-pressed", active ? "true" : "false");
-      trigger.setAttribute("aria-selected", active ? "true" : "false");
-      trigger.tabIndex = active ? 0 : -1;
-      trigger.dataset.lookIndex = `${index}`;
-    });
+      const panelTriggers = [...panel.querySelectorAll("[data-stl-group-trigger]")];
+      panelTriggers.forEach((trigger, triggerIndex) => {
+        const triggerActive = active && triggerIndex === activePosition;
+        trigger.classList.toggle("is-active", triggerActive);
+        trigger.setAttribute("aria-pressed", triggerActive ? "true" : "false");
+        trigger.setAttribute("aria-selected", triggerActive ? "true" : "false");
+        trigger.tabIndex = triggerActive ? 0 : -1;
+        trigger.dataset.lookIndex = `${triggerIndex}`;
+        if (triggerActive) {
+          activeTrigger = trigger;
+        }
+      });
 
-    if (parts.previousButton) {
-      parts.previousButton.disabled = activePosition <= 0;
-    }
-    if (parts.nextButton) {
-      parts.nextButton.disabled = activePosition >= parts.lookCount - 1;
-    }
+      const previousButton = panel.querySelector("[data-stl-group-prev]");
+      const nextButton = panel.querySelector("[data-stl-group-next]");
+      if (previousButton) {
+        previousButton.disabled = !active || activePosition <= 0;
+      }
+      if (nextButton) {
+        nextButton.disabled = !active || activePosition >= parts.lookCount - 1;
+      }
+    });
 
     group.dataset.stlActivePosition = `${activePosition}`;
     return {
       activePosition,
-      activeTrigger: parts.triggers[activePosition] || null,
+      activeTrigger,
       lookCount: parts.lookCount,
     };
   };
@@ -697,9 +701,8 @@
       const group = trigger.closest("[data-stl-group]");
       if (!group) return;
 
-      const parts = getGroupParts(group);
-      const triggerPosition = parts.triggers.indexOf(trigger);
-      if (triggerPosition < 0) return;
+      const triggerPosition = Number(trigger.dataset.lookIndex);
+      if (!Number.isFinite(triggerPosition)) return;
       activateLookAtPosition(group, triggerPosition);
       return;
     }
@@ -732,8 +735,8 @@
     if (!group) return;
 
     const parts = getGroupParts(group);
-    const triggerPosition = parts.triggers.indexOf(trigger);
-    if (triggerPosition < 0) return;
+    const triggerPosition = Number(trigger.dataset.lookIndex);
+    if (!Number.isFinite(triggerPosition)) return;
 
     event.preventDefault();
     const nextPosition = event.key === "ArrowRight"
@@ -741,7 +744,8 @@
       : Math.max(0, triggerPosition - 1);
 
     activateLookAtPosition(group, nextPosition);
-    const nextTrigger = parts.triggers[nextPosition];
+    const activePanel = parts.panels[nextPosition] || null;
+    const nextTrigger = activePanel?.querySelector(`[data-stl-group-trigger][data-look-index="${nextPosition}"]`);
     nextTrigger?.focus();
   });
 

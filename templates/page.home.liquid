@@ -229,49 +229,10 @@
   {% comment %} ---- RENDER ---- {% endcomment %}
   {% if home_stl_total_looks > 0 %}
     <div class="shop-the-look-group" data-stl-group>
-
-      {% comment %} Switcher — only when 2+ valid looks {% endcomment %}
-      {% if home_stl_total_looks > 1 %}
-        <div class="shop-the-look-switcher" aria-label="Browse looks">
-          <button
-            class="shop-the-look-switcher__arrow"
-            type="button"
-            data-stl-group-prev
-            aria-label="Show previous look"
-            disabled
-          >
-            ‹
-          </button>
-          <div class="shop-the-look-switcher__track" role="tablist" aria-label="Available looks">
-            {% assign home_stl_chip_idx = 0 %}
-            {% assign home_stl_handle_lines = home_stl_resolved_handles | newline_to_br | split: '<br />' %}
-            {% for home_stl_handle_line in home_stl_handle_lines %}
-              {% assign home_stl_chip_num = home_stl_chip_idx | plus: 1 %}
-              <button
-                class="shop-the-look-switcher__chip{% if home_stl_chip_idx == 0 %} is-active{% endif %}"
-                type="button"
-                role="tab"
-                data-stl-group-trigger
-                data-look-index="{{ home_stl_chip_idx }}"
-                aria-controls="home-stl-look-{{ home_stl_chip_idx }}"
-                aria-pressed="{% if home_stl_chip_idx == 0 %}true{% else %}false{% endif %}"
-                aria-selected="{% if home_stl_chip_idx == 0 %}true{% else %}false{% endif %}"
-              >
-                Look {{ home_stl_chip_num }}
-              </button>
-              {% assign home_stl_chip_idx = home_stl_chip_idx | plus: 1 %}
-            {% endfor %}
-          </div>
-          <button
-            class="shop-the-look-switcher__arrow"
-            type="button"
-            data-stl-group-next
-            aria-label="Show next look"
-          >
-            ›
-          </button>
-        </div>
-      {% endif %}
+      <div class="shop-the-look-group__top home-collections__top">
+        <h2 class="home-collections__heading">SHOP BY THE LOOK</h2>
+        <div class="home-collections__line" aria-hidden="true"></div>
+      </div>
 
       {% comment %} Panels — same resolved handles list, guaranteed matching count {% endcomment %}
       {% assign home_stl_panel_idx = 0 %}
@@ -308,7 +269,8 @@
             stl_hotspots: home_stl_hotspots,
             stl_index: home_stl_panel_idx,
             stl_hidden: home_stl_is_hidden,
-            stl_grouped: home_stl_total_looks > 1
+            stl_grouped: home_stl_total_looks > 1,
+            stl_total_looks: home_stl_total_looks
           %}
           {% assign home_stl_panel_idx = home_stl_panel_idx | plus: 1 %}
         {% endif %}
