@@ -154,7 +154,6 @@
         e.preventDefault();
         const formData = new FormData(form);
         const submitBtn = form.querySelector('[type="submit"]');
-        const originalText = submitBtn?.textContent;
 
         const variantId = formData.get("id");
         if (!variantId) {
@@ -195,7 +194,6 @@
           if (submitBtn) {
             submitBtn.classList.remove("is-loading");
             submitBtn.disabled = false;
-            if (originalText) submitBtn.textContent = originalText;
           }
         }
       });
