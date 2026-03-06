@@ -1814,7 +1814,7 @@ kbd {
 .cart-drawer {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 200;
   display: grid;
   pointer-events: none;
 }
@@ -1885,7 +1885,7 @@ kbd {
   position: fixed;
   left: 20px;
   top: 20px;
-  z-index: 50;
+  z-index: 210;
   background: rgba(10, 26, 18, 0.95);
   border: 1px solid rgba(120, 255, 170, 0.35);
   color: #b9ffd6;

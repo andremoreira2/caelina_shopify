@@ -9,18 +9,33 @@
   if (!drawer || !content || toggles.length === 0) return;
 
   const isCartPage = document.body.classList.contains("template-cart");
+  const isDrawerOpen = () => drawer.classList.contains("is-open");
+
+  const setDrawerState = (isOpen) => {
+    drawer.classList.toggle("is-open", isOpen);
+    drawer.setAttribute("aria-hidden", isOpen ? "false" : "true");
+    document.body.classList.toggle("cart-drawer-open", isOpen);
+    toggles.forEach((toggle) => {
+      toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+  };
 
   const openDrawer = async () => {
-    drawer.classList.add("is-open");
-    drawer.setAttribute("aria-hidden", "false");
-    document.body.classList.add("cart-drawer-open");
+    if (!isDrawerOpen()) setDrawerState(true);
     await refreshDrawer();
   };
 
   const closeDrawer = () => {
-    drawer.classList.remove("is-open");
-    drawer.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("cart-drawer-open");
+    if (!isDrawerOpen()) return;
+    setDrawerState(false);
+  };
+
+  const toggleDrawer = () => {
+    if (isDrawerOpen()) {
+      closeDrawer();
+      return;
+    }
+    openDrawer();
   };
 
   const refreshDrawer = async () => {
@@ -140,6 +155,21 @@
         const formData = new FormData(form);
         const submitBtn = form.querySelector('[type="submit"]');
         const originalText = submitBtn?.textContent;
+
+        const variantId = formData.get("id");
+        if (!variantId) {
+          showToast("Please choose an option before adding to cart.", "error");
+          return;
+        }
+
+        const quantityRaw = formData.get("quantity");
+        if (quantityRaw !== null) {
+          const quantity = Number(quantityRaw);
+          if (!Number.isFinite(quantity) || quantity < 1) {
+            formData.set("quantity", "1");
+          }
+        }
+
         if (submitBtn) {
           submitBtn.classList.add("is-loading");
           submitBtn.disabled = true;
@@ -150,12 +180,17 @@
             body: formData,
             credentials: "same-origin",
           });
-          if (!res.ok) throw new Error("Add to cart failed");
+          if (!res.ok) {
+            throw new Error(await getCartErrorMessage(res));
+          }
           await openDrawer();
-          showToast("Added to cart");
+          showToast("Added to cart", "success");
         } catch (err) {
-          console.warn(err);
-          showToast("Could not add to cart");
+          const message = err instanceof Error && err.message
+            ? err.message
+            : "Could not add to cart";
+          console.warn("Add to cart failed:", err);
+          showToast(message, "error");
         } finally {
           if (submitBtn) {
             submitBtn.classList.remove("is-loading");
@@ -170,7 +205,7 @@
   toggles.forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      openDrawer();
+      toggleDrawer();
     });
   });
 
@@ -182,14 +217,61 @@
     if (e.key === "Escape") closeDrawer();
   });
 
-  const showToast = (message) => {
+  const getCartErrorMessage = async (response) => {
+    const fallback = "Could not add to cart";
+
+    try {
+      const data = await response.clone().json();
+      if (typeof data?.description === "string" && data.description.trim()) {
+        return data.description.trim();
+      }
+      if (typeof data?.message === "string" && data.message.trim()) {
+        return data.message.trim();
+      }
+      if (typeof data?.errors === "string" && data.errors.trim()) {
+        return data.errors.trim();
+      }
+      if (data?.errors && typeof data.errors === "object") {
+        const firstError = Object.values(data.errors).find((value) => {
+          if (typeof value === "string") return value.trim();
+          if (Array.isArray(value)) return value.length > 0;
+          return false;
+        });
+
+        if (typeof firstError === "string" && firstError.trim()) {
+          return firstError.trim();
+        }
+        if (Array.isArray(firstError) && firstError.length > 0) {
+          return String(firstError[0]);
+        }
+      }
+    } catch (jsonError) {
+      // Response isn't JSON; continue to text fallback.
+    }
+
+    try {
+      const text = (await response.text()).trim();
+      if (text) return text;
+    } catch (textError) {
+      // Ignore and return fallback.
+    }
+
+    return fallback;
+  };
+
+  const showToast = (message, variant = "success") => {
     let toast = document.querySelector(".cart-toast");
     if (!toast) {
       toast = document.createElement("div");
       toast.className = "cart-toast";
+      toast.setAttribute("role", "status");
+      toast.setAttribute("aria-live", "polite");
       document.body.appendChild(toast);
     }
-    toast.innerHTML = `<span class="cart-toast__icon">✓</span><span class="cart-toast__text">${message}</span>`;
+    toast.classList.remove("cart-toast--error");
+    if (variant === "error") toast.classList.add("cart-toast--error");
+    const icon = variant === "error" ? "!" : "✓";
+    toast.innerHTML = `<span class="cart-toast__icon">${icon}</span><span class="cart-toast__text">${message}</span>`;
     toast.classList.add("is-visible");
     clearTimeout(toast._timer);
     toast._timer = setTimeout(() => {
@@ -197,5 +279,6 @@
     }, 2200);
   };
 
+  setDrawerState(false);
   bindAddToCart();
 })();
