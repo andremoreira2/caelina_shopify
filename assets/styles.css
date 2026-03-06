@@ -1886,11 +1886,11 @@ kbd {
   left: 20px;
   top: 20px;
   z-index: 210;
-  background: rgba(10, 26, 18, 0.95);
-  border: 1px solid rgba(120, 255, 170, 0.35);
-  color: #b9ffd6;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  color: #111111;
   padding: 10px 14px;
-  border-radius: 999px;
+  border-radius: 0;
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1901,8 +1901,8 @@ kbd {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 30px rgba(17, 17, 17, 0.16);
+  backdrop-filter: none;
 }
 
 .cart-toast.is-visible {
@@ -1913,12 +1913,13 @@ kbd {
 .cart-toast__icon {
   width: 18px;
   height: 18px;
-  border-radius: 999px;
+  border-radius: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(120, 255, 170, 0.2);
-  color: #7bffb3;
+  background: #ffffff;
+  border: 1px solid #111111;
+  color: #111111;
   font-size: 12px;
   line-height: 1;
 }
