@@ -172,6 +172,31 @@
   </div>
 </section>
 
+<section class="announcement__bar-outer product-announcement" aria-label="Store announcement">
+  <div class="announcement__bar-holder announcement__bar-holder--marquee">
+    <div class="announcement__bar" role="note">
+      <div class="announcement__message">
+        <div class="announcement__scale">
+          <div class="announcement__text">
+            {% for i in (1..6) %}
+              <div class="announcement__slide">
+                <p>FREE WORLDWIDE SHIPPING <span class="announcement__divider" aria-hidden="true"></span> SIGN UP &amp; GET A 25$ GIFT</p>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="announcement__text announcement__text--clone" aria-hidden="true">
+            {% for i in (1..6) %}
+              <div class="announcement__slide">
+                <p>FREE WORLDWIDE SHIPPING <span class="announcement__divider" aria-hidden="true"></span> SIGN UP &amp; GET A 25$ GIFT</p>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 {% assign floating_variant = product.selected_or_first_available_variant %}
 {% assign floating_image = product.featured_image | default: product.images.first %}
 <div class="product-floating-atc" data-floating-atc aria-hidden="true">
