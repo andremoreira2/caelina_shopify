@@ -93,7 +93,7 @@
 
         <button
             type="submit"
-            class="btn primary"
+            class="btn btn--atc"
             data-add-to-cart
             {% unless current_variant.available %}disabled{% endunless %}
         >
@@ -196,16 +196,16 @@
     </div>
     <button
       type="button"
-      class="btn product-floating-atc__btn"
+      class="btn btn--atc product-floating-atc__btn"
       data-floating-add-to-cart
       {% unless floating_variant.available %}disabled{% endunless %}
     >
-      <span class="product-floating-atc__btn-icon" data-floating-add-icon aria-hidden="true" {% unless floating_variant.available %}hidden{% endunless %}>
+      <span class="btn-icon product-floating-atc__btn-icon" data-floating-add-icon aria-hidden="true" {% unless floating_variant.available %}hidden{% endunless %}>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
         </svg>
       </span>
-      <span data-floating-add-text>{% if floating_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
+      <span class="btn-text" data-floating-add-text>{% if floating_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
     </button>
   </div>
 </div>
@@ -395,7 +395,7 @@
                     <input type="hidden" name="id" value="{{ stl_variant.id }}" data-stl-variant-id>
                     <button
                       type="submit"
-                      class="btn shop-the-look__add"
+                      class="btn btn--atc shop-the-look__add"
                       data-stl-add-button
                       {% if stl_product.variants.size > 1 %}
                         {% unless stl_product.available %}disabled{% endunless %}
