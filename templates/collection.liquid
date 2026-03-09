@@ -81,25 +81,56 @@
           <div class="collection-empty">No products found in this collection.</div>
         {% else %}
           {% for product in collection.products %}
-            <a class="collection-card" href="{{ product.url }}">
-              {% if product.featured_image %}
-                <div class="collection-card__image-wrapper">
-                  <img
-                    src="{{ product.featured_image | image_url: width: 600 }}"
-                    alt="{{ product.featured_image.alt | escape }}"
-                    loading="lazy"
-                  >
+            {% assign quick_add_variant = product.selected_or_first_available_variant | default: product.variants.first %}
+            <article class="collection-card">
+              <div class="collection-card__media">
+                <a class="collection-card__image-link" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+                  <div class="collection-card__image-wrapper">
+                    {% if product.featured_image %}
+                      <img
+                        src="{{ product.featured_image | image_url: width: 600 }}"
+                        alt="{{ product.featured_image.alt | default: product.title | escape }}"
+                        loading="lazy"
+                      >
+                    {% endif %}
+                  </div>
+                </a>
+
+                <div class="collection-card__actions">
+                  {% if product.available == false %}
+                    <button type="button" class="btn btn--atc collection-card__quick-add" disabled>
+                      <span class="btn-text">Sold out</span>
+                    </button>
+                  {% elsif product.variants.size == 1 and quick_add_variant %}
+                    {% form 'product', product, class: 'collection-card__quick-add-form' %}
+                      <input type="hidden" name="id" value="{{ quick_add_variant.id }}">
+                      <input type="hidden" name="quantity" value="1">
+                      <button type="submit" class="btn btn--atc collection-card__quick-add">
+                        <span class="btn-icon" aria-hidden="true">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                          </svg>
+                        </span>
+                        <span class="btn-text">Add to cart</span>
+                      </button>
+                    {% endform %}
+                  {% else %}
+                    <a class="btn btn--atc collection-card__quick-add collection-card__quick-add--link" href="{{ product.url }}">
+                      <span class="btn-text">Choose options</span>
+                    </a>
+                  {% endif %}
                 </div>
-              {% endif %}
-              <div class="collection-card__info">
+              </div>
+
+              <a class="collection-card__info" href="{{ product.url }}">
                 <span class="collection-card__title">{{ product.title }}</span>
                 {% render 'price',
                   amount: product.price,
                   wrapper_tag: 'span',
                   wrapper_class: 'collection-card__price price--card'
                 %}
-              </div>
-            </a>
+              </a>
+            </article>
           {% endfor %}
         {% endif %}
       </div>
