@@ -93,7 +93,11 @@
               {% endif %}
               <div class="collection-card__info">
                 <span class="collection-card__title">{{ product.title }}</span>
-                <span class="collection-card__price">{{ product.price | money }}</span>
+                {% render 'price',
+                  amount: product.price,
+                  wrapper_tag: 'span',
+                  wrapper_class: 'collection-card__price price--card'
+                %}
               </div>
             </a>
           {% endfor %}

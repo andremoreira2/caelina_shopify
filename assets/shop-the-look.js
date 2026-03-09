@@ -29,9 +29,9 @@
         <h3 id="stlVariantModalTitle" class="shop-the-look-variant-modal__title" data-stl-modal-title></h3>
         <label class="shop-the-look-variant-modal__label" for="stlVariantModalSelect">Option</label>
         <select id="stlVariantModalSelect" class="shop-the-look__select shop-the-look-variant-modal__select" data-stl-modal-select></select>
-        <div class="shop-the-look__price-line shop-the-look-variant-modal__price-line">
-          <span class="shop-the-look__price-value" data-stl-modal-price></span>
-          <span class="shop-the-look__price-compare" data-stl-modal-compare hidden></span>
+        <div class="price price--feature shop-the-look__price-line shop-the-look-variant-modal__price-line">
+          <span class="price__current shop-the-look__price-value" data-stl-modal-price></span>
+          <span class="price__compare shop-the-look__price-compare" data-stl-modal-compare hidden></span>
         </div>
         <button type="button" class="btn btn--atc shop-the-look__add shop-the-look-variant-modal__add" data-stl-modal-add>
           <span class="btn-icon" data-stl-modal-add-icon aria-hidden="true">

@@ -162,16 +162,16 @@
 
                 <div class="shop-the-look__card-meta">
                   <h3 class="shop-the-look__product-title"><a href="{{ stl_product.url }}">{{ stl_product.title }}</a></h3>
-                  <div class="shop-the-look__price-line">
-                    <span class="shop-the-look__price-value" data-stl-price>{{ stl_variant.price | money }}</span>
-                    <span
-                      class="shop-the-look__price-compare"
-                      data-stl-compare
-                      {% if stl_variant.compare_at_price <= stl_variant.price %}hidden{% endif %}
-                    >
-                      {{ stl_variant.compare_at_price | money }}
-                    </span>
-                  </div>
+                  {% render 'price',
+                    amount: stl_variant.price,
+                    compare_amount: stl_variant.compare_at_price,
+                    wrapper_class: 'shop-the-look__price-line price--feature',
+                    current_class: 'shop-the-look__price-value',
+                    compare_class: 'shop-the-look__price-compare',
+                    current_attrs: 'data-stl-price',
+                    compare_attrs: 'data-stl-compare',
+                    always_render_compare: true
+                  %}
 
                   <form
                     method="post"

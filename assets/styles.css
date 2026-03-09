@@ -18,6 +18,16 @@
   --atc-btn-font-weight: 500;
   --atc-btn-letter-spacing: 0.05em;
   --atc-btn-text-transform: none;
+  /* Global price styling */
+  --price-font-family: "Courier New", Courier, monospace;
+  --price-color: currentColor;
+  --price-current-size: 18px;
+  --price-current-weight: 400;
+  --price-line-height: 1.15;
+  --price-letter-spacing: 0;
+  --price-gap: 8px;
+  --price-compare-size: 12px;
+  --price-compare-opacity: 0.42;
 }
 
 @media (max-width: 820px) {
@@ -27,6 +37,62 @@
     --atc-btn-max-width: 100%;
     --atc-floating-min-width: 150px;
   }
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--price-gap);
+  margin: 0;
+  color: var(--price-color);
+  font-family: var(--price-font-family);
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.price__current,
+.price__compare {
+  font-variant-numeric: tabular-nums;
+}
+
+.price__current {
+  font-size: var(--price-current-size);
+  font-weight: var(--price-current-weight);
+  line-height: var(--price-line-height);
+  letter-spacing: var(--price-letter-spacing);
+}
+
+.price__compare {
+  font-size: var(--price-compare-size);
+  font-weight: 400;
+  line-height: var(--price-line-height);
+  color: currentColor;
+  opacity: var(--price-compare-opacity);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-skip-ink: auto;
+}
+
+.price--feature {
+  --price-current-size: clamp(18px, 1.6vw, 21px);
+  --price-compare-size: 13px;
+}
+
+.price--compact {
+  --price-current-size: 14px;
+  --price-gap: 6px;
+  --price-compare-size: 11px;
+}
+
+.price--card {
+  --price-current-size: 15px;
+  --price-color: rgba(26, 26, 26, 0.82);
+}
+
+.price--subtotal {
+  --price-current-size: 18px;
+  --price-gap: 0;
 }
 
 html,
@@ -1492,23 +1558,6 @@ kbd {
 
 .product-price {
   margin-top: 12px;
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  font-size: 18px;
-  font-weight: 500;
-  opacity: 1;
-  font-family: ui-sans-serif, system-ui, sans-serif;
-}
-
-.product-price-value {
-  font-weight: 600;
-}
-
-.product-compare {
-  font-size: 14px;
-  opacity: 0.6;
-  text-decoration: line-through;
 }
 
 .product-description {
@@ -1817,9 +1866,13 @@ kbd {
   text-transform: uppercase;
 }
 
-.cart-line-variant,
-.cart-line-price {
+.cart-line-variant {
   font-size: 13px;
+  opacity: 0.8;
+}
+
+.cart-line-price {
+  --price-current-size: 13px;
   opacity: 0.8;
 }
 
@@ -2260,8 +2313,7 @@ kbd {
 }
 
 .collection-card__price {
-  color: #1a1a1a;
-  opacity: 0.6;
+  margin-top: 2px;
 }
 
 .collection-empty {
@@ -2458,8 +2510,6 @@ kbd {
 }
 
 .product-floating-atc__price {
-  font-size: 14px;
-  font-weight: 600;
   color: #1a1a1a;
 }
 
@@ -2727,7 +2777,6 @@ body.cart-drawer-open .product-floating-atc {
   flex: 0 0 auto;
   align-items: center;
   gap: 18px;
-  padding-right: 18px;
 }
 
 .announcement__slide {
@@ -2753,7 +2802,7 @@ body.cart-drawer-open .product-floating-atc {
   display: inline-flex;
   align-items: center;
   line-height: 0.8;
-  font-size: 16px;
+  font-size: 16 px;
   opacity: 0.68;
   transform: translateY(-1px);
 }
@@ -2777,7 +2826,6 @@ body.cart-drawer-open .product-floating-atc {
 @media (max-width: 640px) {
   .announcement__text {
     gap: 14px;
-    padding-right: 14px;
   }
 
   .announcement__slide p {
@@ -3224,22 +3272,7 @@ body.cart-drawer-open .product-floating-atc {
 }
 
 .shop-the-look__price-line {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.shop-the-look__price-value {
-  font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: clamp(20px, 1.8vw, 24px);
-  line-height: 1.2;
-  letter-spacing: 0.01em;
-}
-
-.shop-the-look__price-compare {
-  font-size: 14px;
-  color: rgba(26, 26, 26, 0.45);
-  text-decoration: line-through;
+  margin: 0;
 }
 
 .shop-the-look__form {
@@ -4058,9 +4091,6 @@ body.shop-the-look-modal-open {
 }
 
 .drawer-cart__price {
-  font-size: 14px;
-  /* Reduced */
-  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -4180,11 +4210,7 @@ body.shop-the-look-modal-open {
 }
 
 .drawer-cart__subtotal-price {
-  font-size: 18px;
-  /* Larger price */
-  font-weight: 400;
-  letter-spacing: 0;
-  text-transform: none;
+  white-space: nowrap;
 }
 
 .btn--checkout {

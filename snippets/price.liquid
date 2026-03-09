@@ -1,0 +1,47 @@
+{% liquid
+  assign price_amount = amount
+  assign price_compare_amount = compare_amount
+  assign price_wrapper_tag = wrapper_tag | default: 'div'
+  assign price_current_tag = current_tag | default: 'span'
+  assign price_compare_tag = compare_tag | default: 'span'
+
+  assign price_wrapper_class = 'price'
+  if modifier != blank
+    assign price_wrapper_class = price_wrapper_class | append: ' ' | append: modifier
+  endif
+  if wrapper_class != blank
+    assign price_wrapper_class = price_wrapper_class | append: ' ' | append: wrapper_class
+  endif
+
+  assign price_current_class = 'price__current'
+  if current_class != blank
+    assign price_current_class = price_current_class | append: ' ' | append: current_class
+  endif
+
+  assign price_compare_class = 'price__compare'
+  if compare_class != blank
+    assign price_compare_class = price_compare_class | append: ' ' | append: compare_class
+  endif
+
+  assign price_has_compare = false
+  if price_compare_amount != blank and price_compare_amount > price_amount
+    assign price_has_compare = true
+  endif
+
+  assign price_render_compare = false
+  if always_render_compare or price_compare_amount != blank
+    assign price_render_compare = true
+  endif
+%}
+<{{ price_wrapper_tag }} class="{{ price_wrapper_class }}"{% if wrapper_attrs != blank %} {{ wrapper_attrs }}{% endif %}>
+  <{{ price_current_tag }} class="{{ price_current_class }}"{% if current_attrs != blank %} {{ current_attrs }}{% endif %}>
+    {% if current_prefix != blank %}{{ current_prefix }}{% endif %}{{ price_amount | money }}{% if current_suffix != blank %}{{ current_suffix }}{% endif %}
+  </{{ price_current_tag }}>
+  {% if price_render_compare %}
+    <{{ price_compare_tag }} class="{{ price_compare_class }}"{% if compare_attrs != blank %} {{ compare_attrs }}{% endif %}{% unless price_has_compare %} hidden{% endunless %}>
+      {% if price_has_compare %}
+        {% if compare_prefix != blank %}{{ compare_prefix }}{% endif %}{{ price_compare_amount | money }}{% if compare_suffix != blank %}{{ compare_suffix }}{% endif %}
+      {% endif %}
+    </{{ price_compare_tag }}>
+  {% endif %}
+</{{ price_wrapper_tag }}>

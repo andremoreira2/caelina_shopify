@@ -42,12 +42,18 @@
           <div class="drawer-cart__line-details">
             <div class="drawer-cart__line-header">
               <div class="drawer-cart__name">{{ item.product.title }}</div>
-              <div class="drawer-cart__price">{{ item.final_price | money }}</div>
+              {% render 'price',
+                amount: item.final_price,
+                wrapper_class: 'drawer-cart__price price--compact'
+              %}
             </div>
             
             {% if item.variant.title != 'Default Title' %}
               <div class="drawer-cart__variant">Color: {{ item.variant.title }}</div>
-              <div class="drawer-cart__variant-price">{{ item.final_price | money }}</div>
+              {% render 'price',
+                amount: item.final_price,
+                wrapper_class: 'drawer-cart__variant-price price--compact'
+              %}
             {% endif %}
 
             <div class="drawer-cart__controls">
@@ -78,7 +84,12 @@
     <div class="drawer-cart__footer">
       <div class="drawer-cart__subtotal">
         <span>SUBTOTAL</span>
-        <span class="drawer-cart__subtotal-price">{{ cart.total_price | money }} USD</span>
+        {% render 'price',
+          amount: cart.total_price,
+          wrapper_tag: 'span',
+          wrapper_class: 'drawer-cart__subtotal-price price--subtotal',
+          current_suffix: ' USD'
+        %}
       </div>
       <div class="drawer-cart__actions">
         <button class="btn btn--block btn--checkout" type="submit" name="checkout" onclick="window.location.href='/checkout'">CHECK OUT</button>

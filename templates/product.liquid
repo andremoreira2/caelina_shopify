@@ -31,12 +31,15 @@
   <div class="product-info">
     {% assign current_variant = product.selected_or_first_available_variant %}
     <h1 class="product-title">{{ product.title }}</h1>
-    <div class="product-price" data-product-price>
-      <span class="product-price-value">{{ current_variant.price | money }}</span>
-      <span class="product-compare" {% if current_variant.compare_at_price <= current_variant.price %}hidden{% endif %}>
-        {{ current_variant.compare_at_price | money }}
-      </span>
-    </div>
+    {% render 'price',
+      amount: current_variant.price,
+      compare_amount: current_variant.compare_at_price,
+      wrapper_class: 'product-price price--feature',
+      current_class: 'product-price-value',
+      compare_class: 'product-compare',
+      wrapper_attrs: 'data-product-price',
+      always_render_compare: true
+    %}
 
     {% form 'product', product, class: 'product-form' %}
       {% if product.variants.size > 1 %}
@@ -226,7 +229,13 @@
       {% endif %}
       <div class="product-floating-atc__meta">
         <p class="product-floating-atc__title">{{ product.title }}</p>
-        <p class="product-floating-atc__price" data-floating-price>{{ floating_variant.price | money }}</p>
+        {% render 'price',
+          amount: floating_variant.price,
+          wrapper_tag: 'p',
+          wrapper_class: 'product-floating-atc__price price--compact',
+          current_class: 'product-floating-atc__price-value',
+          current_attrs: 'data-floating-price'
+        %}
       </div>
     </div>
     <button
@@ -387,16 +396,16 @@
                     <p class="shop-the-look__vendor">{{ stl_product.vendor }}</p>
                   {% endif %}
                   <h3 class="shop-the-look__product-title"><a href="{{ stl_product.url }}">{{ stl_product.title }}</a></h3>
-                  <div class="shop-the-look__price-line">
-                    <span class="shop-the-look__price-value" data-stl-price>{{ stl_variant.price | money }}</span>
-                    <span
-                      class="shop-the-look__price-compare"
-                      data-stl-compare
-                      {% if stl_variant.compare_at_price <= stl_variant.price %}hidden{% endif %}
-                    >
-                      {{ stl_variant.compare_at_price | money }}
-                    </span>
-                  </div>
+                  {% render 'price',
+                    amount: stl_variant.price,
+                    compare_amount: stl_variant.compare_at_price,
+                    wrapper_class: 'shop-the-look__price-line price--feature',
+                    current_class: 'shop-the-look__price-value',
+                    compare_class: 'shop-the-look__price-compare',
+                    current_attrs: 'data-stl-price',
+                    compare_attrs: 'data-stl-compare',
+                    always_render_compare: true
+                  %}
 
                   <form
                     method="post"
