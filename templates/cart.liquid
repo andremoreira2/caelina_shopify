@@ -22,7 +22,7 @@
                 {% endif %}
               </a>
               <div class="cart-line-info">
-                <div class="cart-line-title">{{ item.product.title }}</div>
+                <a class="cart-line-title" href="{{ item.url }}">{{ item.product.title }}</a>
                 {% if item.variant.title != "Default Title" %}
                   <div class="cart-line-variant">{{ item.variant.title }}</div>
                 {% endif %}
