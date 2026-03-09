@@ -2636,6 +2636,15 @@ body.cart-drawer-open .product-floating-atc {
   background: rgba(0, 0, 0, 0.05);
 }
 
+.qty-btn:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.qty-btn:disabled:hover {
+  background: transparent;
+}
+
 .product-qty {
   width: 50px;
   /* Slightly wider for ease */

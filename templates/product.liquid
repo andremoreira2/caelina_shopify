@@ -89,7 +89,18 @@
              <!-- Simplified Quantity Input to match design ( - 1 + ) -->
              <div class="qty-control">
                 <button type="button" class="qty-btn" data-qty-minus aria-label="Decrease quantity">&minus;</button>
-                <input id="quantity" class="product-qty" type="number" name="quantity" value="1" min="1" step="1">
+                <input
+                  id="quantity"
+                  class="product-qty"
+                  type="number"
+                  name="quantity"
+                  value="1"
+                  min="1"
+                  max="99"
+                  step="1"
+                  inputmode="none"
+                  readonly
+                >
                 <button type="button" class="qty-btn" data-qty-plus aria-label="Increase quantity">&plus;</button>
              </div>
         </div>
@@ -809,14 +820,30 @@
     const plusBtn = document.querySelector("[data-qty-plus]");
 
     if(qtyInput && minusBtn && plusBtn) {
+        const minQty = Number(qtyInput.min) || 1;
+        const maxQty = Number(qtyInput.max) || 99;
+        const clampQty = (value) => {
+            const parsed = parseInt(value, 10);
+            if (!Number.isFinite(parsed)) return minQty;
+            return Math.min(maxQty, Math.max(minQty, parsed));
+        };
+        const syncQty = (value) => {
+            const nextQty = clampQty(value);
+            qtyInput.value = nextQty;
+            minusBtn.disabled = nextQty <= minQty;
+            plusBtn.disabled = nextQty >= maxQty;
+        };
+
         minusBtn.addEventListener("click", () => {
-            const val = parseInt(qtyInput.value) || 1;
-            if(val > 1) qtyInput.value = val - 1;
+            syncQty((parseInt(qtyInput.value, 10) || minQty) - 1);
         });
         plusBtn.addEventListener("click", () => {
-            const val = parseInt(qtyInput.value) || 1;
-            qtyInput.value = val + 1;
+            syncQty((parseInt(qtyInput.value, 10) || minQty) + 1);
         });
+        qtyInput.addEventListener("input", () => {
+            syncQty(qtyInput.value);
+        });
+        syncQty(qtyInput.value);
     }
 
   })();

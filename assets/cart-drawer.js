@@ -166,6 +166,8 @@
           const quantity = Number(quantityRaw);
           if (!Number.isFinite(quantity) || quantity < 1) {
             formData.set("quantity", "1");
+          } else if (quantity > 99) {
+            formData.set("quantity", "99");
           }
         }
 
