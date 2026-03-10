@@ -1,5 +1,36 @@
 {% paginate collection.products by 24 %}
-  <section class="collection-page">
+  {% assign active_filter_count = 0 %}
+  {% assign current_sort_value = collection.sort_by | default: collection.default_sort_by %}
+  {% assign current_sort_label = collection.sort_options.first.name %}
+
+  {% for option in collection.sort_options %}
+    {% if option.value == current_sort_value %}
+      {% assign current_sort_label = option.name %}
+    {% endif %}
+  {% endfor %}
+
+  {% for filter in collection.filters %}
+    {% if filter.type == 'price_range' %}
+      {% if filter.min_value.value != blank or filter.max_value.value != blank %}
+        {% assign active_filter_count = active_filter_count | plus: 1 %}
+      {% endif %}
+    {% else %}
+      {% assign active_filter_count = active_filter_count | plus: filter.active_values.size %}
+    {% endif %}
+  {% endfor %}
+
+  {%- capture clear_filters_query -%}
+    {%- if current_sort_value != blank and current_sort_value != collection.default_sort_by -%}
+      ?sort_by={{ current_sort_value | url_encode }}
+    {%- endif -%}
+  {%- endcapture -%}
+  {% assign clear_filters_url = collection.url | append: clear_filters_query %}
+
+  <section class="collection-page" data-collection-root>
+    <div class="collection-loading" aria-hidden="true" data-collection-loading>
+      <span class="collection-loading__bar"></span>
+    </div>
+
     <header class="collection-header">
       <h1 class="collection-title page-title">{{ collection.title }}</h1>
       {% if collection.description != blank %}
@@ -7,145 +38,312 @@
       {% endif %}
     </header>
 
-    <div class="collection-layout">
-      <aside class="collection-sidebar" aria-label="Filters">
-        <form class="filter-form" method="get" action="{{ collection.url }}">
-          <div class="filter-block">
-            <label class="filter-title" for="SortBy">Sort</label>
-            <select id="SortBy" name="sort_by" class="filter-select">
-              {% for option in collection.sort_options %}
-                <option value="{{ option.value }}" {% if option.value == collection.sort_by %}selected{% endif %}>
-                  {{ option.name }}
-                </option>
+    <div data-collection-content>
+      <div class="collection-toolbar" data-collection-toolbar>
+        <div class="collection-toolbar__meta">
+          <button
+            type="button"
+            class="collection-toolbar__button collection-toolbar__button--filters"
+            data-filter-open
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="CollectionFilterDrawer"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <span>Filters{% if active_filter_count > 0 %} ({{ active_filter_count }}){% endif %}</span>
+          </button>
+
+          <span class="collection-toolbar__divider" aria-hidden="true"></span>
+
+          <details class="collection-sort" data-collection-sort>
+            <summary
+              class="collection-toolbar__button collection-toolbar__button--sort"
+              aria-label="Sort by. Current option: {{ current_sort_label | escape }}"
+            >
+              <span>Sort by</span>
+              <span class="collection-toolbar__chevron" aria-hidden="true"></span>
+            </summary>
+
+            <form class="collection-sort__panel" method="get" action="{{ collection.url }}">
+              {% for filter in collection.filters %}
+                {% if filter.type == 'price_range' %}
+                  {% if filter.min_value.value != blank %}
+                    <input
+                      type="hidden"
+                      name="{{ filter.min_value.param_name }}"
+                      value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
+                    >
+                  {% endif %}
+                  {% if filter.max_value.value != blank %}
+                    <input
+                      type="hidden"
+                      name="{{ filter.max_value.param_name }}"
+                      value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
+                    >
+                  {% endif %}
+                {% else %}
+                  {% for value in filter.active_values %}
+                    <input type="hidden" name="{{ value.param_name }}" value="{{ value.value }}">
+                  {% endfor %}
+                {% endif %}
               {% endfor %}
-            </select>
-          </div>
 
-          {% if collection.filters.size > 0 %}
-            {% for filter in collection.filters %}
-              <div class="filter-block">
-                <div class="filter-title">{{ filter.label }}</div>
-                {% case filter.type %}
-                  {% when 'price_range' %}
-                    <div class="filter-range">
-                      <input
-                        class="filter-input"
-                        type="number"
-                        name="{{ filter.min_value.param_name }}"
-                        value="{{ filter.min_value.value }}"
-                        placeholder="Min"
-                        min="0"
-                        max="{{ filter.range_max }}"
-                      >
-                      <span class="filter-range__dash">—</span>
-                      <input
-                        class="filter-input"
-                        type="number"
-                        name="{{ filter.max_value.param_name }}"
-                        value="{{ filter.max_value.value }}"
-                        placeholder="Max"
-                        min="0"
-                        max="{{ filter.range_max }}"
-                      >
-                    </div>
-                  {% else %}
-                    <ul class="filter-list">
-                      {% for value in filter.values %}
-                        <li>
-                          <label class="filter-item">
-                            <input
-                              type="checkbox"
-                              name="{{ value.param_name }}"
-                              value="{{ value.value }}"
-                              {% if value.active %}checked{% endif %}
-                              {% if value.count == 0 and value.active == false %}disabled{% endif %}
-                            >
-                            <span>{{ value.label }} ({{ value.count }})</span>
-                          </label>
-                        </li>
+              <fieldset class="collection-sort__options">
+                <legend class="visually-hidden">Sort products</legend>
+                {% for option in collection.sort_options %}
+                  <label class="collection-sort__option">
+                    <input
+                      type="radio"
+                      name="sort_by"
+                      value="{{ option.value }}"
+                      {% if option.value == current_sort_value %}checked{% endif %}
+                    >
+                    <span>{{ option.name }}</span>
+                  </label>
+                {% endfor %}
+              </fieldset>
+            </form>
+          </details>
+        </div>
+
+        <span class="collection-toolbar__count">Showing {{ paginate.items }} item{% if paginate.items != 1 %}s{% endif %}</span>
+      </div>
+
+      <div
+        class="collection-filter-drawer"
+        id="CollectionFilterDrawer"
+        data-filter-drawer
+        hidden
+      >
+        <button
+          type="button"
+          class="collection-filter-drawer__backdrop"
+          data-filter-close
+          aria-label="Close filters"
+        ></button>
+
+        <div
+          class="collection-filter-drawer__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="CollectionFilterDrawerTitle"
+        >
+          <form class="collection-filter-form" method="get" action="{{ collection.url }}">
+            {% if current_sort_value != blank %}
+              <input type="hidden" name="sort_by" value="{{ current_sort_value }}">
+            {% endif %}
+
+            <div class="collection-filter-drawer__body">
+              <header class="collection-filter-drawer__header">
+                <h2 id="CollectionFilterDrawerTitle" class="collection-filter-drawer__title">
+                  Filters{% if active_filter_count > 0 %} ({{ active_filter_count }}){% endif %}
+                </h2>
+
+                <button
+                  type="button"
+                  class="collection-filter-drawer__close"
+                  data-filter-close
+                  aria-label="Close filters"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </header>
+
+              {% if active_filter_count > 0 %}
+                <div class="collection-filter-drawer__active">
+                  <a class="collection-filter-chip collection-filter-chip--clear" href="{{ clear_filters_url }}">
+                    Clear filters
+                  </a>
+
+                  {% for filter in collection.filters %}
+                    {% if filter.type == 'price_range' %}
+                      {% if filter.min_value.value != blank or filter.max_value.value != blank %}
+                        <a class="collection-filter-chip" href="{{ filter.url_to_remove }}">
+                          {% if filter.min_value.value != blank %}{{ filter.min_value.value | money }}{% else %}$0{% endif %}
+                          -
+                          {% if filter.max_value.value != blank %}{{ filter.max_value.value | money }}{% else %}{{ filter.range_max | money }}{% endif %}
+                        </a>
+                      {% endif %}
+                    {% else %}
+                      {% for value in filter.active_values %}
+                        <a class="collection-filter-chip" href="{{ value.url_to_remove }}">{{ value.label }}</a>
                       {% endfor %}
-                    </ul>
-                {% endcase %}
-              </div>
-            {% endfor %}
-            <button type="submit" class="btn">Apply</button>
-            <a class="filter-clear" href="{{ collection.url }}">Clear all</a>
-          {% else %}
-            <div class="filter-empty">No filters available yet.</div>
-          {% endif %}
-        </form>
-      </aside>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endif %}
 
-      <div class="collection-grid">
-        {% if paginate.items == 0 or collection.products.size == 0 %}
-          <div class="collection-empty">No products found in this collection.</div>
-        {% else %}
-          {% for product in collection.products %}
-            {% assign quick_add_variant = product.selected_or_first_available_variant | default: product.variants.first %}
-            <article class="collection-card">
-              <div class="collection-card__media">
-                <a class="collection-card__image-link" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
-                  <div class="collection-card__image-wrapper">
-                    {% if product.featured_image %}
-                      <img
-                        src="{{ product.featured_image | image_url: width: 600 }}"
-                        alt="{{ product.featured_image.alt | default: product.title | escape }}"
-                        loading="lazy"
-                      >
+              <div class="collection-filter-drawer__groups">
+                {% if collection.filters.size > 0 %}
+                  {% for filter in collection.filters %}
+                    {% assign group_active_count = 0 %}
+                    {% if filter.type == 'price_range' %}
+                      {% if filter.min_value.value != blank or filter.max_value.value != blank %}
+                        {% assign group_active_count = 1 %}
+                      {% endif %}
+                    {% else %}
+                      {% assign group_active_count = filter.active_values.size %}
+                    {% endif %}
+
+                    <details class="collection-filter-group" {% if group_active_count > 0 %}open{% endif %}>
+                      <summary class="collection-filter-group__summary">
+                        <span>{{ filter.label }}{% if group_active_count > 0 %} ({{ group_active_count }}){% endif %}</span>
+                        <span class="collection-filter-group__icon" aria-hidden="true"></span>
+                      </summary>
+
+                      <div class="collection-filter-group__content">
+                        {% case filter.type %}
+                          {% when 'price_range' %}
+                            <div class="filter-range" data-price-range>
+                              <div class="filter-range__fields">
+                                <input
+                                  class="filter-input"
+                                  type="number"
+                                  name="{{ filter.min_value.param_name }}"
+                                  value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
+                                  placeholder="Min"
+                                  min="0"
+                                  max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                                  data-price-input
+                                >
+                                <span class="filter-range__dash">—</span>
+                                <input
+                                  class="filter-input"
+                                  type="number"
+                                  name="{{ filter.max_value.param_name }}"
+                                  value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
+                                  placeholder="Max"
+                                  min="0"
+                                  max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                                  data-price-input
+                                >
+                              </div>
+
+                              <button
+                                type="submit"
+                                class="filter-range__apply"
+                                data-price-apply
+                                disabled
+                                aria-disabled="true"
+                              >
+                                Apply
+                              </button>
+                            </div>
+                          {% else %}
+                            <ul class="filter-list">
+                              {% for value in filter.values %}
+                                <li>
+                                  <label class="filter-item{% if value.count == 0 and value.active == false %} is-disabled{% endif %}">
+                                    <input
+                                      type="checkbox"
+                                      name="{{ value.param_name }}"
+                                      value="{{ value.value }}"
+                                      {% if value.active %}checked{% endif %}
+                                      {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                                    >
+                                    <span>{{ value.label }}{% if value.count >= 0 %} ({{ value.count }}){% endif %}</span>
+                                  </label>
+                                </li>
+                              {% endfor %}
+                            </ul>
+                        {% endcase %}
+                      </div>
+                    </details>
+                  {% endfor %}
+                {% else %}
+                  <div class="filter-empty">No filters available yet.</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="collection-filter-drawer__footer">
+              <a class="collection-filter-drawer__reset" href="{{ clear_filters_url }}">Reset</a>
+              <button type="submit" class="collection-filter-drawer__apply">
+                View {{ paginate.items }} item{% if paginate.items != 1 %}s{% endif %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div data-collection-results>
+        <div class="collection-grid">
+          {% if paginate.items == 0 or collection.products.size == 0 %}
+            <div class="collection-empty">No products found in this collection.</div>
+          {% else %}
+            {% for product in collection.products %}
+              {% assign quick_add_variant = product.selected_or_first_available_variant | default: product.variants.first %}
+              <article class="collection-card">
+                <div class="collection-card__media">
+                  <a class="collection-card__image-link" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+                    <div class="collection-card__image-wrapper">
+                      {% if product.featured_image %}
+                        <img
+                          src="{{ product.featured_image | image_url: width: 600 }}"
+                          alt="{{ product.featured_image.alt | default: product.title | escape }}"
+                          width="{{ product.featured_image.width }}"
+                          height="{{ product.featured_image.height }}"
+                          loading="lazy"
+                        >
+                      {% endif %}
+                    </div>
+                  </a>
+
+                  <div class="collection-card__actions">
+                    {% if product.available == false %}
+                      <button type="button" class="btn btn--atc collection-card__quick-add" disabled>
+                        <span class="btn-text">Sold out</span>
+                      </button>
+                    {% elsif product.variants.size == 1 and quick_add_variant %}
+                      {% form 'product', product, class: 'collection-card__quick-add-form' %}
+                        <input type="hidden" name="id" value="{{ quick_add_variant.id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn btn--atc collection-card__quick-add">
+                          <span class="btn-icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                            </svg>
+                          </span>
+                          <span class="btn-text">Add to cart</span>
+                        </button>
+                      {% endform %}
+                    {% else %}
+                      <a class="btn btn--atc collection-card__quick-add collection-card__quick-add--link" href="{{ product.url }}">
+                        <span class="btn-text">Choose options</span>
+                      </a>
                     {% endif %}
                   </div>
-                </a>
-
-                <div class="collection-card__actions">
-                  {% if product.available == false %}
-                    <button type="button" class="btn btn--atc collection-card__quick-add" disabled>
-                      <span class="btn-text">Sold out</span>
-                    </button>
-                  {% elsif product.variants.size == 1 and quick_add_variant %}
-                    {% form 'product', product, class: 'collection-card__quick-add-form' %}
-                      <input type="hidden" name="id" value="{{ quick_add_variant.id }}">
-                      <input type="hidden" name="quantity" value="1">
-                      <button type="submit" class="btn btn--atc collection-card__quick-add">
-                        <span class="btn-icon" aria-hidden="true">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                          </svg>
-                        </span>
-                        <span class="btn-text">Add to cart</span>
-                      </button>
-                    {% endform %}
-                  {% else %}
-                    <a class="btn btn--atc collection-card__quick-add collection-card__quick-add--link" href="{{ product.url }}">
-                      <span class="btn-text">Choose options</span>
-                    </a>
-                  {% endif %}
                 </div>
-              </div>
 
-              <a class="collection-card__info" href="{{ product.url }}">
-                <span class="collection-card__title">{{ product.title }}</span>
-                {% render 'price',
-                  amount: product.price,
-                  wrapper_tag: 'span',
-                  wrapper_class: 'collection-card__price price--card'
-                %}
-              </a>
-            </article>
-          {% endfor %}
+                <a class="collection-card__info" href="{{ product.url }}">
+                  <span class="collection-card__title">{{ product.title }}</span>
+                  {% render 'price',
+                    amount: product.price,
+                    wrapper_tag: 'span',
+                    wrapper_class: 'collection-card__price price--card'
+                  %}
+                </a>
+              </article>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        {% if paginate.pages > 1 %}
+          <nav class="collection-pagination" role="navigation" aria-label="Pagination">
+            {% if paginate.previous %}
+              <a href="{{ paginate.previous.url }}">Prev</a>
+            {% endif %}
+            <span>Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+            {% if paginate.next %}
+              <a href="{{ paginate.next.url }}">Next</a>
+            {% endif %}
+          </nav>
         {% endif %}
       </div>
     </div>
-
-    {% if paginate.pages > 1 %}
-      <nav class="collection-pagination" role="navigation" aria-label="Pagination">
-        {% if paginate.previous %}
-          <a href="{{ paginate.previous.url }}">Prev</a>
-        {% endif %}
-        <span>Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
-        {% if paginate.next %}
-          <a href="{{ paginate.next.url }}">Next</a>
-        {% endif %}
-      </nav>
-    {% endif %}
   </section>
+
+  <script src="{{ 'collection-toolbar.js' | asset_url }}" defer="defer"></script>
 {% endpaginate %}
