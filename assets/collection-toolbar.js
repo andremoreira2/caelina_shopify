@@ -182,6 +182,126 @@
     return input instanceof HTMLInputElement && input.matches("[data-price-input]");
   }
 
+  function isPriceSliderInput(input) {
+    return input instanceof HTMLInputElement && input.matches("[data-price-slider-input]");
+  }
+
+  function parsePriceNumber(value) {
+    var parsedValue = window.parseFloat(value);
+    return window.Number.isFinite(parsedValue) ? parsedValue : null;
+  }
+
+  function clampPriceValue(value, minBound, maxBound) {
+    return Math.max(minBound, Math.min(maxBound, value));
+  }
+
+  function formatPriceValue(value) {
+    if (!window.Number.isFinite(value)) return "";
+    if (Math.abs(value - Math.round(value)) < 0.01) {
+      return String(Math.round(value));
+    }
+
+    return String(value.toFixed(2)).replace(/\.?0+$/, "");
+  }
+
+  function formatPriceFieldValue(value, edgeValue) {
+    if (Math.abs(value - edgeValue) < 0.01) return "";
+    return formatPriceValue(value);
+  }
+
+  function getPriceRangeParts(group) {
+    if (!group) return null;
+
+    var slider = group.querySelector("[data-price-slider]");
+    var minInput = group.querySelector('[data-price-input="min"]');
+    var maxInput = group.querySelector('[data-price-input="max"]');
+    var minSlider = group.querySelector('[data-price-slider-input="min"]');
+    var maxSlider = group.querySelector('[data-price-slider-input="max"]');
+
+    if (!slider || !minInput || !maxInput || !minSlider || !maxSlider) {
+      return null;
+    }
+
+    return {
+      slider: slider,
+      minInput: minInput,
+      maxInput: maxInput,
+      minSlider: minSlider,
+      maxSlider: maxSlider
+    };
+  }
+
+  function getPriceRangeBounds(parts) {
+    var minBound = parsePriceNumber(parts.minSlider.min);
+    var limit = parsePriceNumber(parts.maxSlider.max);
+    return {
+      min: minBound != null ? minBound : 0,
+      max: limit != null ? limit : 0
+    };
+  }
+
+  function normalizePriceRangeValues(minValue, maxValue, bounds, sourceSide) {
+    var normalizedMin = clampPriceValue(minValue == null ? bounds.min : minValue, bounds.min, bounds.max);
+    var normalizedMax = clampPriceValue(maxValue == null ? bounds.max : maxValue, bounds.min, bounds.max);
+
+    if (normalizedMin > normalizedMax) {
+      if (sourceSide === "max") {
+        normalizedMin = normalizedMax;
+      } else {
+        normalizedMax = normalizedMin;
+      }
+    }
+
+    return {
+      min: normalizedMin,
+      max: normalizedMax
+    };
+  }
+
+  function updatePriceSliderVisual(parts, values, bounds) {
+    var safeSpan = bounds.max - bounds.min > 0 ? bounds.max - bounds.min : 1;
+
+    parts.minSlider.value = String(values.min);
+    parts.maxSlider.value = String(values.max);
+    parts.slider.style.setProperty("--price-slider-start", (values.min - bounds.min) / safeSpan * 100 + "%");
+    parts.slider.style.setProperty("--price-slider-end", (values.max - bounds.min) / safeSpan * 100 + "%");
+  }
+
+  function syncPriceRangeGroup(group, options) {
+    var parts = getPriceRangeParts(group);
+    if (!parts) return;
+
+    var bounds = getPriceRangeBounds(parts);
+    var useSliderValues = options && options.fromSlider;
+    var sourceSide = options && options.sourceSide;
+    var minValue = useSliderValues ? parsePriceNumber(parts.minSlider.value) : parsePriceNumber(parts.minInput.value);
+    var maxValue = useSliderValues ? parsePriceNumber(parts.maxSlider.value) : parsePriceNumber(parts.maxInput.value);
+    var normalizedValues = normalizePriceRangeValues(minValue, maxValue, bounds, sourceSide);
+
+    updatePriceSliderVisual(parts, normalizedValues, bounds);
+
+    if (options && options.commitFields) {
+      parts.minInput.value = formatPriceFieldValue(normalizedValues.min, bounds.min);
+      parts.maxInput.value = formatPriceFieldValue(normalizedValues.max, bounds.max);
+    }
+  }
+
+  function syncPriceRanges(scope, options) {
+    var groups;
+
+    if (!scope) {
+      groups = root.querySelectorAll("[data-price-range]");
+    } else if (scope.matches && scope.matches("[data-price-range]")) {
+      groups = [scope];
+    } else {
+      groups = scope.querySelectorAll("[data-price-range]");
+    }
+
+    Array.prototype.forEach.call(groups, function (group) {
+      syncPriceRangeGroup(group, options);
+    });
+  }
+
   function setFilterGroupSummaryState(group, expanded) {
     var summary = group ? group.querySelector(".collection-filter-group__summary") : null;
     if (!summary) return;
@@ -206,6 +326,54 @@
       function (group) {
         setFilterGroupSummaryState(group, group.hasAttribute("open"));
         resetFilterGroupContentStyles(group.querySelector(".collection-filter-group__content"));
+      }
+    );
+  }
+
+  function normalizeSingleOpenFilterGroups(scope, openIndex) {
+    var container = scope && scope.querySelectorAll ? scope : root;
+    if (!container) return;
+
+    var groups = container.querySelectorAll(".collection-filter-group");
+    var normalizedOpenIndex = typeof openIndex === "number" ? openIndex : -1;
+
+    if (normalizedOpenIndex < 0) {
+      normalizedOpenIndex = Array.prototype.findIndex.call(groups, function (group) {
+        return group.hasAttribute("open");
+      });
+    }
+
+    Array.prototype.forEach.call(groups, function (group, index) {
+      if (index === normalizedOpenIndex) {
+        group.setAttribute("open", "");
+        return;
+      }
+
+      group.removeAttribute("open");
+    });
+  }
+
+  function closeSiblingFilterGroups(group) {
+    var groupsContainer = group ? group.parentElement : null;
+    if (!groupsContainer) return;
+
+    Array.prototype.forEach.call(
+      groupsContainer.querySelectorAll(".collection-filter-group"),
+      function (siblingGroup) {
+        if (siblingGroup === group || !siblingGroup.hasAttribute("open")) return;
+        animateFilterGroup(siblingGroup, false);
+      }
+    );
+  }
+
+  function setFilterGroupStaticState(scope, isStatic) {
+    var container = scope && scope.querySelectorAll ? scope : root;
+    if (!container) return;
+
+    Array.prototype.forEach.call(
+      container.querySelectorAll(".collection-filter-group"),
+      function (group) {
+        group.toggleAttribute("data-filter-group-static", isStatic);
       }
     );
   }
@@ -350,9 +518,9 @@
   }
 
   function getOpenFilterGroupState() {
-    if (!drawer) return [];
+    if (!drawer) return -1;
 
-    return Array.prototype.map.call(
+    return Array.prototype.findIndex.call(
       drawer.querySelectorAll(".collection-filter-group"),
       function (group) {
         return group.hasAttribute("open");
@@ -360,22 +528,17 @@
     );
   }
 
-  function restoreOpenFilterGroupState(states) {
-    if (!drawer || !states || !states.length) return;
+  function restoreOpenFilterGroupState(openIndex) {
+    if (!drawer) return;
 
-    Array.prototype.forEach.call(
-      drawer.querySelectorAll(".collection-filter-group"),
-      function (group, index) {
-        if (states[index]) {
-          group.setAttribute("open", "");
-          return;
-        }
-
-        group.removeAttribute("open");
-      }
-    );
+    setFilterGroupStaticState(drawer, true);
+    normalizeSingleOpenFilterGroups(drawer, openIndex);
 
     syncFilterGroupStates(drawer);
+
+    window.requestAnimationFrame(function () {
+      setFilterGroupStaticState(drawer, false);
+    });
   }
 
   async function requestCollection(nextUrl, options) {
@@ -418,18 +581,24 @@
 
       var preserveDrawerState = isDrawerOpen();
       var drawerScrollTop = preserveDrawerState && drawerBody ? drawerBody.scrollTop : 0;
-      var openGroupState = preserveDrawerState ? getOpenFilterGroupState() : [];
+      var openGroupState = preserveDrawerState ? getOpenFilterGroupState() : -1;
 
       content.innerHTML = nextContent.innerHTML;
       cacheElements();
       restoreDrawerState(preserveDrawerState);
-      syncPriceApplyState(drawer || root);
-      syncFilterGroupStates(drawer || root);
 
       if (preserveDrawerState && drawerBody) {
         drawerBody.scrollTop = drawerScrollTop;
         restoreOpenFilterGroupState(openGroupState);
+      } else {
+        normalizeSingleOpenFilterGroups(drawer || root);
+        syncFilterGroupStates(drawer || root);
       }
+
+      syncPriceRanges(drawer || root, {
+        commitFields: true
+      });
+      syncPriceApplyState(drawer || root);
 
       if (doc.title) {
         document.title = doc.title;
@@ -485,7 +654,12 @@
       var filterGroup = filterSummary.closest(".collection-filter-group");
       if (!filterGroup) return;
 
-      animateFilterGroup(filterGroup, !filterGroup.hasAttribute("open"));
+      var shouldExpand = !filterGroup.hasAttribute("open");
+      if (shouldExpand) {
+        closeSiblingFilterGroups(filterGroup);
+      }
+
+      animateFilterGroup(filterGroup, shouldExpand);
       return;
     }
 
@@ -516,6 +690,17 @@
 
     if (!target.closest(".collection-filter-form") || !drawer) return;
 
+    if (isPriceSliderInput(target)) {
+      var sliderGroup = target.closest("[data-price-range]");
+      syncPriceRangeGroup(sliderGroup, {
+        fromSlider: true,
+        sourceSide: target.getAttribute("data-price-slider-input"),
+        commitFields: true
+      });
+      syncPriceApplyState(sliderGroup);
+      return;
+    }
+
     if (target.type === "checkbox" || target.type === "radio") {
       handleFilterSubmit(drawer.querySelector("form"), {
         includeDraftPrice: false
@@ -524,16 +709,38 @@
     }
 
     if (isPriceInput(target)) {
-      syncPriceApplyState(target.closest("[data-price-range]"));
+      var priceGroup = target.closest("[data-price-range]");
+      syncPriceRangeGroup(priceGroup, {
+        sourceSide: target.getAttribute("data-price-input"),
+        commitFields: true
+      });
+      syncPriceApplyState(priceGroup);
     }
   });
 
   root.addEventListener("input", function (event) {
     var target = event.target;
+    if (isPriceSliderInput(target)) {
+      if (!target.closest(".collection-filter-form") || !drawer) return;
+
+      var sliderGroup = target.closest("[data-price-range]");
+      syncPriceRangeGroup(sliderGroup, {
+        fromSlider: true,
+        sourceSide: target.getAttribute("data-price-slider-input"),
+        commitFields: true
+      });
+      syncPriceApplyState(sliderGroup);
+      return;
+    }
+
     if (!isPriceInput(target)) return;
     if (!target.closest(".collection-filter-form") || !drawer) return;
 
-    syncPriceApplyState(target.closest("[data-price-range]"));
+    var priceGroup = target.closest("[data-price-range]");
+    syncPriceRangeGroup(priceGroup, {
+      sourceSide: target.getAttribute("data-price-input")
+    });
+    syncPriceApplyState(priceGroup);
   });
 
   root.addEventListener("submit", function (event) {
@@ -542,6 +749,9 @@
 
     if (form.matches(".collection-filter-form")) {
       event.preventDefault();
+      syncPriceRanges(form, {
+        commitFields: true
+      });
       handleFilterSubmit(form, {
         includeDraftPrice: true
       });
@@ -579,6 +789,10 @@
 
   cacheElements();
   restoreDrawerState(false);
+  normalizeSingleOpenFilterGroups(root);
+  syncPriceRanges(root, {
+    commitFields: true
+  });
   syncPriceApplyState(root);
   syncFilterGroupStates(root);
   syncLoadingBarPosition();

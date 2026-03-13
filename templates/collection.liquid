@@ -189,66 +189,99 @@
 
                     <details class="collection-filter-group" {% if group_active_count > 0 %}open{% endif %}>
                       <summary class="collection-filter-group__summary">
-                        <span>{{ filter.label }}{% if group_active_count > 0 %} ({{ group_active_count }}){% endif %}</span>
-                        <span class="collection-filter-group__icon" aria-hidden="true"></span>
+                        <span class="collection-filter-group__label">{{ filter.label }}</span>
+                        <span class="collection-filter-group__meta">
+                          {% if group_active_count > 0 %}
+                            <span class="collection-filter-group__count">{{ group_active_count }}</span>
+                          {% endif %}
+                          <span class="collection-filter-group__icon" aria-hidden="true"></span>
+                        </span>
                       </summary>
 
                       <div class="collection-filter-group__content">
-                        {% case filter.type %}
-                          {% when 'price_range' %}
-                            <div class="filter-range" data-price-range>
-                              <div class="filter-range__fields">
-                                <input
-                                  class="filter-input"
-                                  type="number"
-                                  name="{{ filter.min_value.param_name }}"
-                                  value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
-                                  placeholder="Min"
-                                  min="0"
-                                  max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
-                                  data-price-input
-                                >
-                                <span class="filter-range__dash">—</span>
-                                <input
-                                  class="filter-input"
-                                  type="number"
-                                  name="{{ filter.max_value.param_name }}"
-                                  value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
-                                  placeholder="Max"
-                                  min="0"
-                                  max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
-                                  data-price-input
-                                >
-                              </div>
+                        <div class="collection-filter-group__inner">
+                          {% case filter.type %}
+                            {% when 'price_range' %}
+                              {% assign price_range_max = filter.range_max | money_without_currency | replace: ',', '' | plus: 0 %}
+                              <div class="filter-range" data-price-range>
+                                <div class="filter-range__slider" data-price-slider>
+                                  <span class="filter-range__slider-track" aria-hidden="true"></span>
+                                  <span class="filter-range__slider-fill" aria-hidden="true"></span>
+                                  <input
+                                    class="filter-range__slider-input filter-range__slider-input--min"
+                                    type="range"
+                                    min="0"
+                                    max="{{ price_range_max }}"
+                                    step="1"
+                                    value="{% if filter.min_value.value != blank %}{{ filter.min_value.value | money_without_currency | replace: ',', '' }}{% else %}0{% endif %}"
+                                    data-price-slider-input="min"
+                                    aria-label="Minimum price"
+                                  >
+                                  <input
+                                    class="filter-range__slider-input filter-range__slider-input--max"
+                                    type="range"
+                                    min="0"
+                                    max="{{ price_range_max }}"
+                                    step="1"
+                                    value="{% if filter.max_value.value != blank %}{{ filter.max_value.value | money_without_currency | replace: ',', '' }}{% else %}{{ price_range_max }}{% endif %}"
+                                    data-price-slider-input="max"
+                                    aria-label="Maximum price"
+                                  >
+                                </div>
 
-                              <button
-                                type="submit"
-                                class="filter-range__apply"
-                                data-price-apply
-                                disabled
-                                aria-disabled="true"
-                              >
-                                Apply
-                              </button>
-                            </div>
-                          {% else %}
-                            <ul class="filter-list">
-                              {% for value in filter.values %}
-                                <li>
-                                  <label class="filter-item{% if value.count == 0 and value.active == false %} is-disabled{% endif %}">
-                                    <input
-                                      type="checkbox"
-                                      name="{{ value.param_name }}"
-                                      value="{{ value.value }}"
-                                      {% if value.active %}checked{% endif %}
-                                      {% if value.count == 0 and value.active == false %}disabled{% endif %}
-                                    >
-                                    <span>{{ value.label }}{% if value.count >= 0 %} ({{ value.count }}){% endif %}</span>
-                                  </label>
-                                </li>
-                              {% endfor %}
-                            </ul>
-                        {% endcase %}
+                                <div class="filter-range__fields">
+                                  <input
+                                    class="filter-input"
+                                    type="number"
+                                    name="{{ filter.min_value.param_name }}"
+                                    value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
+                                    placeholder="Min"
+                                    min="0"
+                                    max="{{ price_range_max }}"
+                                    data-price-input="min"
+                                  >
+                                  <span class="filter-range__dash">—</span>
+                                  <input
+                                    class="filter-input"
+                                    type="number"
+                                    name="{{ filter.max_value.param_name }}"
+                                    value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
+                                    placeholder="Max"
+                                    min="0"
+                                    max="{{ price_range_max }}"
+                                    data-price-input="max"
+                                  >
+                                </div>
+
+                                <button
+                                  type="submit"
+                                  class="filter-range__apply"
+                                  data-price-apply
+                                  disabled
+                                  aria-disabled="true"
+                                >
+                                  Apply
+                                </button>
+                              </div>
+                            {% else %}
+                              <ul class="filter-list">
+                                {% for value in filter.values %}
+                                  <li>
+                                    <label class="filter-item{% if value.count == 0 and value.active == false %} is-disabled{% endif %}">
+                                      <input
+                                        type="checkbox"
+                                        name="{{ value.param_name }}"
+                                        value="{{ value.value }}"
+                                        {% if value.active %}checked{% endif %}
+                                        {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                                      >
+                                      <span>{{ value.label }}{% if value.count >= 0 %} ({{ value.count }}){% endif %}</span>
+                                    </label>
+                                  </li>
+                                {% endfor %}
+                              </ul>
+                          {% endcase %}
+                        </div>
                       </div>
                     </details>
                   {% endfor %}
@@ -277,6 +310,10 @@
               {% assign quick_add_variant = product.selected_or_first_available_variant | default: product.variants.first %}
               <article class="collection-card">
                 <div class="collection-card__media">
+                  {% if product.available == false %}
+                    <span class="collection-card__badge">Sold out</span>
+                  {% endif %}
+
                   <a class="collection-card__image-link" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
                     <div class="collection-card__image-wrapper">
                       {% if product.featured_image %}

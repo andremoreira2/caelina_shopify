@@ -147,58 +147,66 @@
     });
   };
 
+  const handleAddToCartSubmit = async (form) => {
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('[type="submit"]');
+
+    const variantId = formData.get("id");
+    if (!variantId) {
+      showToast("Please choose an option before adding to cart.", "error");
+      return;
+    }
+
+    const quantityRaw = formData.get("quantity");
+    if (quantityRaw !== null) {
+      const quantity = Number(quantityRaw);
+      if (!Number.isFinite(quantity) || quantity < 1) {
+        formData.set("quantity", "1");
+      } else if (quantity > 99) {
+        formData.set("quantity", "99");
+      }
+    }
+
+    if (submitBtn) {
+      submitBtn.classList.add("is-loading");
+      submitBtn.disabled = true;
+    }
+
+    try {
+      const res = await fetch("/cart/add.js", {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin",
+      });
+      if (!res.ok) {
+        throw new Error(await getCartErrorMessage(res));
+      }
+      await openDrawer();
+      showToast("Added to cart", "success");
+    } catch (err) {
+      const message = err instanceof Error && err.message
+        ? err.message
+        : "Could not add to cart";
+      console.warn("Add to cart failed:", err);
+      showToast(message, "error");
+    } finally {
+      if (submitBtn) {
+        submitBtn.classList.remove("is-loading");
+        submitBtn.disabled = false;
+      }
+    }
+  };
+
   const bindAddToCart = () => {
     if (isCartPage) return;
-    document.querySelectorAll('form[action*="/cart/add"]').forEach((form) => {
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const submitBtn = form.querySelector('[type="submit"]');
 
-        const variantId = formData.get("id");
-        if (!variantId) {
-          showToast("Please choose an option before adding to cart.", "error");
-          return;
-        }
+    document.addEventListener("submit", async (e) => {
+      const form = e.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      if (!form.matches('form[action*="/cart/add"]')) return;
 
-        const quantityRaw = formData.get("quantity");
-        if (quantityRaw !== null) {
-          const quantity = Number(quantityRaw);
-          if (!Number.isFinite(quantity) || quantity < 1) {
-            formData.set("quantity", "1");
-          } else if (quantity > 99) {
-            formData.set("quantity", "99");
-          }
-        }
-
-        if (submitBtn) {
-          submitBtn.classList.add("is-loading");
-          submitBtn.disabled = true;
-        }
-        try {
-          const res = await fetch("/cart/add.js", {
-            method: "POST",
-            body: formData,
-            credentials: "same-origin",
-          });
-          if (!res.ok) {
-            throw new Error(await getCartErrorMessage(res));
-          }
-          await openDrawer();
-          showToast("Added to cart", "success");
-        } catch (err) {
-          const message = err instanceof Error && err.message
-            ? err.message
-            : "Could not add to cart";
-          console.warn("Add to cart failed:", err);
-          showToast(message, "error");
-        } finally {
-          if (submitBtn) {
-            submitBtn.classList.remove("is-loading");
-            submitBtn.disabled = false;
-          }
-        }
-      });
+      e.preventDefault();
+      await handleAddToCartSubmit(form);
     });
   };
 
