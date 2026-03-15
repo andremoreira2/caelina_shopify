@@ -96,7 +96,16 @@
         %}
       </div>
       <div class="drawer-cart__actions">
-        <button class="btn btn--block btn--checkout" type="submit" name="checkout" onclick="window.location.href='/checkout'">CHECK OUT</button>
+        <button class="btn btn--block btn--checkout" type="submit" name="checkout" onclick="window.location.href='/checkout'">
+          <span class="btn--checkout__content">
+            <span class="btn--checkout__label">CHECKOUT SECURELY</span>
+            <span class="btn--checkout__icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                <path fill="currentColor" d="M8 1.75A2.75 2.75 0 0 0 5.25 4.5V7H4a1 1 0 0 0-1 1v5.25a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-1.25V4.5A2.75 2.75 0 0 0 8 1.75Zm1.25 5.25h-2.5V4.5a1.25 1.25 0 1 1 2.5 0V7Zm-1.9 2.25h1.3c.11 0 .2.09.2.2v.72c0 .07.04.14.09.18.3.22.49.57.49.97A1.43 1.43 0 0 1 8 12.75a1.43 1.43 0 0 1-1.43-1.43c0-.4.19-.75.49-.97a.22.22 0 0 0 .09-.18v-.72c0-.11.09-.2.2-.2Z"/>
+              </svg>
+            </span>
+          </span>
+        </button>
         <div class="drawer-cart__disclaimer">Shipping, taxes, and discount codes are calculated at checkout</div>
       </div>
     </div>
