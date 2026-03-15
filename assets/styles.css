@@ -2870,6 +2870,80 @@ body.collection-filters-open {
   z-index: 2;
 }
 
+.collection-card__nav {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.collection-card__nav-button {
+  --collection-card-nav-size: 40px;
+  --collection-card-nav-inner: 5px;
+  --collection-card-nav-icon-size: 28px;
+  position: absolute;
+  top: 50%;
+  width: var(--collection-card-nav-size);
+  height: var(--collection-card-nav-size);
+  margin-top: calc(var(--collection-card-nav-size) / -2);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: #1a1a1a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.collection-card__nav-button--prev {
+  left: var(--collection-card-nav-inner);
+  transform: translateX(-100%);
+}
+
+.collection-card__nav-button--next {
+  right: var(--collection-card-nav-inner);
+  transform: translateX(100%);
+}
+
+.collection-card__nav-icon {
+  width: var(--collection-card-nav-icon-size);
+  height: var(--collection-card-nav-icon-size);
+  display: block;
+  fill: none;
+}
+
+.collection-card__nav-arrow {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-miterlimit: 10;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.collection-card__nav-button--prev .collection-card__nav-icon {
+  transform: scaleX(-1);
+}
+
+.collection-card__nav-button[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.collection-card__nav-button:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 2px;
+}
+
 .collection-card__quick-add-form {
   width: 100%;
 }
@@ -2932,6 +3006,18 @@ body.collection-filters-open {
     pointer-events: auto;
     transition-delay: 0s;
   }
+
+  .collection-card__media:hover .collection-card__nav,
+  .collection-card__media:focus-within .collection-card__nav {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .collection-card__media:hover .collection-card__nav-button,
+  .collection-card__media:focus-within .collection-card__nav-button {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @media (hover: none) {
@@ -2939,6 +3025,10 @@ body.collection-filters-open {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+  }
+
+  .collection-card__nav {
+    display: none;
   }
 }
 
@@ -3027,6 +3117,11 @@ body.collection-filters-open {
   .collection-grid {
     gap: 32px 16px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .collection-card__nav-button {
+    --collection-card-nav-size: 36px;
+    --collection-card-nav-icon-size: 24px;
   }
 }
 
@@ -4083,6 +4178,10 @@ body.cart-drawer-open .product-floating-atc {
   opacity: 1;
 }
 
+.shop-the-look__card-visual {
+  position: relative;
+}
+
 .shop-the-look--home .shop-the-look__card-visual {
   position: relative;
   background: #f3f2f2;
@@ -4107,6 +4206,106 @@ body.cart-drawer-open .product-floating-atc {
   border-radius: 6px;
   overflow: hidden;
   transition: box-shadow 0.22s ease, transform 0.22s ease;
+}
+
+.shop-the-look__card-media-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transform: translate3d(calc(var(--stl-gallery-index, 0) * -100%), 0, 0);
+  transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.shop-the-look__card-media-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  height: 100%;
+}
+
+.shop-the-look__card-nav {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.shop-the-look__card.is-active .shop-the-look__card-nav {
+  visibility: visible;
+  opacity: 1;
+}
+
+.shop-the-look__card-nav-button {
+  --stl-nav-size: 40px;
+  --stl-nav-inner: 5px;
+  --stl-nav-icon-size: 28px;
+  position: absolute;
+  top: 50%;
+  width: var(--stl-nav-size);
+  height: var(--stl-nav-size);
+  margin-top: calc(var(--stl-nav-size) / -2);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: #1a1a1a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  box-shadow: none;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.shop-the-look__card.is-active .shop-the-look__card-nav-button {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.shop-the-look__card-nav-button--prev {
+  left: var(--stl-nav-inner);
+  transform: translateX(-100%);
+}
+
+.shop-the-look__card-nav-button--next {
+  right: var(--stl-nav-inner);
+  transform: translateX(100%);
+}
+
+.shop-the-look__card-nav-icon {
+  width: var(--stl-nav-icon-size);
+  height: var(--stl-nav-icon-size);
+  display: block;
+  fill: none;
+}
+
+.shop-the-look__card-nav-arrow {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-miterlimit: 10;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.shop-the-look__card-nav-button--prev .shop-the-look__card-nav-icon {
+  transform: scaleX(-1);
+}
+
+.shop-the-look__card-nav-button[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.shop-the-look__card-nav-button:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 2px;
 }
 
 .shop-the-look--home .shop-the-look__card-media {
@@ -4497,6 +4696,11 @@ body.cart-drawer-open .product-floating-atc {
     height: clamp(148px, 38vw, 210px);
   }
 
+  .shop-the-look__card-nav-button {
+    --stl-nav-size: 36px;
+    --stl-nav-icon-size: 24px;
+  }
+
   .shop-the-look--home.shop-the-look--sticky-enabled {
     --stl-mobile-panel-height: clamp(226px, 31dvh, 268px);
     --stl-mobile-card-width: min(72vw, 286px);
@@ -4542,6 +4746,11 @@ body.cart-drawer-open .product-floating-atc {
 
   .shop-the-look--home.shop-the-look--sticky-enabled .shop-the-look__card-media {
     display: block;
+    height: 100%;
+  }
+
+  .shop-the-look--home.shop-the-look--sticky-enabled .shop-the-look__card-media-track,
+  .shop-the-look--home.shop-the-look--sticky-enabled .shop-the-look__card-media-slide {
     height: 100%;
   }
 

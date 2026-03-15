@@ -308,6 +308,7 @@
           {% else %}
             {% for product in collection.products %}
               {% assign quick_add_variant = product.selected_or_first_available_variant | default: product.variants.first %}
+              {% assign product_image_count = product.images | size %}
               <article class="collection-card">
                 <div class="collection-card__media">
                   {% if product.available == false %}
@@ -323,10 +324,48 @@
                           width="{{ product.featured_image.width }}"
                           height="{{ product.featured_image.height }}"
                           loading="lazy"
+                          data-collection-card-image
                         >
                       {% endif %}
                     </div>
                   </a>
+
+                  {% if product_image_count > 1 %}
+                    <div class="collection-card__nav" data-collection-card-nav aria-hidden="true">
+                      <button
+                        type="button"
+                        class="collection-card__nav-button collection-card__nav-button--prev"
+                        data-collection-card-prev
+                        aria-label="Show previous image for {{ product.title | escape }}"
+                      >
+                        <svg class="collection-card__nav-icon" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M8.91003 19.9201L15.43 13.4001C16.2 12.6301 16.2 11.3701 15.43 10.6001L8.91003 4.08008" class="collection-card__nav-arrow"></path>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="collection-card__nav-button collection-card__nav-button--next"
+                        data-collection-card-next
+                        aria-label="Show next image for {{ product.title | escape }}"
+                      >
+                        <svg class="collection-card__nav-icon" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M8.91003 19.9201L15.43 13.4001C16.2 12.6301 16.2 11.3701 15.43 10.6001L8.91003 4.08008" class="collection-card__nav-arrow"></path>
+                        </svg>
+                      </button>
+                    </div>
+                    <script type="application/json" data-collection-card-images>
+                      [
+                        {% for product_image in product.images %}
+                          {
+                            "src": {{ product_image | image_url: width: 600 | json }},
+                            "alt": {{ product_image.alt | default: product.title | json }},
+                            "width": {{ product_image.width | json }},
+                            "height": {{ product_image.height | json }}
+                          }{% unless forloop.last %},{% endunless %}
+                        {% endfor %}
+                      ]
+                    </script>
+                  {% endif %}
 
                   <div class="collection-card__actions">
                     {% if product.available == false %}
@@ -383,4 +422,5 @@
   </section>
 
   <script src="{{ 'collection-toolbar.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'collection-card-gallery.js' | asset_url }}" defer="defer"></script>
 {% endpaginate %}

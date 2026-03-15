@@ -178,6 +178,51 @@
     let lastTouchY = 0;
     let hasTouchTracking = false;
 
+    const galleryCards = cards
+      .map((card) => {
+        const nav = card.querySelector("[data-stl-gallery-nav]");
+        const track = card.querySelector("[data-stl-gallery-track]");
+        const slides = [...card.querySelectorAll("[data-stl-gallery-slide]")];
+        const prevButton = card.querySelector("[data-stl-gallery-prev]");
+        const nextButton = card.querySelector("[data-stl-gallery-next]");
+
+        if (!nav || !track || slides.length < 2 || !prevButton || !nextButton) {
+          return null;
+        }
+
+        return {
+          card,
+          nav,
+          track,
+          slides,
+          prevButton,
+          nextButton,
+          index: 0,
+        };
+      })
+      .filter(Boolean);
+
+    const syncGallery = (gallery) => {
+      if (!gallery) return;
+
+      gallery.index = ((gallery.index % gallery.slides.length) + gallery.slides.length) % gallery.slides.length;
+      gallery.track.style.setProperty("--stl-gallery-index", gallery.index);
+
+      gallery.slides.forEach((slide, slideIndex) => {
+        const isCurrent = slideIndex === gallery.index;
+        slide.setAttribute("aria-hidden", isCurrent ? "false" : "true");
+      });
+
+      const isActiveCard = toNumber(gallery.card.dataset.index) === activeIndex;
+      gallery.nav.setAttribute("aria-hidden", isActiveCard ? "false" : "true");
+      gallery.prevButton.tabIndex = isActiveCard ? 0 : -1;
+      gallery.nextButton.tabIndex = isActiveCard ? 0 : -1;
+    };
+
+    const syncGalleries = () => {
+      galleryCards.forEach((gallery) => syncGallery(gallery));
+    };
+
     const setActive = (nextIndex) => {
       if (activeIndex === nextIndex) return;
       activeIndex = nextIndex;
@@ -192,6 +237,8 @@
         const active = toNumber(card.dataset.index) === nextIndex;
         card.classList.toggle("is-active", active);
       });
+
+      syncGalleries();
     };
 
     const getNearestCardIndex = () => {
@@ -387,6 +434,27 @@
           activateFromDot();
         }
       });
+    });
+
+    galleryCards.forEach((gallery) => {
+      const moveGallery = (step) => {
+        gallery.index += step;
+        syncGallery(gallery);
+      };
+
+      gallery.prevButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        moveGallery(-1);
+      });
+
+      gallery.nextButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        moveGallery(1);
+      });
+
+      syncGallery(gallery);
     });
 
     const initialDot = dots.find((dot) => dot.classList.contains("is-active")) || dots[0];

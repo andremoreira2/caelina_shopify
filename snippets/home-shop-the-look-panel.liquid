@@ -143,6 +143,7 @@
               {% endif %}
               {% assign stl_variant = stl_product.selected_or_first_available_variant | default: stl_product.variants.first %}
               {% assign stl_product_image = stl_product.featured_image | default: stl_product.images.first %}
+              {% assign stl_product_image_count = stl_product.images | size %}
               {% capture stl_variant_select_id %}homeStlVariant-{{ stl_index }}-{{ stl_card_index }}{% endcapture %}
               {% assign stl_card_number = stl_card_index | plus: 1 %}
               <article
@@ -154,17 +155,61 @@
                 <div class="shop-the-look__card-visual">
                   <a class="shop-the-look__card-media" href="{{ stl_product.url }}">
                     {% if stl_product_image != blank %}
-                      <img
-                        src="{{ stl_product_image | image_url: width: 1000 }}"
-                        alt="{{ stl_product_image.alt | default: stl_product.title | escape }}"
-                        loading="lazy"
-                        width="{{ stl_product_image.width | default: 900 }}"
-                        height="{{ stl_product_image.height | default: 900 }}"
-                      >
+                      {% if stl_product_image_count > 1 %}
+                        <div class="shop-the-look__card-media-track" data-stl-gallery-track style="--stl-gallery-index: 0;">
+                          {% for stl_gallery_image in stl_product.images %}
+                            <span
+                              class="shop-the-look__card-media-slide"
+                              data-stl-gallery-slide
+                              aria-hidden="{% unless forloop.first %}true{% else %}false{% endunless %}"
+                            >
+                              <img
+                                src="{{ stl_gallery_image | image_url: width: 1000 }}"
+                                alt="{{ stl_gallery_image.alt | default: stl_product.title | escape }}"
+                                loading="lazy"
+                                width="{{ stl_gallery_image.width | default: 900 }}"
+                                height="{{ stl_gallery_image.height | default: 900 }}"
+                              >
+                            </span>
+                          {% endfor %}
+                        </div>
+                      {% else %}
+                        <img
+                          src="{{ stl_product_image | image_url: width: 1000 }}"
+                          alt="{{ stl_product_image.alt | default: stl_product.title | escape }}"
+                          loading="lazy"
+                          width="{{ stl_product_image.width | default: 900 }}"
+                          height="{{ stl_product_image.height | default: 900 }}"
+                        >
+                      {% endif %}
                     {% else %}
                       <span class="shop-the-look__media-fallback" aria-hidden="true"></span>
                     {% endif %}
                   </a>
+                  {% if stl_product_image_count > 1 %}
+                    <div class="shop-the-look__card-nav" data-stl-gallery-nav>
+                      <button
+                        type="button"
+                        class="shop-the-look__card-nav-button shop-the-look__card-nav-button--prev"
+                        data-stl-gallery-prev
+                        aria-label="Show previous image for {{ stl_product.title | escape }}"
+                      >
+                        <svg class="shop-the-look__card-nav-icon" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M8.91003 19.9201L15.43 13.4001C16.2 12.6301 16.2 11.3701 15.43 10.6001L8.91003 4.08008" class="shop-the-look__card-nav-arrow"></path>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="shop-the-look__card-nav-button shop-the-look__card-nav-button--next"
+                        data-stl-gallery-next
+                        aria-label="Show next image for {{ stl_product.title | escape }}"
+                      >
+                        <svg class="shop-the-look__card-nav-icon" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M8.91003 19.9201L15.43 13.4001C16.2 12.6301 16.2 11.3701 15.43 10.6001L8.91003 4.08008" class="shop-the-look__card-nav-arrow"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  {% endif %}
                   <form
                     method="post"
                     action="/cart/add"
