@@ -2,12 +2,17 @@
   {% assign active_filter_count = 0 %}
   {% assign current_sort_value = collection.sort_by | default: collection.default_sort_by %}
   {% assign current_sort_label = collection.sort_options.first.name %}
+  {% assign sort_toggle_label = 'Sort by' %}
 
   {% for option in collection.sort_options %}
     {% if option.value == current_sort_value %}
       {% assign current_sort_label = option.name %}
     {% endif %}
   {% endfor %}
+
+  {% if current_sort_value != blank and current_sort_value != collection.default_sort_by %}
+    {% assign sort_toggle_label = current_sort_label %}
+  {% endif %}
 
   {% for filter in collection.filters %}
     {% if filter.type == 'price_range' %}
@@ -57,12 +62,12 @@
 
           <span class="collection-toolbar__divider" aria-hidden="true"></span>
 
-          <details class="collection-sort" data-collection-sort>
+          <details class="collection-sort" data-collection-sort data-default-sort-value="{{ collection.default_sort_by | escape }}">
             <summary
               class="collection-toolbar__button collection-toolbar__button--sort"
-              aria-label="Sort by. Current option: {{ current_sort_label | escape }}"
+              aria-label="Sort by. Current option: {{ sort_toggle_label | escape }}"
             >
-              <span>Sort by</span>
+              <span class="collection-toolbar__sort-label" data-collection-sort-label data-default-label="Sort by">{{ sort_toggle_label }}</span>
               <span class="collection-toolbar__chevron" aria-hidden="true"></span>
             </summary>
 
@@ -100,7 +105,7 @@
                       value="{{ option.value }}"
                       {% if option.value == current_sort_value %}checked{% endif %}
                     >
-                    <span>{{ option.name }}</span>
+                    <span class="collection-sort__option-label">{{ option.name }}</span>
                   </label>
                 {% endfor %}
               </fieldset>
@@ -369,14 +374,23 @@
 
                   <div class="collection-card__actions">
                     {% if product.available == false %}
-                      <button type="button" class="btn btn--atc collection-card__quick-add" disabled>
+                      <button
+                        type="button"
+                        class="btn btn--atc collection-card__quick-add"
+                        aria-label="Sold out: {{ product.title | escape }}"
+                        disabled
+                      >
                         <span class="btn-text">Sold out</span>
                       </button>
                     {% elsif product.variants.size == 1 and quick_add_variant %}
                       {% form 'product', product, class: 'collection-card__quick-add-form' %}
                         <input type="hidden" name="id" value="{{ quick_add_variant.id }}">
                         <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="btn btn--atc collection-card__quick-add">
+                        <button
+                          type="submit"
+                          class="btn btn--atc collection-card__quick-add"
+                          aria-label="Add {{ product.title | escape }} to cart"
+                        >
                           <span class="btn-icon" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
@@ -386,7 +400,16 @@
                         </button>
                       {% endform %}
                     {% else %}
-                      <a class="btn btn--atc collection-card__quick-add collection-card__quick-add--link" href="{{ product.url }}">
+                      <a
+                        class="btn btn--atc collection-card__quick-add collection-card__quick-add--link"
+                        href="{{ product.url }}"
+                        aria-label="Choose options for {{ product.title | escape }}"
+                      >
+                        <span class="btn-icon" aria-hidden="true">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                          </svg>
+                        </span>
                         <span class="btn-text">Choose options</span>
                       </a>
                     {% endif %}

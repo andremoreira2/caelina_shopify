@@ -36,8 +36,14 @@
   }
 
   function updateHeaderOffset() {
-    var headerHeight = Math.ceil(header.getBoundingClientRect().height);
+    var headerHeight = header.getBoundingClientRect().height;
     body.style.setProperty('--site-header-offset', headerHeight + 'px');
+    body.style.setProperty('--site-header-current-offset', headerHeight + 'px');
+  }
+
+  function updateCurrentHeaderOffset() {
+    var headerHeight = header.getBoundingClientRect().height;
+    body.style.setProperty('--site-header-current-offset', headerHeight + 'px');
   }
 
   function applyHeaderState() {
@@ -47,6 +53,7 @@
 
     header.classList.toggle('is-scrolled', isScrolled);
     header.style.setProperty('--header-shrink-progress', progress.toFixed(3));
+    updateCurrentHeaderOffset();
     ticking = false;
   }
 

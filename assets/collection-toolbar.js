@@ -25,6 +25,28 @@
     sort = root.querySelector("[data-collection-sort]");
     loadingBar = root.querySelector("[data-collection-loading]");
     closeButton = drawer ? drawer.querySelector(".collection-filter-drawer__close") : null;
+    syncSortLabel();
+  }
+
+  function syncSortLabel() {
+    if (!sort) return;
+
+    var label = sort.querySelector("[data-collection-sort-label]");
+    var summary = sort.querySelector("summary");
+    if (!label || !summary) return;
+
+    var defaultLabel = label.getAttribute("data-default-label") || "Sort by";
+    var defaultSortValue = sort.getAttribute("data-default-sort-value") || "";
+    var checkedInput = sort.querySelector('input[name="sort_by"]:checked');
+    var checkedOption = checkedInput ? checkedInput.closest(".collection-sort__option") : null;
+    var checkedLabel = checkedOption ? checkedOption.querySelector(".collection-sort__option-label") : null;
+    var checkedValue = checkedInput ? checkedInput.value : "";
+    var nextLabel = checkedValue && checkedValue !== defaultSortValue && checkedLabel
+      ? checkedLabel.textContent.trim()
+      : defaultLabel;
+
+    label.textContent = nextLabel;
+    summary.setAttribute("aria-label", "Sort by. Current option: " + nextLabel);
   }
 
   function normalizeUrl(input) {
@@ -59,7 +81,7 @@
     if (!loadingBar || !toolbar) return;
 
     var rect = toolbar.getBoundingClientRect();
-    var top = Math.max(0, Math.round(rect.bottom + 8));
+    var top = Math.max(0, Math.round(rect.bottom - 1));
     var left = Math.max(0, Math.round(rect.left));
     var right = Math.max(left, Math.round(rect.right));
     var width = Math.max(0, right - left);
@@ -628,6 +650,7 @@
   }
 
   function handleSortSubmit(form) {
+    syncSortLabel();
     closeSort();
     requestCollection(buildUrlFromForm(form));
   }
