@@ -2,13 +2,15 @@
   const roots = [...document.querySelectorAll("[data-shop-the-look]")];
   if (!roots.length) return;
 
-  const CARD_SCROLL_OFFSET = 120;
+  const DESKTOP_CARD_FOCUS_RATIO = 0.32;
   const STL_MOBILE_BREAKPOINT = 820;
 
   const toNumber = (value) => {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
   };
+
+  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
   const isOptionAvailable = (option) => option?.dataset?.available === "true";
 
@@ -169,6 +171,7 @@
     const panel = root.querySelector(".shop-the-look__panel");
     const mediaWrap = root.querySelector(".shop-the-look__media-wrap");
     const inner = root.querySelector(".shop-the-look__inner");
+    const scrollBoundsRoot = root.closest("[data-stl-section]") || root;
     if (!dots.length || !cards.length) return;
 
     let activeIndex = -1;
@@ -263,7 +266,7 @@
         return bestIndex;
       }
 
-      const targetY = window.innerHeight * 0.32;
+      const targetY = window.innerHeight * DESKTOP_CARD_FOCUS_RATIO;
       cards.forEach((card) => {
         const rect = card.getBoundingClientRect();
         if (rect.bottom <= 0 || rect.top >= window.innerHeight) return;
@@ -311,9 +314,14 @@
         return;
       }
 
-      const targetTop = window.scrollY + target.getBoundingClientRect().top - CARD_SCROLL_OFFSET;
+      const boundsRect = scrollBoundsRoot.getBoundingClientRect();
+      const maxScrollTop = Math.max(0, window.scrollY + boundsRect.bottom - window.innerHeight);
+      const targetTop = window.scrollY
+        + target.getBoundingClientRect().top
+        - (window.innerHeight * DESKTOP_CARD_FOCUS_RATIO);
+
       window.scrollTo({
-        top: Math.max(0, targetTop),
+        top: clamp(targetTop, 0, maxScrollTop),
         behavior: prefersReducedMotion ? "auto" : "smooth",
       });
     };
