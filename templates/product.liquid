@@ -266,21 +266,19 @@
 </div>
 
 {% assign stl_enabled = product.metafields.custom.shop_the_look_enabled.value %}
-{% assign stl_title = product.metafields.custom.shop_the_look_title.value | default: 'Shop The Look' %}
+{% assign stl_title = 'Complete the Look' %}
 {% assign stl_image = product.metafields.custom.shop_the_look_image.value %}
 {% assign stl_products = product.metafields.custom.shop_the_look_products.value %}
 {% assign stl_hotspots = product.metafields.custom.shop_the_look_hotspots.value %}
 {% assign stl_set = product.metafields.custom.shop_the_look_set.value %}
+{% assign stl_title_prefix = 'COMPLETE' %}
+{% assign stl_title_script = 'the Look' %}
 
 {% if stl_set != blank %}
-  {% assign stl_set_title = stl_set.shop_the_look_title.value | default: stl_set.title.value | default: stl_set.shop_the_look_title | default: stl_set.title %}
   {% assign stl_set_image = stl_set.shop_the_look_image.value | default: stl_set.image.value | default: stl_set.shop_the_look_image | default: stl_set.image %}
   {% assign stl_set_products = stl_set.shop_the_look_products.value | default: stl_set.products.value | default: stl_set.shop_the_look_products | default: stl_set.products %}
   {% assign stl_set_hotspots = stl_set.shop_the_look_hotspots.value | default: stl_set.hotspots.value | default: stl_set.shop_the_look_hotspots | default: stl_set.hotspots %}
 
-  {% if stl_set_title != blank %}
-    {% assign stl_title = stl_set_title %}
-  {% endif %}
   {% if stl_set_image != blank %}
     {% assign stl_image = stl_set_image %}
   {% endif %}
@@ -302,240 +300,22 @@
 {% endif %}
 
 {% if stl_enabled and stl_image != blank and stl_product_count > 0 %}
-  <section class="shop-the-look shop-the-look--product" data-shop-the-look>
-    <div class="shop-the-look__inner">
-      <div class="shop-the-look__layout">
-        <div class="shop-the-look__media-column">
-          <div class="shop-the-look__header">
-            <h2 class="shop-the-look__title">{{ stl_title }}</h2>
-          </div>
-          <div class="shop-the-look__media-wrap" style="--stl-image-ratio: {{ stl_image.aspect_ratio | default: 0.8571428571 }};">
-            <img
-              class="shop-the-look__image"
-              src="{{ stl_image | image_url: width: 1800 }}"
-              alt="{{ stl_image.alt | default: stl_title | escape }}"
-              loading="lazy"
-              width="{{ stl_image.width | default: 1200 }}"
-              height="{{ stl_image.height | default: 1400 }}"
-            >
-            <div class="shop-the-look__dots">
-              {% assign stl_dot_index = 0 %}
-              {% for stl_product in stl_products limit: 4 %}
-                {% if stl_product != blank %}
-                  {% assign fallback_x = 50 %}
-                  {% assign fallback_y = 50 %}
-                  {% case stl_dot_index %}
-                    {% when 0 %}
-                      {% assign fallback_x = 28 %}
-                      {% assign fallback_y = 34 %}
-                    {% when 1 %}
-                      {% assign fallback_x = 64 %}
-                      {% assign fallback_y = 30 %}
-                    {% when 2 %}
-                      {% assign fallback_x = 70 %}
-                      {% assign fallback_y = 62 %}
-                    {% when 3 %}
-                      {% assign fallback_x = 48 %}
-                      {% assign fallback_y = 78 %}
-                  {% endcase %}
-
-                  {% assign stl_dot_x = fallback_x %}
-                  {% assign stl_dot_y = fallback_y %}
-                  {% assign stl_dot_label = stl_product.title %}
-                  {% if stl_hotspots != blank and stl_hotspots.size > stl_dot_index %}
-                    {% assign stl_hotspot = stl_hotspots[stl_dot_index] %}
-                    {% if stl_hotspot.x != blank %}
-                      {% assign stl_dot_x = stl_hotspot.x %}
-                    {% endif %}
-                    {% if stl_hotspot.y != blank %}
-                      {% assign stl_dot_y = stl_hotspot.y %}
-                    {% endif %}
-                    {% if stl_hotspot.label != blank %}
-                      {% assign stl_dot_label = stl_hotspot.label %}
-                    {% endif %}
-                  {% endif %}
-                  <button
-                    class="shop-the-look__dot{% if stl_dot_index == 0 %} is-active{% endif %}"
-                    type="button"
-                    data-stl-dot
-                    data-index="{{ stl_dot_index }}"
-                    aria-label="Show {{ stl_dot_label | escape }}"
-                    aria-pressed="{% if stl_dot_index == 0 %}true{% else %}false{% endif %}"
-                    style="left: {{ stl_dot_x | at_least: 0 | at_most: 100 }}%; top: {{ stl_dot_y | at_least: 0 | at_most: 100 }}%;"
-                  >
-                    <span class="shop-the-look__dot-core" aria-hidden="true"></span>
-                  </button>
-                  {% assign stl_dot_index = stl_dot_index | plus: 1 %}
-                {% endif %}
-              {% endfor %}
-            </div>
-          </div>
-        </div>
-
-        <div class="shop-the-look__panel">
-          {% assign stl_card_index = 0 %}
-          {% for stl_product in stl_products limit: 4 %}
-            {% if stl_product != blank %}
-              {% assign stl_active = false %}
-              {% if stl_card_index == 0 %}
-                {% assign stl_active = true %}
-              {% endif %}
-              {% assign stl_variant = stl_product.selected_or_first_available_variant | default: stl_product.variants.first %}
-              {% assign stl_product_image = stl_product.featured_image | default: stl_product.images.first %}
-              {% assign stl_product_image_count = stl_product.images | size %}
-              {% capture stl_variant_select_id %}stlVariant-{{ product.id }}-{{ stl_card_index }}{% endcapture %}
-              <article
-                class="shop-the-look__card{% if stl_active %} is-active{% endif %}"
-                data-stl-card
-                data-index="{{ stl_card_index }}"
-              >
-                <div class="shop-the-look__card-visual">
-                  <a class="shop-the-look__card-media" href="{{ stl_product.url }}">
-                    {% if stl_product_image != blank %}
-                      {% if stl_product_image_count > 1 %}
-                        <div class="shop-the-look__card-media-track" data-stl-gallery-track style="--stl-gallery-index: 0;">
-                          {% for stl_gallery_image in stl_product.images %}
-                            <span
-                              class="shop-the-look__card-media-slide"
-                              data-stl-gallery-slide
-                              aria-hidden="{% unless forloop.first %}true{% else %}false{% endunless %}"
-                            >
-                              <img
-                                src="{{ stl_gallery_image | image_url: width: 1000 }}"
-                                alt="{{ stl_gallery_image.alt | default: stl_product.title | escape }}"
-                                loading="lazy"
-                                width="{{ stl_gallery_image.width | default: 900 }}"
-                                height="{{ stl_gallery_image.height | default: 900 }}"
-                              >
-                            </span>
-                          {% endfor %}
-                        </div>
-                      {% else %}
-                        <img
-                          src="{{ stl_product_image | image_url: width: 1000 }}"
-                          alt="{{ stl_product_image.alt | default: stl_product.title | escape }}"
-                          loading="lazy"
-                          width="{{ stl_product_image.width | default: 900 }}"
-                          height="{{ stl_product_image.height | default: 900 }}"
-                        >
-                      {% endif %}
-                    {% else %}
-                      <span class="shop-the-look__media-fallback" aria-hidden="true"></span>
-                    {% endif %}
-                  </a>
-                  {% if stl_product_image_count > 1 %}
-                    <div class="shop-the-look__card-nav" data-stl-gallery-nav>
-                      <button
-                        type="button"
-                        class="shop-the-look__card-nav-button shop-the-look__card-nav-button--prev"
-                        data-stl-gallery-prev
-                        aria-label="Show previous image for {{ stl_product.title | escape }}"
-                      >
-                        <svg class="shop-the-look__card-nav-icon" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M8.91003 19.9201L15.43 13.4001C16.2 12.6301 16.2 11.3701 15.43 10.6001L8.91003 4.08008" class="shop-the-look__card-nav-arrow"></path>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        class="shop-the-look__card-nav-button shop-the-look__card-nav-button--next"
-                        data-stl-gallery-next
-                        aria-label="Show next image for {{ stl_product.title | escape }}"
-                      >
-                        <svg class="shop-the-look__card-nav-icon" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M8.91003 19.9201L15.43 13.4001C16.2 12.6301 16.2 11.3701 15.43 10.6001L8.91003 4.08008" class="shop-the-look__card-nav-arrow"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  {% endif %}
-                </div>
-
-                <div class="shop-the-look__card-meta">
-                  {% if stl_product.vendor != blank %}
-                    <p class="shop-the-look__vendor">{{ stl_product.vendor }}</p>
-                  {% endif %}
-                  <h3 class="shop-the-look__product-title"><a href="{{ stl_product.url }}">{{ stl_product.title }}</a></h3>
-                  {% render 'price',
-                    amount: stl_variant.price,
-                    compare_amount: stl_variant.compare_at_price,
-                    wrapper_class: 'shop-the-look__price-line price--feature',
-                    current_class: 'shop-the-look__price-value',
-                    compare_class: 'shop-the-look__price-compare',
-                    current_attrs: 'data-stl-price',
-                    compare_attrs: 'data-stl-compare',
-                    always_render_compare: true
-                  %}
-
-                  <form
-                    method="post"
-                    action="/cart/add"
-                    class="shop-the-look__form"
-                    data-stl-product-title="{{ stl_product.title | escape }}"
-                    data-stl-requires-choice="{% if stl_product.variants.size > 1 %}true{% else %}false{% endif %}"
-                  >
-                    {% if stl_product.variants.size > 1 %}
-                      <div class="shop-the-look__option-slot shop-the-look__option-slot--hidden">
-                        <label class="shop-the-look__label" for="{{ stl_variant_select_id }}">Choose option</label>
-                        <select class="shop-the-look__select" id="{{ stl_variant_select_id }}" data-stl-variant-select>
-                          {% for variant in stl_product.variants %}
-                            <option
-                              value="{{ variant.id }}"
-                              data-price="{{ variant.price | money }}"
-                              data-compare="{{ variant.compare_at_price | money }}"
-                              data-price-amount="{{ variant.price }}"
-                              data-compare-amount="{{ variant.compare_at_price }}"
-                              data-available="{{ variant.available }}"
-                              {% if variant.id == stl_variant.id %}selected{% endif %}
-                              {% unless variant.available %}disabled{% endunless %}
-                            >
-                              {{ variant.title }}
-                            </option>
-                          {% endfor %}
-                        </select>
-                      </div>
-                    {% endif %}
-
-                    <input type="hidden" name="id" value="{{ stl_variant.id }}" data-stl-variant-id>
-                    <button
-                      type="submit"
-                      class="btn btn--atc shop-the-look__add"
-                      data-stl-add-button
-                      {% if stl_product.variants.size > 1 %}
-                        {% unless stl_product.available %}disabled{% endunless %}
-                      {% else %}
-                        {% unless stl_variant.available %}disabled{% endunless %}
-                      {% endif %}
-                    >
-                      <span
-                        class="btn-icon"
-                        aria-hidden="true"
-                        {% if stl_product.variants.size > 1 %}
-                          hidden
-                        {% else %}
-                          {% unless stl_variant.available %}hidden{% endunless %}
-                        {% endif %}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                        </svg>
-                      </span>
-                      <span class="btn-text" data-stl-add-text>
-                        {% if stl_product.variants.size > 1 %}
-                          {% if stl_product.available %}Choose options{% else %}Sold out{% endif %}
-                        {% else %}
-                          {% if stl_variant.available %}Add to cart{% else %}Sold out{% endif %}
-                        {% endif %}
-                      </span>
-                    </button>
-                  </form>
-                </div>
-              </article>
-              {% assign stl_card_index = stl_card_index | plus: 1 %}
-            {% endif %}
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-  </section>
+  {% render 'home-shop-the-look-panel',
+    stl_title: stl_title,
+    stl_image: stl_image,
+    stl_products: stl_products,
+    stl_hotspots: stl_hotspots,
+    stl_index: 0,
+    stl_hidden: false,
+    stl_grouped: false,
+    stl_total_looks: 1,
+    stl_root_modifier: 'shop-the-look--home shop-the-look--product',
+    stl_use_editorial_title: true,
+    stl_title_prefix: stl_title_prefix,
+    stl_title_script: stl_title_script,
+    stl_render_group_attrs: false,
+    stl_show_title: true
+  %}
 {% endif %}
 
 <div class="product-lightbox" data-lightbox aria-hidden="true">

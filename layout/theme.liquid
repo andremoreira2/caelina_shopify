@@ -27,6 +27,17 @@
   <meta name="theme-color" content="#0b0b0f">
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{ page_title }}</title>
+  <style>
+    @font-face {
+      font-family: "Mayonice";
+      src:
+        url("{{ 'Mayonice.woff2' | asset_url }}") format("woff2"),
+        url("{{ 'Mayonice.ttf' | asset_url }}") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
   {{ 'styles.css' | asset_url | stylesheet_tag }}
   {{ content_for_header }}
 </head>

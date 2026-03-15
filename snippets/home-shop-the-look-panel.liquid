@@ -7,15 +7,23 @@
   {% endfor %}
 {% endif %}
 
+{% assign stl_has_panel_state = true %}
+{% if stl_render_group_attrs == false %}
+  {% assign stl_has_panel_state = false %}
+{% endif %}
+{% assign stl_root_modifier = stl_root_modifier | default: 'shop-the-look--home' %}
+
 {% if stl_image != blank and stl_product_count > 0 %}
   <section
-    class="shop-the-look shop-the-look--home{% if stl_grouped %} shop-the-look--grouped{% endif %}"
+    class="shop-the-look {{ stl_root_modifier }}{% if stl_grouped %} shop-the-look--grouped{% endif %}"
     data-shop-the-look
-    data-stl-look-panel
-    data-look-index="{{ stl_index }}"
-    id="home-stl-look-{{ stl_index }}"
-    aria-hidden="{% if stl_hidden %}true{% else %}false{% endif %}"
-    {% if stl_hidden %}hidden{% endif %}
+    {% if stl_has_panel_state %}
+      data-stl-look-panel
+      data-look-index="{{ stl_index }}"
+      id="home-stl-look-{{ stl_index }}"
+      aria-hidden="{% if stl_hidden %}true{% else %}false{% endif %}"
+      {% if stl_hidden %}hidden{% endif %}
+    {% endif %}
   >
     <div class="shop-the-look__inner">
       <div class="shop-the-look__layout">
@@ -64,11 +72,24 @@
               </button>
             </div>
           {% endif %}
+          {% if stl_show_title and stl_title != blank %}
+            <div class="shop-the-look__header">
+              {% if stl_use_editorial_title and stl_title_script != blank %}
+                <h2 class="home-collections__heading shop-the-look-group__heading shop-the-look__title">
+                  {{ stl_title_prefix | default: stl_title }}
+                  <span class="shop-the-look-group__heading-script">{{ stl_title_script }}</span>
+                </h2>
+                <div class="home-collections__line" aria-hidden="true"></div>
+              {% else %}
+                <h2 class="shop-the-look__title">{{ stl_title }}</h2>
+              {% endif %}
+            </div>
+          {% endif %}
           <div class="shop-the-look__media-wrap" style="--stl-image-ratio: {{ stl_image.aspect_ratio | default: 0.8571428571 }};">
             <img
               class="shop-the-look__image"
               src="{{ stl_image | image_url: width: 1800 }}"
-              alt="{{ stl_title | escape }}"
+              alt="{{ stl_image.alt | default: stl_title | escape }}"
               loading="lazy"
               width="{{ stl_image.width | default: 1200 }}"
               height="{{ stl_image.height | default: 1400 }}"
