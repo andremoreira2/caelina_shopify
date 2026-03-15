@@ -751,4 +751,50 @@
 
   document.addEventListener("shopify:section:load", syncAllLookGroups);
   document.addEventListener("shopify:section:reorder", syncAllLookGroups);
+
+  /* =========================================
+     Tooltip position: flip below for dots near the top
+     ========================================= */
+  const positionTooltips = () => {
+    document.querySelectorAll("[data-stl-dot]").forEach((dot) => {
+      const topValue = parseFloat(dot.style.top);
+      // If the dot is in the top ~25% of the image, flip tooltip below
+      if (Number.isFinite(topValue) && topValue < 25) {
+        dot.classList.add("shop-the-look__dot--tooltip-below");
+      } else {
+        dot.classList.remove("shop-the-look__dot--tooltip-below");
+      }
+    });
+  };
+  positionTooltips();
+
+  /* =========================================
+     Entrance animation (IntersectionObserver)
+     ========================================= */
+  const revealSections = document.querySelectorAll("[data-stl-section]");
+  if (revealSections.length && typeof IntersectionObserver !== "undefined") {
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) {
+      revealSections.forEach((section) => section.classList.add("is-revealed"));
+    } else {
+      const revealObserverOptions = {
+        // Trigger a bit later so the entrance animation is visible after the
+        // section has moved further into the viewport.
+        threshold: 0.22,
+        rootMargin: "0px 0px -14% 0px",
+      };
+      const revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-revealed");
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        },
+        revealObserverOptions
+      );
+      revealSections.forEach((section) => revealObserver.observe(section));
+    }
+  }
 })();
