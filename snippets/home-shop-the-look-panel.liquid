@@ -130,7 +130,6 @@
                       {% assign stl_dot_label = stl_hotspot.label %}
                     {% endif %}
                   {% endif %}
-                  {% assign stl_dot_number = stl_dot_index | plus: 1 %}
                   {% assign stl_dot_variant = stl_product.selected_or_first_available_variant | default: stl_product.variants.first %}
                   <button
                     class="shop-the-look__dot{% if stl_dot_index == 0 %} is-active{% endif %}"
@@ -141,7 +140,6 @@
                     aria-pressed="{% if stl_dot_index == 0 %}true{% else %}false{% endif %}"
                     style="left: {{ stl_dot_x | at_least: 0 | at_most: 100 }}%; top: {{ stl_dot_y | at_least: 0 | at_most: 100 }}%;"
                   >
-                    <span class="shop-the-look__dot-num" aria-hidden="true">{{ stl_dot_number }}</span>
                     <span class="shop-the-look__dot-tooltip" aria-hidden="true" data-stl-tooltip>
                       <span class="shop-the-look__dot-tooltip-name">{{ stl_product.title | truncate: 32 }}</span>
                       <span class="shop-the-look__dot-tooltip-price">{{ stl_dot_variant.price | money }}</span>
@@ -166,13 +164,11 @@
               {% assign stl_product_image = stl_product.featured_image | default: stl_product.images.first %}
               {% assign stl_product_image_count = stl_product.images | size %}
               {% capture stl_variant_select_id %}homeStlVariant-{{ stl_index }}-{{ stl_card_index }}{% endcapture %}
-              {% assign stl_card_number = stl_card_index | plus: 1 %}
               <article
                 class="shop-the-look__card{% if stl_active %} is-active{% endif %}"
                 data-stl-card
                 data-index="{{ stl_card_index }}"
               >
-                <span class="shop-the-look__card-badge" aria-hidden="true">{{ stl_card_number }}</span>
                 <div class="shop-the-look__card-visual">
                   <a class="shop-the-look__card-media" href="{{ stl_product.url }}">
                     {% if stl_product_image != blank %}

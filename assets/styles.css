@@ -4013,10 +4013,6 @@ body.cart-drawer-open .product-floating-atc {
   border: 2px solid rgba(255, 255, 255, 0.92);
   border-radius: 999px;
   background: rgba(17, 14, 10, 0.78);
-  color: #ffffff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
   pointer-events: auto;
   overflow: visible;
@@ -4068,17 +4064,6 @@ body.cart-drawer-open .product-floating-atc {
 
 .shop-the-look__dot.is-active::after {
   animation-delay: 1.1s;
-}
-
-/* Numbered dot label */
-.shop-the-look__dot-num {
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0;
-  font-family: 'Avenir Next', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  position: relative;
-  z-index: 1;
 }
 
 /* Floating tooltip */
@@ -4222,34 +4207,6 @@ body.cart-drawer-open .product-floating-atc {
   .shop-the-look__dot.is-active::after {
     animation: none;
   }
-}
-
-/* ---- Card number badge ---- */
-.shop-the-look__card-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: rgba(17, 14, 10, 0.82);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: 'Avenir Next', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  opacity: 0;
-  transform: scale(0.7);
-  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-}
-
-.shop-the-look__card.is-active .shop-the-look__card-badge {
-  opacity: 1;
-  transform: scale(1);
 }
 
 .shop-the-look__panel {
@@ -4727,6 +4684,10 @@ body.cart-drawer-open .product-floating-atc {
     scroll-snap-stop: always;
   }
 
+  .shop-the-look__card::after {
+    display: none;
+  }
+
   /* Sticky Scroll Logic for Mobile */
   .shop-the-look--sticky-enabled {
     /* Height will be set by JS */
@@ -4832,6 +4793,7 @@ body.cart-drawer-open .product-floating-atc {
   }
 
   .shop-the-look--home.shop-the-look--sticky-enabled {
+    --stl-mobile-bottom-gap: 0px;
     --stl-mobile-panel-height: clamp(226px, 31dvh, 268px);
     --stl-mobile-card-width: min(72vw, 286px);
   }
@@ -4930,22 +4892,9 @@ body.cart-drawer-open .product-floating-atc {
     height: 24px;
   }
 
-  .shop-the-look__dot-num {
-    font-size: 9px;
-  }
-
   /* Hide floating tooltips on mobile — too cramped */
   .shop-the-look__dot-tooltip {
     display: none;
-  }
-
-  /* Card badges slightly smaller on mobile */
-  .shop-the-look__card-badge {
-    width: 22px;
-    height: 22px;
-    font-size: 10px;
-    top: 8px;
-    left: 8px;
   }
 
   /* Entrance animation: vertical on mobile */
