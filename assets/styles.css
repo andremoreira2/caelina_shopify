@@ -4691,7 +4691,7 @@ body.cart-drawer-open .product-floating-atc {
   /* Sticky Scroll Logic for Mobile */
   .shop-the-look--sticky-enabled {
     /* Height will be set by JS */
-    min-height: 100dvh;
+    min-height: var(--stl-mobile-viewport-height, 100svh);
     --stl-mobile-bottom-gap: 10px;
     --stl-mobile-media-product-gap: 10px;
   }
@@ -4699,7 +4699,7 @@ body.cart-drawer-open .product-floating-atc {
   .shop-the-look--sticky-enabled .shop-the-look__inner {
     position: sticky;
     top: var(--site-header-offset, 0px);
-    height: calc(100dvh - var(--site-header-offset, 0px));
+    height: calc(var(--stl-mobile-viewport-height, 100svh) - var(--site-header-offset, 0px));
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -4710,13 +4710,13 @@ body.cart-drawer-open .product-floating-atc {
     display: flex;
     flex-direction: column;
     height: 100%;
-    max-height: calc(100dvh - var(--site-header-offset, 0px));
+    max-height: calc(var(--stl-mobile-viewport-height, 100svh) - var(--site-header-offset, 0px));
     gap: var(--stl-mobile-media-product-gap);
   }
 
   .shop-the-look--sticky-enabled .shop-the-look__media-column {
     flex: 0 0 auto;
-    max-height: 46dvh;
+    max-height: calc(var(--stl-mobile-viewport-height, 100svh) * 0.46);
     /* Slightly smaller image area so title stays visible on mobile */
     width: 100%;
     display: flex;
@@ -4794,7 +4794,7 @@ body.cart-drawer-open .product-floating-atc {
 
   .shop-the-look--home.shop-the-look--sticky-enabled {
     --stl-mobile-bottom-gap: 0px;
-    --stl-mobile-panel-height: clamp(226px, 31dvh, 268px);
+    --stl-mobile-panel-height: clamp(226px, calc(var(--stl-mobile-viewport-height, 100svh) * 0.31), 268px);
     --stl-mobile-card-width: min(72vw, 286px);
   }
 

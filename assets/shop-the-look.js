@@ -180,6 +180,35 @@
     const mobileLayout = window.matchMedia(`(max-width: ${STL_MOBILE_BREAKPOINT}px)`);
     let lastTouchY = 0;
     let hasTouchTracking = false;
+    root._mobileViewportWidth = 0;
+    root._mobileViewportHeight = 0;
+
+    const resetLockedMobileViewportHeight = () => {
+      root._mobileViewportWidth = 0;
+      root._mobileViewportHeight = 0;
+      root.style.removeProperty("--stl-mobile-viewport-height");
+    };
+
+    const syncLockedMobileViewportHeight = () => {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const widthChanged = !Number.isFinite(root._mobileViewportWidth)
+        || root._mobileViewportWidth <= 0
+        || Math.abs(viewportWidth - root._mobileViewportWidth) > 2;
+
+      if (widthChanged || !Number.isFinite(root._mobileViewportHeight) || root._mobileViewportHeight <= 0) {
+        root._mobileViewportHeight = viewportHeight;
+      } else {
+        // Keep the tallest viewport seen for this width so iOS browser chrome
+        // reappearing does not compress the sticky media area mid-scroll.
+        root._mobileViewportHeight = Math.max(root._mobileViewportHeight, viewportHeight);
+      }
+
+      root._mobileViewportWidth = viewportWidth;
+      root.style.setProperty("--stl-mobile-viewport-height", `${root._mobileViewportHeight}px`);
+
+      return root._mobileViewportHeight;
+    };
 
     const galleryCards = cards
       .map((card) => {
@@ -572,12 +601,14 @@
         root.style.height = "";
         panel.style.transform = "";
         root.style.removeProperty("--stl-title-center-shift");
+        resetLockedMobileViewportHeight();
         root._mobileScrollDistance = 0;
         root._mobileFirstCardCenter = 0;
         return;
       }
 
       removeMobileScrollHandler();
+      const viewportHeight = syncLockedMobileViewportHeight();
 
       // 1. Reset sticky class before measuring
       root.classList.remove("shop-the-look--sticky-enabled");
@@ -638,7 +669,6 @@
       // height = viewport height (sticky "screen") + scrollable distance
       // As user scrolls through scrollableDistance px vertically,
       // we translate scrollableDistance px horizontally.
-      const viewportHeight = window.innerHeight;
       root.style.height = `${viewportHeight + scrollableDistance}px`;
 
       // 4. Build scroll handler — capture fresh scrollableDistance in closure
