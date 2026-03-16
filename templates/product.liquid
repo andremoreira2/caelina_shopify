@@ -6,21 +6,13 @@
     {% assign image_remainder = image_count | modulo: 2 %}
     <div class="product-gallery-grid{% if image_count > 1 and image_remainder == 1 %} product-gallery-grid--odd{% endif %}">
       {% for media in gallery_images %}
-        <button
-          class="product-gallery-grid__item"
-          type="button"
-          data-gallery-image
-          data-index="{{ forloop.index0 }}"
-          data-zoom="{{ media | image_url: width: 2200 }}"
-          data-alt="{{ media.alt | escape }}"
-          aria-label="Open image {{ forloop.index }}"
-        >
+        <div class="product-gallery-grid__item">
           <img
             src="{{ media | image_url: width: 1200 }}"
             alt="{{ media.alt | escape }}"
             loading="{% if forloop.index0 < 2 %}eager{% else %}lazy{% endif %}"
           >
-        </button>
+        </div>
       {% endfor %}
     </div>
     {% if image_count == 0 %}
@@ -318,74 +310,9 @@
   %}
 {% endif %}
 
-<div class="product-lightbox" data-lightbox aria-hidden="true">
-  <button class="product-lightbox__close" type="button" data-lightbox-close aria-label="Close image">✕</button>
-  <button class="product-lightbox__nav product-lightbox__nav--prev" type="button" data-lightbox-prev aria-label="Previous image">‹</button>
-  <img class="product-lightbox__image" data-lightbox-image alt="">
-  <button class="product-lightbox__nav product-lightbox__nav--next" type="button" data-lightbox-next aria-label="Next image">›</button>
-</div>
-
 <script>
   (() => {
     const variants = {{ product.variants | json }};
-    const galleryImages = [...document.querySelectorAll("[data-gallery-image]")];
-    const gallerySources = galleryImages.map((item) => {
-      const img = item.querySelector("img");
-      return {
-        zoom: item.dataset.zoom || img?.src || "",
-        alt: item.dataset.alt || img?.alt || "",
-      };
-    });
-
-    const lightbox = document.querySelector("[data-lightbox]");
-    const lightboxImg = lightbox?.querySelector("[data-lightbox-image]");
-    const lightboxClose = lightbox?.querySelector("[data-lightbox-close]");
-    const lightboxPrev = lightbox?.querySelector("[data-lightbox-prev]");
-    const lightboxNext = lightbox?.querySelector("[data-lightbox-next]");
-    if (lightbox && lightboxImg && gallerySources.length > 0) {
-      let currentIndex = 0;
-
-      const showAt = (idx) => {
-        currentIndex = (idx + gallerySources.length) % gallerySources.length;
-        const next = gallerySources[currentIndex];
-        lightboxImg.src = next.zoom;
-        lightboxImg.alt = next.alt;
-      };
-
-      const openLightbox = (index) => {
-        showAt(index);
-        lightbox.classList.add("is-open");
-        lightbox.setAttribute("aria-hidden", "false");
-      };
-      const closeLightbox = () => {
-        lightbox.classList.remove("is-open");
-        lightbox.setAttribute("aria-hidden", "true");
-      };
-
-      galleryImages.forEach((item, index) => {
-        item.addEventListener("click", () => openLightbox(index));
-      });
-
-      lightbox.addEventListener("click", (e) => {
-        if (e.target === lightbox) closeLightbox();
-      });
-      lightboxClose.addEventListener("click", closeLightbox);
-      lightboxPrev?.addEventListener("click", (e) => {
-        e.stopPropagation();
-        showAt(currentIndex - 1);
-      });
-      lightboxNext?.addEventListener("click", (e) => {
-        e.stopPropagation();
-        showAt(currentIndex + 1);
-      });
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeLightbox();
-        if (lightbox.classList.contains("is-open")) {
-          if (e.key === "ArrowLeft") showAt(currentIndex - 1);
-          if (e.key === "ArrowRight") showAt(currentIndex + 1);
-        }
-      });
-    }
 
     const variantSelect = document.getElementById("variantSelect");
     const productForm = document.querySelector(".product-form");
