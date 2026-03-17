@@ -10,6 +10,8 @@
 {
   "current": {
     "accent_color": "#ffffff",
+    "home_hero_video_primary_url": "https://cdn.shopify.com/videos/c/o/v/693ebb9b81594aeab755f32cba0ec8a8.mp4",
+    "home_hero_video_secondary_url": "https://cdn.shopify.com/videos/c/o/v/cd7e30225724449c9a6523df4f7331e2.mp4",
     "home_stl_look_handles": "look-4\nhome-page-shop-the-look\ntest-set-name",
     "content_for_index": []
   },
