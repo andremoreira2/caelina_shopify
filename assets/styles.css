@@ -3999,9 +3999,9 @@ body.cart-drawer-open .product-floating-atc {
   position: relative;
   width: 100%;
   aspect-ratio: var(--stl-frame-ratio, 0.8571428571);
-  /* overflow:hidden removed — it clips box-shadow on mobile when a parent has overflow:hidden.
-     Border-radius clipping is handled by the image and dots overlay directly. */
-  overflow: hidden;
+  /* Keep the image rounded on the img itself so hotspot tooltips can extend
+     outside the frame without getting clipped. */
+  overflow: visible;
   background: #f3efe9;
   border-radius: 6px;
   border: 1px solid rgba(17, 17, 17, 0.08);

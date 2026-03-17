@@ -4,6 +4,9 @@
 
   const DESKTOP_CARD_FOCUS_RATIO = 0.32;
   const STL_MOBILE_BREAKPOINT = 820;
+  const STL_SCROLL_LOCK_TOLERANCE = 6;
+  const STL_SCROLL_LOCK_IDLE_MS = 140;
+  const STL_SCROLL_LOCK_MAX_MS = 2000;
 
   const toNumber = (value) => {
     const parsed = Number(value);
@@ -179,6 +182,7 @@
 
     let activeIndex = -1;
     let rafPending = false;
+    let pendingScrollTarget = null;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobileLayout = window.matchMedia(`(max-width: ${STL_MOBILE_BREAKPOINT}px)`);
     let lastTouchY = 0;
@@ -325,9 +329,86 @@
     const findCardByIndex = (nextIndex) =>
       cards.find((card) => toNumber(card.dataset.index) === nextIndex) || null;
 
+    const getMaxWindowScroll = () => {
+      const scrollingElement = document.scrollingElement || document.documentElement;
+      return Math.max(0, scrollingElement.scrollHeight - window.innerHeight);
+    };
+
+    const getCurrentScrollPosition = (surface) => {
+      if (surface === "panel" && panel) {
+        return panel.scrollLeft;
+      }
+
+      return window.scrollY;
+    };
+
+    const clearPendingScrollTarget = (syncToScroll = false) => {
+      pendingScrollTarget = null;
+
+      if (syncToScroll) {
+        setActive(getNearestCardIndex());
+      }
+    };
+
+    const lockActiveDuringScroll = (nextIndex, targetScroll) => {
+      if (!targetScroll) {
+        clearPendingScrollTarget();
+        return;
+      }
+
+      const clampedPosition = clamp(
+        targetScroll.position,
+        0,
+        targetScroll.surface === "panel" ? getPanelMaxScroll() : getMaxWindowScroll()
+      );
+      const currentPosition = getCurrentScrollPosition(targetScroll.surface);
+
+      if (Math.abs(currentPosition - clampedPosition) <= STL_SCROLL_LOCK_TOLERANCE) {
+        clearPendingScrollTarget();
+        return;
+      }
+
+      pendingScrollTarget = {
+        index: nextIndex,
+        surface: targetScroll.surface,
+        position: clampedPosition,
+        startedAt: performance.now(),
+        lastPosition: currentPosition,
+        lastMovedAt: performance.now(),
+      };
+    };
+
+    const syncPendingScrollTarget = () => {
+      if (!pendingScrollTarget) return false;
+
+      const currentPosition = getCurrentScrollPosition(pendingScrollTarget.surface);
+      const now = performance.now();
+
+      if (Math.abs(currentPosition - pendingScrollTarget.lastPosition) > 0.5) {
+        pendingScrollTarget.lastPosition = currentPosition;
+        pendingScrollTarget.lastMovedAt = now;
+      }
+
+      if (activeIndex !== pendingScrollTarget.index) {
+        setActive(pendingScrollTarget.index);
+      }
+
+      const reachedTarget = Math.abs(currentPosition - pendingScrollTarget.position) <= STL_SCROLL_LOCK_TOLERANCE;
+      const isIdle = now - pendingScrollTarget.lastMovedAt >= STL_SCROLL_LOCK_IDLE_MS;
+      const hasExpired = now - pendingScrollTarget.startedAt >= STL_SCROLL_LOCK_MAX_MS;
+
+      if (!reachedTarget && !isIdle && !hasExpired) {
+        return true;
+      }
+
+      const shouldSyncToScroll = !reachedTarget;
+      clearPendingScrollTarget(shouldSyncToScroll);
+      return true;
+    };
+
     const scrollToCard = (nextIndex) => {
       const target = findCardByIndex(nextIndex);
-      if (!target) return;
+      if (!target) return null;
 
       if (mobileLayout.matches && panel) {
         if (root.classList.contains("shop-the-look--sticky-enabled")) {
@@ -338,38 +419,89 @@
             : cards[0].offsetLeft + (cards[0].offsetWidth / 2);
           const targetCenter = target.offsetLeft + (target.offsetWidth / 2);
           const targetProgress = Math.max(0, Math.min(maxDistance, targetCenter - firstCardCenter));
-          const targetScrollY = rootTop + targetProgress;
+          const targetScrollY = clamp(rootTop + targetProgress, 0, getMaxWindowScroll());
+
+          // If scroll would go down but this card is already the naturally active one, skip
+          if (targetScrollY > window.scrollY) {
+            const currentOffset = Math.max(0, Math.min(maxDistance, -root.getBoundingClientRect().top));
+            const currentCenter = firstCardCenter + currentOffset;
+            let nearestIndex = -1;
+            let bestDiff = Infinity;
+            cards.forEach((card) => {
+              const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
+              const diff = Math.abs(cardCenter - currentCenter);
+              if (diff < bestDiff) {
+                bestDiff = diff;
+                nearestIndex = toNumber(card.dataset.index);
+              }
+            });
+            if (nearestIndex === nextIndex) return null;
+          }
 
           window.scrollTo({
-            top: Math.max(0, targetScrollY),
+            top: targetScrollY,
             behavior: prefersReducedMotion ? "auto" : "smooth",
           });
+          return {
+            surface: "window",
+            position: targetScrollY,
+          };
         } else {
           // Fallback if sticky disabled (content too small)
-          const targetLeft = panel.scrollLeft + target.getBoundingClientRect().left - panel.getBoundingClientRect().left;
+          const targetLeft = clamp(
+            panel.scrollLeft + target.getBoundingClientRect().left - panel.getBoundingClientRect().left,
+            0,
+            getPanelMaxScroll()
+          );
           panel.scrollTo({
-            left: Math.max(0, targetLeft),
+            left: targetLeft,
             behavior: prefersReducedMotion ? "auto" : "smooth",
           });
+          return {
+            surface: "panel",
+            position: targetLeft,
+          };
         }
-        return;
       }
 
+      const cardRect = target.getBoundingClientRect();
       const boundsRect = scrollBoundsRoot.getBoundingClientRect();
       const maxScrollTop = Math.max(0, window.scrollY + boundsRect.bottom - window.innerHeight);
-      const targetTop = window.scrollY
-        + target.getBoundingClientRect().top
-        - (window.innerHeight * DESKTOP_CARD_FOCUS_RATIO);
+
+      let targetTop;
+      if (cardRect.bottom > window.innerHeight) {
+        // Card is below the viewport bottom — scroll just enough to reveal it
+        targetTop = clamp(window.scrollY + cardRect.bottom - window.innerHeight, 0, maxScrollTop);
+      } else {
+        // Card is fully or partially visible — scroll up to focus position
+        targetTop = clamp(
+          window.scrollY + cardRect.top - (window.innerHeight * DESKTOP_CARD_FOCUS_RATIO),
+          0,
+          maxScrollTop
+        );
+        // If the computed target would scroll DOWN and the card is already fully visible, skip
+        if (targetTop > window.scrollY && cardRect.top >= 0) {
+          return null;
+        }
+      }
 
       window.scrollTo({
-        top: clamp(targetTop, 0, maxScrollTop),
+        top: targetTop,
         behavior: prefersReducedMotion ? "auto" : "smooth",
       });
+      return {
+        surface: "window",
+        position: targetTop,
+      };
     };
 
     const syncActiveFromScroll = () => {
       const sectionRect = root.getBoundingClientRect();
       if (sectionRect.bottom <= 0 || sectionRect.top >= window.innerHeight) return;
+
+      if (syncPendingScrollTarget()) {
+        return;
+      }
 
       // If sticky mode, we calculate generic active index based on transform/scroll
       if (mobileLayout.matches && root.classList.contains("shop-the-look--sticky-enabled")) {
@@ -472,9 +604,36 @@
 
     dots.forEach((dot) => {
       const index = toNumber(dot.dataset.index);
+      let preClickScrollY = null;
+      dot.addEventListener("pointerdown", () => {
+        preClickScrollY = window.scrollY;
+      }, { passive: true });
       const activateFromDot = () => {
+        // Use pointerdown scroll (before browser focus-scroll) if available
+        const savedScrollY = preClickScrollY ?? window.scrollY;
+        preClickScrollY = null;
+        // Check before setActive mutates the DOM
+        const wasAlreadyActive = dot.classList.contains("is-active");
         setActive(index);
-        scrollToCard(index);
+        const scrollTarget = scrollToCard(index);
+
+        let effectiveTarget = scrollTarget;
+        if (wasAlreadyActive && scrollTarget && scrollTarget.position >= savedScrollY) {
+          // Dot was already active — don't allow downward scroll (it's unintended position drift,
+          // not real navigation). Cancel the scroll scrollToCard just initiated.
+          window.scrollTo({ top: savedScrollY, behavior: "instant" });
+          effectiveTarget = null;
+        }
+
+        lockActiveDuringScroll(index, effectiveTarget);
+        if (!effectiveTarget) {
+          // Restore scroll if any unintended scroll happened (layout shift, browser focus, etc.)
+          requestAnimationFrame(() => {
+            if (window.scrollY !== savedScrollY) {
+              window.scrollTo({ top: savedScrollY, behavior: "instant" });
+            }
+          });
+        }
       };
       dot.addEventListener("click", activateFromDot);
       dot.addEventListener("keydown", (event) => {
@@ -607,6 +766,8 @@
     };
 
     const initMobileScroll = () => {
+      clearPendingScrollTarget();
+
       if (!mobileLayout.matches) {
         removeMobileScrollHandler();
         root.classList.remove("shop-the-look--sticky-enabled");
@@ -666,9 +827,9 @@
         }, 0);
         const maxMediaHeight = Math.floor(
           inner.getBoundingClientRect().height
-            - getOuterHeight(panel)
-            - mediaFixedHeight
-            - layoutGap
+          - getOuterHeight(panel)
+          - mediaFixedHeight
+          - layoutGap
         );
 
         if (maxMediaHeight > 0) {
