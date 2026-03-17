@@ -612,15 +612,12 @@
         // Capture scroll before any browser focus behaviour (pointerdown fires before focus)
         const savedScrollY = preClickScrollY ?? window.scrollY;
         preClickScrollY = null;
-        const wasAlreadyActive = dot.classList.contains("is-active");
-        setActive(index);
 
-        // For mobile sticky + already-active dot: compute the target scroll position
-        // WITHOUT calling window.scrollTo first. On iOS, calling scrollTo then immediately
-        // cancelling it with another scrollTo is unreliable — the cancel gets ignored.
-        // So we decide upfront whether to scroll at all.
-        if (wasAlreadyActive && mobileLayout.matches && panel &&
-            root.classList.contains("shop-the-look--sticky-enabled")) {
+        // Compute BEFORE setActive to avoid layout shift from CSS class changes corrupting
+        // getBoundingClientRect values. Also avoids relying on is-active class which is
+        // 1 rAF behind actual scroll position.
+        let skipDownwardScroll = false;
+        if (mobileLayout.matches && panel && root.classList.contains("shop-the-look--sticky-enabled")) {
           const target = findCardByIndex(index);
           if (target) {
             const rootTop = window.scrollY + root.getBoundingClientRect().top;
@@ -633,16 +630,29 @@
             const targetScrollY = clamp(rootTop + targetProgress, 0, getMaxWindowScroll());
 
             if (targetScrollY >= savedScrollY) {
-              // Would scroll down (or stay) — skip entirely, restore if anything moved
-              lockActiveDuringScroll(index, null);
-              requestAnimationFrame(() => {
-                if (window.scrollY !== savedScrollY) {
-                  window.scroll(window.scrollX, savedScrollY);
-                }
+              // Would scroll down — check if this card is already the nearest active one
+              const currentOffset = Math.max(0, Math.min(maxDistance, -root.getBoundingClientRect().top));
+              const currentCenter = firstCardCenter + currentOffset;
+              let nearestIndex = -1;
+              let bestDiff = Infinity;
+              cards.forEach((card) => {
+                const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
+                const diff = Math.abs(cardCenter - currentCenter);
+                if (diff < bestDiff) { bestDiff = diff; nearestIndex = toNumber(card.dataset.index); }
               });
-              return;
+              if (nearestIndex === index) skipDownwardScroll = true;
             }
           }
+        }
+
+        setActive(index);
+
+        if (skipDownwardScroll) {
+          lockActiveDuringScroll(index, null);
+          requestAnimationFrame(() => {
+            if (window.scrollY !== savedScrollY) window.scroll(window.scrollX, savedScrollY);
+          });
+          return;
         }
 
         const scrollTarget = scrollToCard(index);
