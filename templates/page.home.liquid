@@ -52,9 +52,9 @@
 
             {% if jewelry_collection %}
               {% assign card_url = jewelry_collection.url %}
-              {% assign card_image = jewelry_collection.featured_image %}
+              {% assign card_image = jewelry_collection.image | default: jewelry_collection.featured_image %}
               {% if card_image == blank and jewelry_collection.products.first %}
-                {% assign card_image = jewelry_collection.products.first.featured_image %}
+                {% assign card_image = jewelry_collection.products.first.featured_media.preview_image | default: jewelry_collection.products.first.featured_image %}
               {% endif %}
             {% endif %}
 
