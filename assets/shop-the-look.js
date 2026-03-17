@@ -609,28 +609,49 @@
         preClickScrollY = window.scrollY;
       }, { passive: true });
       const activateFromDot = () => {
-        // Use pointerdown scroll (before browser focus-scroll) if available
+        // Capture scroll before any browser focus behaviour (pointerdown fires before focus)
         const savedScrollY = preClickScrollY ?? window.scrollY;
         preClickScrollY = null;
-        // Check before setActive mutates the DOM
         const wasAlreadyActive = dot.classList.contains("is-active");
         setActive(index);
-        const scrollTarget = scrollToCard(index);
 
-        let effectiveTarget = scrollTarget;
-        if (wasAlreadyActive && scrollTarget && scrollTarget.position >= savedScrollY) {
-          // Dot was already active — don't allow downward scroll (it's unintended position drift,
-          // not real navigation). Cancel the scroll scrollToCard just initiated.
-          window.scrollTo({ top: savedScrollY, behavior: "instant" });
-          effectiveTarget = null;
+        // For mobile sticky + already-active dot: compute the target scroll position
+        // WITHOUT calling window.scrollTo first. On iOS, calling scrollTo then immediately
+        // cancelling it with another scrollTo is unreliable — the cancel gets ignored.
+        // So we decide upfront whether to scroll at all.
+        if (wasAlreadyActive && mobileLayout.matches && panel &&
+            root.classList.contains("shop-the-look--sticky-enabled")) {
+          const target = findCardByIndex(index);
+          if (target) {
+            const rootTop = window.scrollY + root.getBoundingClientRect().top;
+            const maxDistance = Number.isFinite(root._mobileScrollDistance) ? root._mobileScrollDistance : 0;
+            const firstCardCenter = Number.isFinite(root._mobileFirstCardCenter)
+              ? root._mobileFirstCardCenter
+              : cards[0].offsetLeft + (cards[0].offsetWidth / 2);
+            const targetCenter = target.offsetLeft + (target.offsetWidth / 2);
+            const targetProgress = Math.max(0, Math.min(maxDistance, targetCenter - firstCardCenter));
+            const targetScrollY = clamp(rootTop + targetProgress, 0, getMaxWindowScroll());
+
+            if (targetScrollY >= savedScrollY) {
+              // Would scroll down (or stay) — skip entirely, restore if anything moved
+              lockActiveDuringScroll(index, null);
+              requestAnimationFrame(() => {
+                if (window.scrollY !== savedScrollY) {
+                  window.scroll(window.scrollX, savedScrollY);
+                }
+              });
+              return;
+            }
+          }
         }
 
-        lockActiveDuringScroll(index, effectiveTarget);
-        if (!effectiveTarget) {
-          // Restore scroll if any unintended scroll happened (layout shift, browser focus, etc.)
+        const scrollTarget = scrollToCard(index);
+        lockActiveDuringScroll(index, scrollTarget);
+        if (!scrollTarget) {
+          // Restore scroll if any unintended movement happened (layout shift, browser focus, etc.)
           requestAnimationFrame(() => {
             if (window.scrollY !== savedScrollY) {
-              window.scrollTo({ top: savedScrollY, behavior: "instant" });
+              window.scroll(window.scrollX, savedScrollY);
             }
           });
         }
