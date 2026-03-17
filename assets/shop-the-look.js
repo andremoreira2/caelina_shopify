@@ -4,6 +4,7 @@
 
   const DESKTOP_CARD_FOCUS_RATIO = 0.32;
   const STL_MOBILE_BREAKPOINT = 820;
+  const STL_MOBILE_STICKY_END_BUFFER = 12;
   const STL_SCROLL_LOCK_TOLERANCE = 6;
   const STL_SCROLL_LOCK_IDLE_MS = 140;
   const STL_SCROLL_LOCK_MAX_MS = 2000;
@@ -342,6 +343,47 @@
       return window.scrollY;
     };
 
+    const restoreScrollPosition = (savedScrollY) => {
+      window.requestAnimationFrame(() => {
+        if (window.scrollY !== savedScrollY) {
+          window.scroll(window.scrollX, savedScrollY);
+        }
+      });
+    };
+
+    const getStickyScrollMetrics = () => ({
+      rootTop: window.scrollY + root.getBoundingClientRect().top,
+      maxDistance: Number.isFinite(root._mobileScrollDistance) ? root._mobileScrollDistance : 0,
+      firstCardCenter: Number.isFinite(root._mobileFirstCardCenter)
+        ? root._mobileFirstCardCenter
+        : cards[0].offsetLeft + (cards[0].offsetWidth / 2),
+    });
+
+    const getNearestStickyCardIndex = (currentOffset, maxDistance = root._mobileScrollDistance) => {
+      const firstCardCenter = Number.isFinite(root._mobileFirstCardCenter)
+        ? root._mobileFirstCardCenter
+        : cards[0].offsetLeft + (cards[0].offsetWidth / 2);
+      const clampedOffset = Math.max(
+        0,
+        Math.min(Number.isFinite(maxDistance) ? maxDistance : Infinity, currentOffset)
+      );
+      const targetCenter = firstCardCenter + clampedOffset;
+
+      let bestIndex = -1;
+      let bestDiff = Infinity;
+
+      cards.forEach((card) => {
+        const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
+        const diff = Math.abs(cardCenter - targetCenter);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          bestIndex = toNumber(card.dataset.index);
+        }
+      });
+
+      return bestIndex;
+    };
+
     const clearPendingScrollTarget = (syncToScroll = false) => {
       pendingScrollTarget = null;
 
@@ -412,30 +454,14 @@
 
       if (mobileLayout.matches && panel) {
         if (root.classList.contains("shop-the-look--sticky-enabled")) {
-          const rootTop = window.scrollY + root.getBoundingClientRect().top;
-          const maxDistance = Number.isFinite(root._mobileScrollDistance) ? root._mobileScrollDistance : 0;
-          const firstCardCenter = Number.isFinite(root._mobileFirstCardCenter)
-            ? root._mobileFirstCardCenter
-            : cards[0].offsetLeft + (cards[0].offsetWidth / 2);
+          const { rootTop, maxDistance, firstCardCenter } = getStickyScrollMetrics();
           const targetCenter = target.offsetLeft + (target.offsetWidth / 2);
           const targetProgress = Math.max(0, Math.min(maxDistance, targetCenter - firstCardCenter));
           const targetScrollY = clamp(rootTop + targetProgress, 0, getMaxWindowScroll());
 
-          // If scroll would go down but this card is already the naturally active one, skip
           if (targetScrollY > window.scrollY) {
             const currentOffset = Math.max(0, Math.min(maxDistance, -root.getBoundingClientRect().top));
-            const currentCenter = firstCardCenter + currentOffset;
-            let nearestIndex = -1;
-            let bestDiff = Infinity;
-            cards.forEach((card) => {
-              const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
-              const diff = Math.abs(cardCenter - currentCenter);
-              if (diff < bestDiff) {
-                bestDiff = diff;
-                nearestIndex = toNumber(card.dataset.index);
-              }
-            });
-            if (nearestIndex === nextIndex) return null;
+            if (getNearestStickyCardIndex(currentOffset, maxDistance) === nextIndex) return null;
           }
 
           window.scrollTo({
@@ -503,30 +529,12 @@
         return;
       }
 
-      // If sticky mode, we calculate generic active index based on transform/scroll
       if (mobileLayout.matches && root.classList.contains("shop-the-look--sticky-enabled")) {
         const maxStickyDistance = Number.isFinite(root._mobileScrollDistance)
           ? root._mobileScrollDistance
           : Infinity;
-        // Calculate based on current translate
-        // currentOffset = -rect.top basically
         const currentOffset = Math.max(0, Math.min(maxStickyDistance, -sectionRect.top));
-        const firstCardCenter = Number.isFinite(root._mobileFirstCardCenter)
-          ? root._mobileFirstCardCenter
-          : cards[0].offsetLeft + (cards[0].offsetWidth / 2);
-        const targetCenter = firstCardCenter + currentOffset;
-
-        let bestIndex = -1;
-        let bestDiff = Infinity;
-
-        cards.forEach((card) => {
-          const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
-          const diff = Math.abs(cardCenter - targetCenter);
-          if (diff < bestDiff) {
-            bestDiff = diff;
-            bestIndex = toNumber(card.dataset.index);
-          }
-        });
+        const bestIndex = getNearestStickyCardIndex(currentOffset, maxStickyDistance);
 
         if (bestIndex >= 0) setActive(bestIndex);
         return;
@@ -553,7 +561,7 @@
 
     const onTouchMove = (event) => {
       if (!mobileLayout.matches || !panel) return;
-      if (root.classList.contains("shop-the-look--sticky-enabled")) return; // Disable interference
+      if (root.classList.contains("shop-the-look--sticky-enabled")) return;
 
       if (!event.touches || event.touches.length !== 1) return;
       if (!hasTouchTracking) return;
@@ -578,7 +586,7 @@
 
     const onWheel = (event) => {
       if (!mobileLayout.matches || !panel) return;
-      if (root.classList.contains("shop-the-look--sticky-enabled")) return; // Disable interference
+      if (root.classList.contains("shop-the-look--sticky-enabled")) return;
 
       const maxScroll = getPanelMaxScroll();
       if (maxScroll <= 0) return;
@@ -609,38 +617,23 @@
         preClickScrollY = window.scrollY;
       }, { passive: true });
       const activateFromDot = () => {
-        // Capture scroll before any browser focus behaviour (pointerdown fires before focus)
         const savedScrollY = preClickScrollY ?? window.scrollY;
         preClickScrollY = null;
 
-        // Compute BEFORE setActive to avoid layout shift from CSS class changes corrupting
-        // getBoundingClientRect values. Also avoids relying on is-active class which is
-        // 1 rAF behind actual scroll position.
         let skipDownwardScroll = false;
         if (mobileLayout.matches && panel && root.classList.contains("shop-the-look--sticky-enabled")) {
           const target = findCardByIndex(index);
           if (target) {
-            const rootTop = window.scrollY + root.getBoundingClientRect().top;
-            const maxDistance = Number.isFinite(root._mobileScrollDistance) ? root._mobileScrollDistance : 0;
-            const firstCardCenter = Number.isFinite(root._mobileFirstCardCenter)
-              ? root._mobileFirstCardCenter
-              : cards[0].offsetLeft + (cards[0].offsetWidth / 2);
+            const { rootTop, maxDistance, firstCardCenter } = getStickyScrollMetrics();
             const targetCenter = target.offsetLeft + (target.offsetWidth / 2);
             const targetProgress = Math.max(0, Math.min(maxDistance, targetCenter - firstCardCenter));
             const targetScrollY = clamp(rootTop + targetProgress, 0, getMaxWindowScroll());
 
             if (targetScrollY >= savedScrollY) {
-              // Would scroll down — check if this card is already the nearest active one
               const currentOffset = Math.max(0, Math.min(maxDistance, -root.getBoundingClientRect().top));
-              const currentCenter = firstCardCenter + currentOffset;
-              let nearestIndex = -1;
-              let bestDiff = Infinity;
-              cards.forEach((card) => {
-                const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
-                const diff = Math.abs(cardCenter - currentCenter);
-                if (diff < bestDiff) { bestDiff = diff; nearestIndex = toNumber(card.dataset.index); }
-              });
-              if (nearestIndex === index) skipDownwardScroll = true;
+              if (getNearestStickyCardIndex(currentOffset, maxDistance) === index) {
+                skipDownwardScroll = true;
+              }
             }
           }
         }
@@ -649,21 +642,14 @@
 
         if (skipDownwardScroll) {
           lockActiveDuringScroll(index, null);
-          requestAnimationFrame(() => {
-            if (window.scrollY !== savedScrollY) window.scroll(window.scrollX, savedScrollY);
-          });
+          restoreScrollPosition(savedScrollY);
           return;
         }
 
         const scrollTarget = scrollToCard(index);
         lockActiveDuringScroll(index, scrollTarget);
         if (!scrollTarget) {
-          // Restore scroll if any unintended movement happened (layout shift, browser focus, etc.)
-          requestAnimationFrame(() => {
-            if (window.scrollY !== savedScrollY) {
-              window.scroll(window.scrollX, savedScrollY);
-            }
-          });
+          restoreScrollPosition(savedScrollY);
         }
       };
       dot.addEventListener("click", activateFromDot);
@@ -813,9 +799,8 @@
       }
 
       removeMobileScrollHandler();
-      const viewportHeight = syncLockedMobileViewportHeight();
+      syncLockedMobileViewportHeight();
 
-      // 1. Reset sticky class before measuring
       root.classList.remove("shop-the-look--sticky-enabled");
       root.style.height = "";
       panel.style.transform = "";
@@ -824,11 +809,8 @@
       root._mobileScrollDistance = 0;
       root._mobileFirstCardCenter = 0;
 
-      // Force a layout reflow so the browser recalculates dimensions
-      // without the sticky CSS applied
       void panel.offsetWidth;
 
-      // 2. Enable Sticky Mode to measure final layout geometry
       root.classList.add("shop-the-look--sticky-enabled");
       panel.style.transform = "translate3d(0px, 0, 0)";
       void panel.offsetWidth;
@@ -880,7 +862,6 @@
       const endTranslate = mediaCenter - lastCardCenter;
       const scrollableDistance = Math.max(0, startTranslate - endTranslate);
 
-      // If content fits, no need to hijack
       if (scrollableDistance <= 0) {
         root.classList.remove("shop-the-look--sticky-enabled");
         panel.style.transform = "";
@@ -889,18 +870,34 @@
         return;
       }
 
-      // Force reset any native scroll that might have happened
       panel.scrollLeft = 0;
       root._mobileScrollDistance = scrollableDistance;
       root._mobileFirstCardCenter = firstCardCenter;
 
-      // 3. Set Section Height
-      // height = viewport height (sticky "screen") + scrollable distance
-      // As user scrolls through scrollableDistance px vertically,
-      // we translate scrollableDistance px horizontally.
-      root.style.height = `${viewportHeight + scrollableDistance}px`;
+      // height = sticky top offset + sticky content height + horizontal travel
+      // We measure the sticky span directly from the layout instead of relying
+      // on viewport unit guesses, which can release the sticky phase a bit early
+      // on mobile browser chrome changes.
+      const stickyTop = parseFloat(window.getComputedStyle(inner).top || "0") || 0;
+      const stickyHeight = inner.getBoundingClientRect().height;
+      const floatingBarInset = (() => {
+        if (!root.classList.contains("shop-the-look--product")) return 0;
 
-      // 4. Build scroll handler — capture fresh scrollableDistance in closure
+        const floatingBar = document.querySelector("[data-floating-atc]");
+        if (!floatingBar) return 0;
+
+        const rect = floatingBar.getBoundingClientRect();
+        return Math.max(0, Math.min(window.innerHeight, window.innerHeight - rect.top));
+      })();
+      const requiredSectionHeight = Math.ceil(
+        stickyTop
+        + stickyHeight
+        + scrollableDistance
+        + floatingBarInset
+        + STL_MOBILE_STICKY_END_BUFFER
+      );
+      root.style.height = `${requiredSectionHeight}px`;
+
       const onGlobalScroll = () => {
         if (!mobileLayout.matches) return;
         const rect = root.getBoundingClientRect();
@@ -909,22 +906,16 @@
         panel.style.transform = `translate3d(${startTranslate - progress}px, 0, 0)`;
       };
 
-      // Remove any previously registered handler before adding the new one
-      // (important on resize: scrollableDistance changes, so we need a fresh closure)
       root._mobileScrollHandler = onGlobalScroll;
       window.addEventListener("scroll", onGlobalScroll, { passive: true });
 
-      // Initial sync
       onGlobalScroll();
     };
 
-    // Re-calc on resize (debounced via rAF)
     window.addEventListener("resize", () => {
       requestAnimationFrame(initMobileScroll);
     });
 
-    // Init: wait for images to load so scrollWidth is accurate.
-    // If already complete, run now; otherwise defer to the load event.
     if (document.readyState === "complete") {
       initMobileScroll();
     } else {
