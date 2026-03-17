@@ -41,17 +41,28 @@
       </div>
       <div class="home-collections__viewport" data-home-collections-viewport tabindex="0" aria-label="Jewelry categories slider">
         <div class="home-collections__track">
-          {% assign jewelry_entries = 'earrings:EARRINGS|rings:RINGS|necklaces:NECKLACE|bracelets:BRACELETS|watches:WATCHES' | split: '|' %}
+          {% assign jewelry_entries = 'earrings,earring:EARRINGS|rings,ring:RINGS|necklaces,necklace:NECKLACE|bracelets,bracelet:BRACELETS|watches,watch:WATCHES' | split: '|' %}
           {% for entry in jewelry_entries %}
             {% assign parts = entry | split: ':' %}
-            {% assign handle = parts[0] %}
+            {% assign handle_candidates = parts[0] | split: ',' %}
+            {% assign handle = handle_candidates.first | strip %}
             {% assign card_title = parts[1] %}
-            {% assign jewelry_collection = collections[handle] %}
+            {% assign jewelry_collection = blank %}
             {% assign card_url = '/collections/' | append: handle %}
             {% assign card_image = blank %}
 
+            {% for handle_candidate in handle_candidates %}
+              {% assign candidate_handle = handle_candidate | strip %}
+              {% if candidate_handle != blank and collections[candidate_handle] %}
+                {% assign handle = candidate_handle %}
+                {% assign jewelry_collection = collections[candidate_handle] %}
+                {% break %}
+              {% endif %}
+            {% endfor %}
+
             {% if jewelry_collection %}
               {% assign card_url = jewelry_collection.url %}
+              {% assign card_title = jewelry_collection.title | default: card_title %}
               {% assign card_image = jewelry_collection.image | default: jewelry_collection.featured_image %}
               {% if card_image == blank and jewelry_collection.products.first %}
                 {% assign card_image = jewelry_collection.products.first.featured_media.preview_image | default: jewelry_collection.products.first.featured_image %}
