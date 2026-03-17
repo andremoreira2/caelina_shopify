@@ -169,6 +169,9 @@
     const dots = [...root.querySelectorAll("[data-stl-dot]")];
     const cards = [...root.querySelectorAll("[data-stl-card]")];
     const panel = root.querySelector(".shop-the-look__panel");
+    const layout = root.querySelector(".shop-the-look__layout");
+    const mediaColumn = root.querySelector(".shop-the-look__media-column");
+    const mediaStage = root.querySelector(".shop-the-look__media-stage");
     const mediaWrap = root.querySelector(".shop-the-look__media-wrap");
     const inner = root.querySelector(".shop-the-look__inner");
     const scrollBoundsRoot = root.closest("[data-stl-section]") || root;
@@ -253,6 +256,15 @@
 
     const syncGalleries = () => {
       galleryCards.forEach((gallery) => syncGallery(gallery));
+    };
+
+    const getOuterHeight = (element) => {
+      if (!element) return 0;
+
+      const styles = window.getComputedStyle(element);
+      return element.getBoundingClientRect().height
+        + parseFloat(styles.marginTop || "0")
+        + parseFloat(styles.marginBottom || "0");
     };
 
     const setActive = (nextIndex) => {
@@ -601,6 +613,7 @@
         root.style.height = "";
         panel.style.transform = "";
         root.style.removeProperty("--stl-title-center-shift");
+        root.style.removeProperty("--stl-mobile-media-max-height");
         resetLockedMobileViewportHeight();
         root._mobileScrollDistance = 0;
         root._mobileFirstCardCenter = 0;
@@ -615,6 +628,7 @@
       root.style.height = "";
       panel.style.transform = "";
       root.style.removeProperty("--stl-title-center-shift");
+      root.style.removeProperty("--stl-mobile-media-max-height");
       root._mobileScrollDistance = 0;
       root._mobileFirstCardCenter = 0;
 
@@ -641,6 +655,29 @@
         root.style.setProperty("--stl-title-center-shift", `${titleCenterShift}px`);
       } else {
         root.style.setProperty("--stl-title-center-shift", "0px");
+      }
+
+      if (inner && panel && mediaColumn && mediaStage && layout) {
+        const layoutStyles = window.getComputedStyle(layout);
+        const layoutGap = parseFloat(layoutStyles.rowGap || layoutStyles.gap || "0");
+        const mediaFixedHeight = [...mediaColumn.children].reduce((total, child) => {
+          if (child === mediaStage) return total;
+          return total + getOuterHeight(child);
+        }, 0);
+        const maxMediaHeight = Math.floor(
+          inner.getBoundingClientRect().height
+            - getOuterHeight(panel)
+            - mediaFixedHeight
+            - layoutGap
+        );
+
+        if (maxMediaHeight > 0) {
+          root.style.setProperty("--stl-mobile-media-max-height", `${maxMediaHeight}px`);
+        } else {
+          root.style.removeProperty("--stl-mobile-media-max-height");
+        }
+      } else {
+        root.style.removeProperty("--stl-mobile-media-max-height");
       }
 
       const firstCard = cards[0];
@@ -756,14 +793,14 @@
         }
       });
 
-      const previousButton = panel.querySelector("[data-stl-group-prev]");
-      const nextButton = panel.querySelector("[data-stl-group-next]");
-      if (previousButton) {
-        previousButton.disabled = !active || activePosition <= 0;
-      }
-      if (nextButton) {
-        nextButton.disabled = !active || activePosition >= parts.lookCount - 1;
-      }
+      const previousButtons = [...panel.querySelectorAll("[data-stl-group-prev]")];
+      const nextButtons = [...panel.querySelectorAll("[data-stl-group-next]")];
+      previousButtons.forEach((button) => {
+        button.disabled = !active || activePosition <= 0;
+      });
+      nextButtons.forEach((button) => {
+        button.disabled = !active || activePosition >= parts.lookCount - 1;
+      });
     });
 
     group.dataset.stlActivePosition = `${activePosition}`;

@@ -39,7 +39,7 @@
                 {% if stl_index == 0 %}disabled{% endif %}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-                  <polyline points="10,3 5,8 10,13" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polyline points="10,3 5,8 10,13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
               <div class="shop-the-look-switcher__track" role="tablist" aria-label="Available looks">
@@ -67,7 +67,7 @@
                 {% if stl_index >= stl_last_index %}disabled{% endif %}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-                  <polyline points="6,3 11,8 6,13" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polyline points="6,3 11,8 6,13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
             </div>
@@ -85,69 +85,71 @@
               {% endif %}
             </div>
           {% endif %}
-          <div class="shop-the-look__media-wrap" style="--stl-image-ratio: {{ stl_image.aspect_ratio | default: 0.8571428571 }};">
-            <img
-              class="shop-the-look__image"
-              src="{{ stl_image | image_url: width: 1800 }}"
-              alt="{{ stl_image.alt | default: stl_title | escape }}"
-              loading="lazy"
-              width="{{ stl_image.width | default: 1200 }}"
-              height="{{ stl_image.height | default: 1400 }}"
-            >
-            <div class="shop-the-look__dots">
-              {% assign stl_dot_index = 0 %}
-              {% for stl_product in stl_products limit: 4 %}
-                {% if stl_product != blank %}
-                  {% assign fallback_x = 50 %}
-                  {% assign fallback_y = 50 %}
-                  {% case stl_dot_index %}
-                    {% when 0 %}
-                      {% assign fallback_x = 28 %}
-                      {% assign fallback_y = 34 %}
-                    {% when 1 %}
-                      {% assign fallback_x = 64 %}
-                      {% assign fallback_y = 30 %}
-                    {% when 2 %}
-                      {% assign fallback_x = 70 %}
-                      {% assign fallback_y = 62 %}
-                    {% when 3 %}
-                      {% assign fallback_x = 48 %}
-                      {% assign fallback_y = 78 %}
-                  {% endcase %}
+          <div class="shop-the-look__media-stage">
+            <div class="shop-the-look__media-wrap" style="--stl-image-ratio: {{ stl_image.aspect_ratio | default: 0.8571428571 }};">
+              <img
+                class="shop-the-look__image"
+                src="{{ stl_image | image_url: width: 1800 }}"
+                alt="{{ stl_image.alt | default: stl_title | escape }}"
+                loading="lazy"
+                width="{{ stl_image.width | default: 1200 }}"
+                height="{{ stl_image.height | default: 1400 }}"
+              >
+              <div class="shop-the-look__dots">
+                {% assign stl_dot_index = 0 %}
+                {% for stl_product in stl_products limit: 4 %}
+                  {% if stl_product != blank %}
+                    {% assign fallback_x = 50 %}
+                    {% assign fallback_y = 50 %}
+                    {% case stl_dot_index %}
+                      {% when 0 %}
+                        {% assign fallback_x = 28 %}
+                        {% assign fallback_y = 34 %}
+                      {% when 1 %}
+                        {% assign fallback_x = 64 %}
+                        {% assign fallback_y = 30 %}
+                      {% when 2 %}
+                        {% assign fallback_x = 70 %}
+                        {% assign fallback_y = 62 %}
+                      {% when 3 %}
+                        {% assign fallback_x = 48 %}
+                        {% assign fallback_y = 78 %}
+                    {% endcase %}
 
-                  {% assign stl_dot_x = fallback_x %}
-                  {% assign stl_dot_y = fallback_y %}
-                  {% assign stl_dot_label = stl_product.title %}
-                  {% if stl_hotspots != blank and stl_hotspots.size > stl_dot_index %}
-                    {% assign stl_hotspot = stl_hotspots[stl_dot_index] %}
-                    {% if stl_hotspot.x != blank %}
-                      {% assign stl_dot_x = stl_hotspot.x %}
+                    {% assign stl_dot_x = fallback_x %}
+                    {% assign stl_dot_y = fallback_y %}
+                    {% assign stl_dot_label = stl_product.title %}
+                    {% if stl_hotspots != blank and stl_hotspots.size > stl_dot_index %}
+                      {% assign stl_hotspot = stl_hotspots[stl_dot_index] %}
+                      {% if stl_hotspot.x != blank %}
+                        {% assign stl_dot_x = stl_hotspot.x %}
+                      {% endif %}
+                      {% if stl_hotspot.y != blank %}
+                        {% assign stl_dot_y = stl_hotspot.y %}
+                      {% endif %}
+                      {% if stl_hotspot.label != blank %}
+                        {% assign stl_dot_label = stl_hotspot.label %}
+                      {% endif %}
                     {% endif %}
-                    {% if stl_hotspot.y != blank %}
-                      {% assign stl_dot_y = stl_hotspot.y %}
-                    {% endif %}
-                    {% if stl_hotspot.label != blank %}
-                      {% assign stl_dot_label = stl_hotspot.label %}
-                    {% endif %}
+                    {% assign stl_dot_variant = stl_product.selected_or_first_available_variant | default: stl_product.variants.first %}
+                    <button
+                      class="shop-the-look__dot{% if stl_dot_index == 0 %} is-active{% endif %}"
+                      type="button"
+                      data-stl-dot
+                      data-index="{{ stl_dot_index }}"
+                      aria-label="Show {{ stl_dot_label | escape }}"
+                      aria-pressed="{% if stl_dot_index == 0 %}true{% else %}false{% endif %}"
+                      style="left: {{ stl_dot_x | at_least: 0 | at_most: 100 }}%; top: {{ stl_dot_y | at_least: 0 | at_most: 100 }}%;"
+                    >
+                      <span class="shop-the-look__dot-tooltip" aria-hidden="true" data-stl-tooltip>
+                        <span class="shop-the-look__dot-tooltip-name">{{ stl_product.title | truncate: 32 }}</span>
+                        <span class="shop-the-look__dot-tooltip-price">{{ stl_dot_variant.price | money }}</span>
+                      </span>
+                    </button>
+                    {% assign stl_dot_index = stl_dot_index | plus: 1 %}
                   {% endif %}
-                  {% assign stl_dot_variant = stl_product.selected_or_first_available_variant | default: stl_product.variants.first %}
-                  <button
-                    class="shop-the-look__dot{% if stl_dot_index == 0 %} is-active{% endif %}"
-                    type="button"
-                    data-stl-dot
-                    data-index="{{ stl_dot_index }}"
-                    aria-label="Show {{ stl_dot_label | escape }}"
-                    aria-pressed="{% if stl_dot_index == 0 %}true{% else %}false{% endif %}"
-                    style="left: {{ stl_dot_x | at_least: 0 | at_most: 100 }}%; top: {{ stl_dot_y | at_least: 0 | at_most: 100 }}%;"
-                  >
-                    <span class="shop-the-look__dot-tooltip" aria-hidden="true" data-stl-tooltip>
-                      <span class="shop-the-look__dot-tooltip-name">{{ stl_product.title | truncate: 32 }}</span>
-                      <span class="shop-the-look__dot-tooltip-price">{{ stl_dot_variant.price | money }}</span>
-                    </span>
-                  </button>
-                  {% assign stl_dot_index = stl_dot_index | plus: 1 %}
-                {% endif %}
-              {% endfor %}
+                {% endfor %}
+              </div>
             </div>
           </div>
         </div>

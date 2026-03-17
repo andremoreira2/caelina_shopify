@@ -3738,8 +3738,11 @@ body.cart-drawer-open .product-floating-atc {
   padding: 24px 60px 90px;
   box-sizing: border-box;
   text-align: left;
-  --stl-sticky-line: max(86px, calc(var(--site-header-offset, 0px) + 18px));
+  --stl-sticky-line: max(86px, calc(var(--site-header-current-offset, var(--site-header-offset, 0px)) + 18px));
   --stl-desktop-media-width: clamp(620px, 39vw, 740px);
+  --stl-frame-ratio: 0.8571428571;
+  --stl-desktop-media-max-height: calc(100dvh - var(--stl-sticky-line) - clamp(84px, 11vh, 140px));
+  --stl-media-frame-width: 100%;
 }
 
 .shop-the-look--home {
@@ -3747,13 +3750,13 @@ body.cart-drawer-open .product-floating-atc {
   padding: clamp(2px, 0.9vw, 10px) clamp(16px, 4vw, 56px) clamp(6px, 1vw, 18px);
   position: relative;
   z-index: 2;
-  --stl-sticky-line: max(120px, calc(var(--site-header-offset, 150px) + 18px));
+  --stl-sticky-line: max(120px, calc(var(--site-header-current-offset, var(--site-header-offset, 150px)) + 18px));
 }
 
 .shop-the-look--product.shop-the-look--home {
   background: #fdfaf5;
   padding: 8px 60px 90px;
-  --stl-sticky-line: max(86px, calc(var(--site-header-offset, 0px) + 18px));
+  --stl-sticky-line: max(86px, calc(var(--site-header-current-offset, var(--site-header-offset, 0px)) + 18px));
 }
 
 .shop-the-look--home.shop-the-look--grouped {
@@ -3822,14 +3825,14 @@ body.cart-drawer-open .product-floating-atc {
 }
 
 .shop-the-look-switcher {
-  width: 100%;
+  width: min(100%, var(--stl-media-frame-width, 100%));
   margin: 0 0 clamp(10px, 1.4vw, 16px);
+  margin-inline: auto;
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: clamp(4px, 0.8vw, 10px);
   background: transparent;
-  border-bottom: 1px solid rgba(17, 17, 17, 0.1);
 }
 
 .shop-the-look--home .shop-the-look__header {
@@ -3842,7 +3845,8 @@ body.cart-drawer-open .product-floating-atc {
   min-width: 0;
   display: flex;
   align-items: stretch;
-  gap: 0;
+  gap: clamp(2px, 0.4vw, 6px);
+  justify-content: center;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -3875,18 +3879,22 @@ body.cart-drawer-open .product-floating-atc {
 .shop-the-look-switcher__chip::after {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: 12px;
   left: clamp(14px, 2vw, 28px);
   right: clamp(14px, 2vw, 28px);
   height: 1px;
   background: #111111;
   transform: scaleX(var(--_chip-line-scale, 0));
-  transform-origin: left center;
-  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: left;
+  transition: transform 0.18s ease;
 }
 
 .shop-the-look-switcher__chip:hover {
   color: rgba(17, 17, 17, 0.68);
+}
+
+.shop-the-look-switcher__chip:hover::after {
+  transform: scaleX(1);
 }
 
 .shop-the-look-switcher__chip.is-active {
@@ -3906,7 +3914,7 @@ body.cart-drawer-open .product-floating-atc {
   height: 46px;
   border: none;
   background: transparent;
-  color: rgba(17, 17, 17, 0.55);
+  color: rgba(17, 17, 17, 0.72);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -3917,14 +3925,9 @@ body.cart-drawer-open .product-floating-atc {
   position: relative;
 }
 
-.shop-the-look-switcher__arrow:first-child {
-  border-right: 1px solid rgba(17, 17, 17, 0.1);
-  padding-right: 2px;
-}
-
-.shop-the-look-switcher__arrow:last-child {
-  border-left: 1px solid rgba(17, 17, 17, 0.1);
-  padding-left: 2px;
+.shop-the-look-switcher__arrow svg {
+  width: 18px;
+  height: 18px;
 }
 
 .shop-the-look-switcher__arrow:hover {
@@ -3979,10 +3982,19 @@ body.cart-drawer-open .product-floating-atc {
   align-items: start;
 }
 
+.shop-the-look__media-stage {
+  position: relative;
+  width: min(100%, var(--stl-media-frame-width, 100%));
+  margin-inline: auto;
+}
+
 .shop-the-look__media-wrap {
   position: relative;
+  width: 100%;
+  aspect-ratio: var(--stl-frame-ratio, 0.8571428571);
   /* overflow:hidden removed — it clips box-shadow on mobile when a parent has overflow:hidden.
      Border-radius clipping is handled by the image and dots overlay directly. */
+  overflow: hidden;
   background: #f3efe9;
   border-radius: 6px;
   border: 1px solid rgba(17, 17, 17, 0.08);
@@ -3993,7 +4005,7 @@ body.cart-drawer-open .product-floating-atc {
 .shop-the-look__image {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: cover;
   border-radius: 6px;
   /* clips the image to the wrapper's rounded corners */
@@ -4655,6 +4667,10 @@ body.cart-drawer-open .product-floating-atc {
     top: auto;
   }
 
+  .shop-the-look__media-stage {
+    display: block;
+  }
+
   .shop-the-look__media-wrap {
     position: relative;
   }
@@ -4692,14 +4708,18 @@ body.cart-drawer-open .product-floating-atc {
   .shop-the-look--sticky-enabled {
     /* Height will be set by JS */
     min-height: var(--stl-mobile-viewport-height, 100svh);
+    --stl-media-frame-width: min(
+      100%,
+      calc(var(--stl-mobile-media-max-height, 1000px) * var(--stl-frame-ratio, 0.8571428571))
+    );
     --stl-mobile-bottom-gap: 10px;
     --stl-mobile-media-product-gap: 10px;
   }
 
   .shop-the-look--sticky-enabled .shop-the-look__inner {
     position: sticky;
-    top: var(--site-header-offset, 0px);
-    height: calc(var(--stl-mobile-viewport-height, 100svh) - var(--site-header-offset, 0px));
+    top: var(--site-header-current-offset, var(--site-header-offset, 0px));
+    height: calc(var(--stl-mobile-viewport-height, 100svh) - var(--site-header-current-offset, var(--site-header-offset, 0px)));
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -4710,7 +4730,7 @@ body.cart-drawer-open .product-floating-atc {
     display: flex;
     flex-direction: column;
     height: 100%;
-    max-height: calc(var(--stl-mobile-viewport-height, 100svh) - var(--site-header-offset, 0px));
+    max-height: calc(var(--stl-mobile-viewport-height, 100svh) - var(--site-header-current-offset, var(--site-header-offset, 0px)));
     gap: var(--stl-mobile-media-product-gap);
   }
 
@@ -4743,22 +4763,34 @@ body.cart-drawer-open .product-floating-atc {
     transform: translateX(var(--stl-title-center-shift, 0px));
   }
 
-  .shop-the-look--sticky-enabled .shop-the-look__media-wrap {
+  .shop-the-look--sticky-enabled .shop-the-look__media-stage {
     flex: 1 1 auto;
     min-height: 0;
-    height: 100%;
-    width: auto;
+    width: min(100%, var(--stl-media-frame-width, 100%));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .shop-the-look--sticky-enabled .shop-the-look__media-wrap {
+    flex: 0 0 auto;
+    min-height: 0;
+    height: auto;
+    width: min(
+      100%,
+      calc(var(--stl-mobile-media-max-height, 1000px) * var(--stl-frame-ratio, 0.8571428571))
+    );
+    max-height: var(--stl-mobile-media-max-height, none);
     max-width: 100%;
-    aspect-ratio: var(--stl-image-ratio, 0.8571428571);
+    aspect-ratio: var(--stl-frame-ratio, 0.8571428571);
     align-self: center;
-    /* overflow:hidden removed — clips box-shadow; image handles its own border-radius */
     border-radius: 4px;
   }
 
   .shop-the-look--sticky-enabled .shop-the-look__image {
     height: 100%;
     width: 100%;
-    object-fit: contain;
+    object-fit: cover;
   }
 
   .shop-the-look--sticky-enabled .shop-the-look__panel {
@@ -4906,28 +4938,16 @@ body.cart-drawer-open .product-floating-atc {
 }
 
 @media (min-width: 821px) {
+  .shop-the-look {
+    --stl-media-frame-width: min(
+      100%,
+      var(--stl-desktop-media-width),
+      calc(var(--stl-desktop-media-max-height) * var(--stl-frame-ratio, 0.8571428571))
+    );
+  }
+
   .shop-the-look-switcher {
     margin-bottom: clamp(12px, 1.6vw, 18px);
-  }
-
-  .shop-the-look-switcher__track {
-    justify-content: flex-start;
-  }
-
-  .shop-the-look-switcher__arrow {
-    position: static;
-    transform: none;
-    padding: 0;
-  }
-
-  .shop-the-look-switcher__arrow:first-child {
-    border-right: 1px solid rgba(17, 17, 17, 0.1);
-    padding-right: 0;
-  }
-
-  .shop-the-look-switcher__arrow:last-child {
-    border-left: 1px solid rgba(17, 17, 17, 0.1);
-    padding-left: 0;
   }
 
   .shop-the-look__layout {
@@ -4935,16 +4955,21 @@ body.cart-drawer-open .product-floating-atc {
     gap: clamp(16px, 2.2vw, 30px);
   }
 
+  .shop-the-look__media-stage {
+    display: block;
+  }
+
   .shop-the-look__media-wrap {
-    width: min(100%, var(--stl-desktop-media-width));
+    width: 100%;
     max-width: 100%;
+    max-height: var(--stl-desktop-media-max-height);
     margin-inline: auto;
   }
 
   .shop-the-look__image {
     width: 100%;
     max-width: 100%;
-    max-height: calc(100dvh - var(--stl-sticky-line) - clamp(84px, 11vh, 140px));
+    max-height: 100%;
   }
 
   .shop-the-look__panel {
