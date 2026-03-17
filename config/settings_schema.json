@@ -10,6 +10,26 @@
       },
       {
         "type": "header",
+        "content": "Home hero video"
+      },
+      {
+        "type": "paragraph",
+        "content": "Paste Shopify Files .mp4 URLs for /pages/home. If both are filled, Video 1 plays first, then Video 2, then loops back to Video 1."
+      },
+      {
+        "type": "text",
+        "id": "home_hero_video_primary_url",
+        "label": "Video 1 URL",
+        "default": "https://cdn.shopify.com/videos/c/o/v/cd7e30225724449c9a6523df4f7331e2.mp4"
+      },
+      {
+        "type": "text",
+        "id": "home_hero_video_secondary_url",
+        "label": "Video 2 URL",
+        "info": "Optional. Plays after Video 1 finishes."
+      },
+      {
+        "type": "header",
         "content": "Home Shop The Look"
       },
       {

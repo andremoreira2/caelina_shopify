@@ -229,6 +229,9 @@
   {% if template.name == 'product' or (template.name == 'page' and template.suffix == 'home') %}
     <script src="{{ 'shop-the-look.js' | asset_url }}" defer></script>
   {% endif %}
+  {% if template.name == 'page' and template.suffix == 'home' %}
+    <script src="{{ 'home-hero-video.js' | asset_url }}" defer></script>
+  {% endif %}
   {% if template.name == 'index' %}
     <script src="{{ 'app.js' | asset_url }}" defer></script>
   {% endif %}

@@ -1,7 +1,25 @@
+{% assign home_hero_video_default = 'https://cdn.shopify.com/videos/c/o/v/cd7e30225724449c9a6523df4f7331e2.mp4' %}
+{% assign home_hero_video_primary = settings.home_hero_video_primary_url | strip | default: home_hero_video_default %}
+{% assign home_hero_video_secondary = settings.home_hero_video_secondary_url | strip %}
+
 <section class="home-page home-page--minimal">
   <div class="home-page__media">
-    <video class="home-page__video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
-      <source src="https://cdn.shopify.com/videos/c/o/v/cd7e30225724449c9a6523df4f7331e2.mp4" type="video/mp4">
+    <video
+      class="home-page__video"
+      autoplay
+      muted
+      playsinline
+      preload="metadata"
+      aria-hidden="true"
+      {% if home_hero_video_secondary == blank %}
+        loop
+      {% else %}
+        data-home-hero-video
+        data-home-hero-video-primary="{{ home_hero_video_primary | escape }}"
+        data-home-hero-video-secondary="{{ home_hero_video_secondary | escape }}"
+      {% endif %}
+    >
+      <source src="{{ home_hero_video_primary | escape }}" type="video/mp4">
     </video>
     <div class="home-page__media-intro" aria-hidden="true"></div>
     <a class="home-page__explore-button" href="{{ routes.root_url }}">EXPLORE</a>
