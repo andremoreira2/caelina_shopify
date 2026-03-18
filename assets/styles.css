@@ -101,8 +101,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  overflow-x: hidden;
-  overscroll-behavior-x: none;
+  overflow-x: clip;
 }
 
 body {
