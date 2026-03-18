@@ -184,6 +184,7 @@
 
     let activeIndex = -1;
     let rafPending = false;
+    let stickyRafPending = false;
     let pendingScrollTarget = null;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobileLayout = window.matchMedia(`(max-width: ${STL_MOBILE_BREAKPOINT}px)`);
@@ -195,6 +196,9 @@
     let pendingResizeReinit = 0;
     root._mobileViewportWidth = 0;
     root._mobileViewportHeight = 0;
+    root._lastResizeViewportWidth = window.innerWidth;
+    root._lastLandscapeDesktopMode = mobileLayout.matches && landscapeDesktopLayout.matches;
+    root._mobileStartTranslate = 0;
 
     const shouldUseLandscapeDesktopLayout = () => mobileLayout.matches && landscapeDesktopLayout.matches;
     const shouldUseMobileCardLayout = () => mobileLayout.matches && !shouldUseLandscapeDesktopLayout();
@@ -231,6 +235,111 @@
       root.style.setProperty("--stl-mobile-viewport-height", `${root._mobileViewportHeight}px`);
 
       return root._mobileViewportHeight;
+    };
+
+    const syncStickyTitleShift = () => {
+      const panelRect = panel?.getBoundingClientRect();
+      const mediaRect = mediaWrap?.getBoundingClientRect();
+      const innerRect = inner?.getBoundingClientRect();
+
+      if (!panelRect) return panelRect;
+
+      if (mediaRect && innerRect) {
+        const mediaCenterX = mediaRect.left + (mediaRect.width / 2);
+        const innerCenterX = innerRect.left + (innerRect.width / 2);
+        const titleCenterShift = mediaCenterX - innerCenterX;
+        root.style.setProperty("--stl-title-center-shift", `${titleCenterShift}px`);
+      } else {
+        root.style.setProperty("--stl-title-center-shift", "0px");
+      }
+
+      return panelRect;
+    };
+
+    const syncStickyMediaMaxHeight = () => {
+      if (!(inner && panel && mediaColumn && mediaStage && layout)) {
+        root.style.removeProperty("--stl-mobile-media-max-height");
+        return;
+      }
+
+      const layoutStyles = window.getComputedStyle(layout);
+      const layoutGap = parseFloat(layoutStyles.rowGap || layoutStyles.gap || "0");
+      const mediaFixedHeight = [...mediaColumn.children].reduce((total, child) => {
+        if (child === mediaStage) return total;
+        return total + getOuterHeight(child);
+      }, 0);
+      const maxMediaHeight = Math.floor(
+        inner.getBoundingClientRect().height
+        - getOuterHeight(panel)
+        - mediaFixedHeight
+        - layoutGap
+      );
+
+      if (maxMediaHeight > 0) {
+        root.style.setProperty("--stl-mobile-media-max-height", `${maxMediaHeight}px`);
+      } else {
+        root.style.removeProperty("--stl-mobile-media-max-height");
+      }
+    };
+
+    const syncStickyTravelMetrics = () => {
+      syncStickyMediaMaxHeight();
+      const panelRect = syncStickyTitleShift();
+      const mediaRect = mediaWrap?.getBoundingClientRect();
+      const mediaCenter = mediaRect
+        ? (mediaRect.left - panelRect.left) + (mediaRect.width / 2)
+        : (panelRect.width / 2);
+
+      const firstCard = cards[0];
+      const lastCard = cards[cards.length - 1];
+      const firstCardCenter = firstCard.offsetLeft + (firstCard.offsetWidth / 2);
+      const lastCardCenter = lastCard.offsetLeft + (lastCard.offsetWidth / 2);
+      const startTranslate = mediaCenter - firstCardCenter;
+      const endTranslate = mediaCenter - lastCardCenter;
+      const scrollableDistance = Math.max(0, startTranslate - endTranslate);
+
+      root._mobileStartTranslate = startTranslate;
+      root._mobileScrollDistance = scrollableDistance;
+      root._mobileFirstCardCenter = firstCardCenter;
+
+      return scrollableDistance;
+    };
+
+    const syncStickySectionHeight = () => {
+      const stickyTop = parseFloat(window.getComputedStyle(inner).top || "0") || 0;
+      const stickyHeight = inner.getBoundingClientRect().height;
+      const floatingBarInset = (() => {
+        if (!root.classList.contains("shop-the-look--product")) return 0;
+
+        const floatingBar = document.querySelector("[data-floating-atc]");
+        if (!floatingBar) return 0;
+
+        const rect = floatingBar.getBoundingClientRect();
+        return Math.max(0, Math.min(window.innerHeight, window.innerHeight - rect.top));
+      })();
+      const requiredSectionHeight = Math.ceil(
+        stickyTop
+        + stickyHeight
+        + (Number.isFinite(root._mobileScrollDistance) ? root._mobileScrollDistance : 0)
+        + floatingBarInset
+        + STL_MOBILE_STICKY_END_BUFFER
+      );
+      root.style.height = `${requiredSectionHeight}px`;
+    };
+
+    const refreshStickyMetrics = () => {
+      if (!shouldUseMobileStickyLayout()) return false;
+      if (!root.classList.contains("shop-the-look--sticky-enabled")) return false;
+
+      syncLockedMobileViewportHeight();
+      const scrollableDistance = syncStickyTravelMetrics();
+
+      if (!(scrollableDistance > 0)) {
+        return false;
+      }
+
+      syncStickySectionHeight();
+      return true;
     };
 
     const galleryCards = cards
@@ -830,96 +939,36 @@
       root.classList.add("shop-the-look--sticky-enabled");
       panel.style.transform = "translate3d(0px, 0, 0)";
       void panel.offsetWidth;
-
-      const panelRect = panel.getBoundingClientRect();
-      const mediaRect = mediaWrap ? mediaWrap.getBoundingClientRect() : null;
-      const innerRect = inner ? inner.getBoundingClientRect() : null;
-      const mediaCenter = mediaRect
-        ? (mediaRect.left - panelRect.left) + (mediaRect.width / 2)
-        : (panelRect.width / 2);
-
-      if (mediaRect && innerRect) {
-        const mediaCenterX = mediaRect.left + (mediaRect.width / 2);
-        const innerCenterX = innerRect.left + (innerRect.width / 2);
-        const titleCenterShift = mediaCenterX - innerCenterX;
-        root.style.setProperty("--stl-title-center-shift", `${titleCenterShift}px`);
-      } else {
-        root.style.setProperty("--stl-title-center-shift", "0px");
-      }
-
-      if (inner && panel && mediaColumn && mediaStage && layout) {
-        const layoutStyles = window.getComputedStyle(layout);
-        const layoutGap = parseFloat(layoutStyles.rowGap || layoutStyles.gap || "0");
-        const mediaFixedHeight = [...mediaColumn.children].reduce((total, child) => {
-          if (child === mediaStage) return total;
-          return total + getOuterHeight(child);
-        }, 0);
-        const maxMediaHeight = Math.floor(
-          inner.getBoundingClientRect().height
-          - getOuterHeight(panel)
-          - mediaFixedHeight
-          - layoutGap
-        );
-
-        if (maxMediaHeight > 0) {
-          root.style.setProperty("--stl-mobile-media-max-height", `${maxMediaHeight}px`);
-        } else {
-          root.style.removeProperty("--stl-mobile-media-max-height");
-        }
-      } else {
-        root.style.removeProperty("--stl-mobile-media-max-height");
-      }
-
-      const firstCard = cards[0];
-      const lastCard = cards[cards.length - 1];
-      const firstCardCenter = firstCard.offsetLeft + (firstCard.offsetWidth / 2);
-      const lastCardCenter = lastCard.offsetLeft + (lastCard.offsetWidth / 2);
-      const startTranslate = mediaCenter - firstCardCenter;
-      const endTranslate = mediaCenter - lastCardCenter;
-      const scrollableDistance = Math.max(0, startTranslate - endTranslate);
+      const scrollableDistance = syncStickyTravelMetrics();
 
       if (scrollableDistance <= 0) {
         root.classList.remove("shop-the-look--sticky-enabled");
         panel.style.transform = "";
         root.style.removeProperty("--stl-title-center-shift");
+        root.style.removeProperty("--stl-mobile-media-max-height");
+        root.style.height = "";
+        root._mobileStartTranslate = 0;
+        root._mobileScrollDistance = 0;
         root._mobileFirstCardCenter = 0;
         return;
       }
 
       panel.scrollLeft = 0;
-      root._mobileScrollDistance = scrollableDistance;
-      root._mobileFirstCardCenter = firstCardCenter;
-
-      // height = sticky top offset + sticky content height + horizontal travel
-      // We measure the sticky span directly from the layout instead of relying
-      // on viewport unit guesses, which can release the sticky phase a bit early
-      // on mobile browser chrome changes.
-      const stickyTop = parseFloat(window.getComputedStyle(inner).top || "0") || 0;
-      const stickyHeight = inner.getBoundingClientRect().height;
-      const floatingBarInset = (() => {
-        if (!root.classList.contains("shop-the-look--product")) return 0;
-
-        const floatingBar = document.querySelector("[data-floating-atc]");
-        if (!floatingBar) return 0;
-
-        const rect = floatingBar.getBoundingClientRect();
-        return Math.max(0, Math.min(window.innerHeight, window.innerHeight - rect.top));
-      })();
-      const requiredSectionHeight = Math.ceil(
-        stickyTop
-        + stickyHeight
-        + scrollableDistance
-        + floatingBarInset
-        + STL_MOBILE_STICKY_END_BUFFER
-      );
-      root.style.height = `${requiredSectionHeight}px`;
+      syncStickySectionHeight();
 
       const onGlobalScroll = () => {
-        if (!shouldUseMobileStickyLayout()) return;
-        const rect = root.getBoundingClientRect();
-        const offset = -rect.top;
-        const progress = Math.max(0, Math.min(scrollableDistance, offset));
-        panel.style.transform = `translate3d(${startTranslate - progress}px, 0, 0)`;
+        if (stickyRafPending) return;
+        stickyRafPending = true;
+        window.requestAnimationFrame(() => {
+          stickyRafPending = false;
+          if (!shouldUseMobileStickyLayout()) return;
+          const rect = root.getBoundingClientRect();
+          const offset = -rect.top;
+          const maxDistance = Number.isFinite(root._mobileScrollDistance) ? root._mobileScrollDistance : 0;
+          const startTranslate = Number.isFinite(root._mobileStartTranslate) ? root._mobileStartTranslate : 0;
+          const progress = Math.max(0, Math.min(maxDistance, offset));
+          panel.style.transform = `translate3d(${startTranslate - progress}px, 0, 0)`;
+        });
       };
 
       root._mobileScrollHandler = onGlobalScroll;
@@ -943,7 +992,25 @@
     };
 
     const handleViewportResize = () => {
+      const viewportWidth = window.innerWidth;
+      const landscapeDesktopMode = shouldUseLandscapeDesktopLayout();
+      const widthChanged = Math.abs(viewportWidth - root._lastResizeViewportWidth) > 2;
+      const layoutModeChanged = landscapeDesktopMode !== root._lastLandscapeDesktopMode;
+
+      root._lastResizeViewportWidth = viewportWidth;
+      root._lastLandscapeDesktopMode = landscapeDesktopMode;
       syncResponsiveLayoutClasses();
+
+      if (!widthChanged && !layoutModeChanged) {
+        window.requestAnimationFrame(() => {
+          if (refreshStickyMetrics() && typeof root._mobileScrollHandler === "function") {
+            root._mobileScrollHandler();
+          }
+          handleScroll();
+        });
+        return;
+      }
+
       scheduleMobileScrollInit();
     };
 
