@@ -4728,8 +4728,8 @@ body.cart-drawer-open .product-floating-atc {
 
   .shop-the-look--sticky-enabled .shop-the-look__inner {
     position: sticky;
-    top: var(--site-header-current-offset, var(--site-header-offset, 0px));
-    height: calc(var(--stl-mobile-viewport-height, 100svh) - var(--site-header-current-offset, var(--site-header-offset, 0px)));
+    top: var(--stl-sticky-top-offset, var(--site-header-current-offset, var(--site-header-offset, 0px)));
+    height: calc(var(--stl-mobile-viewport-height, 100svh) - var(--stl-sticky-top-offset, var(--site-header-current-offset, var(--site-header-offset, 0px))));
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -4740,7 +4740,7 @@ body.cart-drawer-open .product-floating-atc {
     display: flex;
     flex-direction: column;
     height: 100%;
-    max-height: calc(var(--stl-mobile-viewport-height, 100svh) - var(--site-header-current-offset, var(--site-header-offset, 0px)));
+    max-height: calc(var(--stl-mobile-viewport-height, 100svh) - var(--stl-sticky-top-offset, var(--site-header-current-offset, var(--site-header-offset, 0px))));
     gap: var(--stl-mobile-media-product-gap);
     overflow-x: clip;
   }

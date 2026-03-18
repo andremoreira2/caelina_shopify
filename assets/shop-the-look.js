@@ -9,6 +9,7 @@
   const STL_SCROLL_LOCK_IDLE_MS = 140;
   const STL_SCROLL_LOCK_MAX_MS = 2000;
   const STL_RESIZE_REINIT_DEBOUNCE_MS = 220;
+  const STL_SCROLL_IDLE_RECALC_MS = 180;
 
   const toNumber = (value) => {
     const parsed = Number(value);
@@ -186,6 +187,7 @@
     let rafPending = false;
     let stickyRafPending = false;
     let pendingScrollTarget = null;
+    let scrollIdleTimer = 0;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobileLayout = window.matchMedia(`(max-width: ${STL_MOBILE_BREAKPOINT}px)`);
     const landscapeDesktopLayout = window.matchMedia(
@@ -194,6 +196,8 @@
     let lastTouchY = 0;
     let hasTouchTracking = false;
     let pendingResizeReinit = 0;
+    let pendingStickyMetricRefresh = false;
+    let isScrollActive = false;
     root._mobileViewportWidth = 0;
     root._mobileViewportHeight = 0;
     root._lastResizeViewportWidth = window.innerWidth;
@@ -235,6 +239,15 @@
       root.style.setProperty("--stl-mobile-viewport-height", `${root._mobileViewportHeight}px`);
 
       return root._mobileViewportHeight;
+    };
+
+    const syncStickyTopOffset = () => {
+      const bodyStyles = window.getComputedStyle(document.body);
+      const currentOffsetValue = bodyStyles.getPropertyValue("--site-header-current-offset").trim();
+      const fallbackOffsetValue = bodyStyles.getPropertyValue("--site-header-offset").trim();
+      const resolvedOffset = currentOffsetValue || fallbackOffsetValue || "0px";
+      root.style.setProperty("--stl-sticky-top-offset", resolvedOffset);
+      return resolvedOffset;
     };
 
     const syncStickyTitleShift = () => {
@@ -306,6 +319,7 @@
     };
 
     const syncStickySectionHeight = () => {
+      syncStickyTopOffset();
       const stickyTop = parseFloat(window.getComputedStyle(inner).top || "0") || 0;
       const stickyHeight = inner.getBoundingClientRect().height;
       const floatingBarInset = (() => {
@@ -340,6 +354,32 @@
 
       syncStickySectionHeight();
       return true;
+    };
+
+    const flushPendingStickyMetricRefresh = () => {
+      if (!pendingStickyMetricRefresh) return;
+      pendingStickyMetricRefresh = false;
+
+      window.requestAnimationFrame(() => {
+        if (refreshStickyMetrics() && typeof root._mobileScrollHandler === "function") {
+          root._mobileScrollHandler();
+        }
+        handleScroll();
+      });
+    };
+
+    const markScrollActivity = () => {
+      isScrollActive = true;
+
+      if (scrollIdleTimer) {
+        window.clearTimeout(scrollIdleTimer);
+      }
+
+      scrollIdleTimer = window.setTimeout(() => {
+        scrollIdleTimer = 0;
+        isScrollActive = false;
+        flushPendingStickyMetricRefresh();
+      }, STL_SCROLL_IDLE_RECALC_MS);
     };
 
     const galleryCards = cards
@@ -726,6 +766,7 @@
     };
 
     const handleScroll = () => {
+      markScrollActivity();
       if (rafPending) return;
       rafPending = true;
       window.requestAnimationFrame(() => {
@@ -915,6 +956,7 @@
         root.classList.remove("shop-the-look--sticky-enabled");
         root.style.height = "";
         panel.style.transform = "";
+        root.style.removeProperty("--stl-sticky-top-offset");
         root.style.removeProperty("--stl-title-center-shift");
         root.style.removeProperty("--stl-mobile-media-max-height");
         resetLockedMobileViewportHeight();
@@ -929,6 +971,7 @@
       root.classList.remove("shop-the-look--sticky-enabled");
       root.style.height = "";
       panel.style.transform = "";
+      root.style.removeProperty("--stl-sticky-top-offset");
       root.style.removeProperty("--stl-title-center-shift");
       root.style.removeProperty("--stl-mobile-media-max-height");
       root._mobileScrollDistance = 0;
@@ -937,6 +980,7 @@
       void panel.offsetWidth;
 
       root.classList.add("shop-the-look--sticky-enabled");
+      syncStickyTopOffset();
       panel.style.transform = "translate3d(0px, 0, 0)";
       void panel.offsetWidth;
       const scrollableDistance = syncStickyTravelMetrics();
@@ -944,6 +988,7 @@
       if (scrollableDistance <= 0) {
         root.classList.remove("shop-the-look--sticky-enabled");
         panel.style.transform = "";
+        root.style.removeProperty("--stl-sticky-top-offset");
         root.style.removeProperty("--stl-title-center-shift");
         root.style.removeProperty("--stl-mobile-media-max-height");
         root.style.height = "";
@@ -1002,6 +1047,11 @@
       syncResponsiveLayoutClasses();
 
       if (!widthChanged && !layoutModeChanged) {
+        if (isScrollActive) {
+          pendingStickyMetricRefresh = true;
+          return;
+        }
+
         window.requestAnimationFrame(() => {
           if (refreshStickyMetrics() && typeof root._mobileScrollHandler === "function") {
             root._mobileScrollHandler();
