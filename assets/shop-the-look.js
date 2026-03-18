@@ -8,6 +8,7 @@
   const STL_SCROLL_LOCK_TOLERANCE = 6;
   const STL_SCROLL_LOCK_IDLE_MS = 140;
   const STL_SCROLL_LOCK_MAX_MS = 2000;
+  const STL_RESIZE_REINIT_DEBOUNCE_MS = 140;
 
   const toNumber = (value) => {
     const parsed = Number(value);
@@ -191,8 +192,11 @@
     );
     let lastTouchY = 0;
     let hasTouchTracking = false;
+    let pendingResizeReinit = 0;
     root._mobileViewportWidth = 0;
     root._mobileViewportHeight = 0;
+    root._lastResizeViewportWidth = window.innerWidth;
+    root._lastLandscapeDesktopMode = mobileLayout.matches && landscapeDesktopLayout.matches;
 
     const shouldUseLandscapeDesktopLayout = () => mobileLayout.matches && landscapeDesktopLayout.matches;
     const shouldUseMobileCardLayout = () => mobileLayout.matches && !shouldUseLandscapeDesktopLayout();
@@ -926,10 +930,50 @@
       onGlobalScroll();
     };
 
-    window.addEventListener("resize", () => {
+    const scheduleMobileScrollInit = () => {
+      if (pendingResizeReinit) {
+        window.clearTimeout(pendingResizeReinit);
+      }
+
+      pendingResizeReinit = window.setTimeout(() => {
+        pendingResizeReinit = 0;
+        window.requestAnimationFrame(() => {
+          initMobileScroll();
+          handleScroll();
+        });
+      }, STL_RESIZE_REINIT_DEBOUNCE_MS);
+    };
+
+    const handleViewportResize = () => {
+      const viewportWidth = window.innerWidth;
+      const landscapeDesktopMode = shouldUseLandscapeDesktopLayout();
+      const widthChanged = Math.abs(viewportWidth - root._lastResizeViewportWidth) > 2;
+      const layoutModeChanged = landscapeDesktopMode !== root._lastLandscapeDesktopMode;
+
+      root._lastResizeViewportWidth = viewportWidth;
+      root._lastLandscapeDesktopMode = landscapeDesktopMode;
       syncResponsiveLayoutClasses();
-      requestAnimationFrame(initMobileScroll);
-    });
+
+      // iOS Safari fires resize while scrolling as the browser chrome expands
+      // and collapses. Rebuilding the sticky layout on those height-only resizes
+      // causes the whole section to jitter. Only reinitialize for real width or
+      // layout mode changes; otherwise keep the current sticky metrics stable.
+      if (!widthChanged && !layoutModeChanged) {
+        if (shouldUseMobileStickyLayout()) {
+          syncLockedMobileViewportHeight();
+          if (typeof root._mobileScrollHandler === "function") {
+            root._mobileScrollHandler();
+          }
+        }
+
+        handleScroll();
+        return;
+      }
+
+      scheduleMobileScrollInit();
+    };
+
+    window.addEventListener("resize", handleViewportResize);
 
     if (document.readyState === "complete") {
       initMobileScroll();
