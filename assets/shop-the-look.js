@@ -4,6 +4,9 @@
 
   const DESKTOP_CARD_FOCUS_RATIO = 0.32;
   const STL_MOBILE_BREAKPOINT = 820;
+  const STL_LANDSCAPE_DESKTOP_MIN_WIDTH = 720;
+  const STL_LANDSCAPE_DESKTOP_MIN_HEIGHT = 400;
+  const STL_SHORT_LANDSCAPE_MAX_HEIGHT = 560;
   const STL_MOBILE_STICKY_END_BUFFER = 12;
   const STL_SCROLL_LOCK_TOLERANCE = 6;
   const STL_SCROLL_LOCK_IDLE_MS = 140;
@@ -186,10 +189,28 @@
     let pendingScrollTarget = null;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobileLayout = window.matchMedia(`(max-width: ${STL_MOBILE_BREAKPOINT}px)`);
+    const landscapeDesktopLayout = window.matchMedia(
+      `(max-width: ${STL_MOBILE_BREAKPOINT}px) and (orientation: landscape) and (min-width: ${STL_LANDSCAPE_DESKTOP_MIN_WIDTH}px) and (min-height: ${STL_LANDSCAPE_DESKTOP_MIN_HEIGHT}px)`
+    );
+    const shortLandscapeLayout = window.matchMedia(
+      `(max-width: ${STL_MOBILE_BREAKPOINT}px) and (orientation: landscape) and (max-height: ${STL_SHORT_LANDSCAPE_MAX_HEIGHT}px)`
+    );
     let lastTouchY = 0;
     let hasTouchTracking = false;
     root._mobileViewportWidth = 0;
     root._mobileViewportHeight = 0;
+
+    const shouldUseLandscapeDesktopLayout = () => mobileLayout.matches && landscapeDesktopLayout.matches;
+    const shouldUseMobileCardLayout = () => mobileLayout.matches && !shouldUseLandscapeDesktopLayout();
+
+    // Short landscape phones should avoid the portrait-style sticky sequence.
+    const shouldUseMobileStickyLayout = () => shouldUseMobileCardLayout() && !shortLandscapeLayout.matches;
+
+    const syncResponsiveLayoutClasses = () => {
+      root.classList.toggle("shop-the-look--landscape-desktop", shouldUseLandscapeDesktopLayout());
+    };
+
+    syncResponsiveLayoutClasses();
 
     const resetLockedMobileViewportHeight = () => {
       root._mobileViewportWidth = 0;
@@ -294,7 +315,7 @@
       let bestIndex = activeIndex >= 0 ? activeIndex : toNumber(cards[0].dataset.index);
       let bestDistance = Infinity;
 
-      if (mobileLayout.matches && panel) {
+      if (shouldUseMobileCardLayout() && panel) {
         const panelRect = panel.getBoundingClientRect();
         const targetX = panelRect.left + panelRect.width * 0.35;
 
@@ -452,7 +473,7 @@
       const target = findCardByIndex(nextIndex);
       if (!target) return null;
 
-      if (mobileLayout.matches && panel) {
+      if (shouldUseMobileCardLayout() && panel) {
         if (root.classList.contains("shop-the-look--sticky-enabled")) {
           const { rootTop, maxDistance, firstCardCenter } = getStickyScrollMetrics();
           const targetCenter = target.offsetLeft + (target.offsetWidth / 2);
@@ -529,7 +550,7 @@
         return;
       }
 
-      if (mobileLayout.matches && root.classList.contains("shop-the-look--sticky-enabled")) {
+      if (shouldUseMobileCardLayout() && root.classList.contains("shop-the-look--sticky-enabled")) {
         const maxStickyDistance = Number.isFinite(root._mobileScrollDistance)
           ? root._mobileScrollDistance
           : Infinity;
@@ -549,7 +570,7 @@
     };
 
     const onTouchStart = (event) => {
-      if (!mobileLayout.matches || !panel) return;
+      if (!shouldUseMobileCardLayout() || !panel) return;
       if (root.classList.contains("shop-the-look--sticky-enabled")) return;
 
       if (!event.touches || event.touches.length !== 1) return;
@@ -560,7 +581,7 @@
     };
 
     const onTouchMove = (event) => {
-      if (!mobileLayout.matches || !panel) return;
+      if (!shouldUseMobileCardLayout() || !panel) return;
       if (root.classList.contains("shop-the-look--sticky-enabled")) return;
 
       if (!event.touches || event.touches.length !== 1) return;
@@ -585,7 +606,7 @@
     };
 
     const onWheel = (event) => {
-      if (!mobileLayout.matches || !panel) return;
+      if (!shouldUseMobileCardLayout() || !panel) return;
       if (root.classList.contains("shop-the-look--sticky-enabled")) return;
 
       const maxScroll = getPanelMaxScroll();
@@ -621,7 +642,7 @@
         preClickScrollY = null;
 
         let skipDownwardScroll = false;
-        if (mobileLayout.matches && panel && root.classList.contains("shop-the-look--sticky-enabled")) {
+        if (shouldUseMobileCardLayout() && panel && root.classList.contains("shop-the-look--sticky-enabled")) {
           const target = findCardByIndex(index);
           if (target) {
             const { rootTop, maxDistance, firstCardCenter } = getStickyScrollMetrics();
@@ -784,8 +805,9 @@
 
     const initMobileScroll = () => {
       clearPendingScrollTarget();
+      syncResponsiveLayoutClasses();
 
-      if (!mobileLayout.matches) {
+      if (!shouldUseMobileStickyLayout()) {
         removeMobileScrollHandler();
         root.classList.remove("shop-the-look--sticky-enabled");
         root.style.height = "";
@@ -899,7 +921,7 @@
       root.style.height = `${requiredSectionHeight}px`;
 
       const onGlobalScroll = () => {
-        if (!mobileLayout.matches) return;
+        if (!shouldUseMobileStickyLayout()) return;
         const rect = root.getBoundingClientRect();
         const offset = -rect.top;
         const progress = Math.max(0, Math.min(scrollableDistance, offset));
@@ -913,6 +935,7 @@
     };
 
     window.addEventListener("resize", () => {
+      syncResponsiveLayoutClasses();
       requestAnimationFrame(initMobileScroll);
     });
 
