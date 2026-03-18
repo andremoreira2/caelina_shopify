@@ -4,9 +4,6 @@
 
   const DESKTOP_CARD_FOCUS_RATIO = 0.32;
   const STL_MOBILE_BREAKPOINT = 820;
-  const STL_LANDSCAPE_DESKTOP_MIN_WIDTH = 720;
-  const STL_LANDSCAPE_DESKTOP_MIN_HEIGHT = 400;
-  const STL_SHORT_LANDSCAPE_MAX_HEIGHT = 560;
   const STL_MOBILE_STICKY_END_BUFFER = 12;
   const STL_SCROLL_LOCK_TOLERANCE = 6;
   const STL_SCROLL_LOCK_IDLE_MS = 140;
@@ -190,10 +187,7 @@
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobileLayout = window.matchMedia(`(max-width: ${STL_MOBILE_BREAKPOINT}px)`);
     const landscapeDesktopLayout = window.matchMedia(
-      `(max-width: ${STL_MOBILE_BREAKPOINT}px) and (orientation: landscape) and (min-width: ${STL_LANDSCAPE_DESKTOP_MIN_WIDTH}px) and (min-height: ${STL_LANDSCAPE_DESKTOP_MIN_HEIGHT}px)`
-    );
-    const shortLandscapeLayout = window.matchMedia(
-      `(max-width: ${STL_MOBILE_BREAKPOINT}px) and (orientation: landscape) and (max-height: ${STL_SHORT_LANDSCAPE_MAX_HEIGHT}px)`
+      `(max-width: ${STL_MOBILE_BREAKPOINT}px) and (orientation: landscape)`
     );
     let lastTouchY = 0;
     let hasTouchTracking = false;
@@ -202,9 +196,7 @@
 
     const shouldUseLandscapeDesktopLayout = () => mobileLayout.matches && landscapeDesktopLayout.matches;
     const shouldUseMobileCardLayout = () => mobileLayout.matches && !shouldUseLandscapeDesktopLayout();
-
-    // Short landscape phones should avoid the portrait-style sticky sequence.
-    const shouldUseMobileStickyLayout = () => shouldUseMobileCardLayout() && !shortLandscapeLayout.matches;
+    const shouldUseMobileStickyLayout = () => shouldUseMobileCardLayout();
 
     const syncResponsiveLayoutClasses = () => {
       root.classList.toggle("shop-the-look--landscape-desktop", shouldUseLandscapeDesktopLayout());

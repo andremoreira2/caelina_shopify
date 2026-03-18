@@ -4944,55 +4944,29 @@ body.cart-drawer-open .product-floating-atc {
 
 }
 
-/* Keep the non-sticky landscape fallback compact on short phone viewports. */
-@media (max-width: 820px) and (orientation: landscape) and (max-height: 560px) {
-  .shop-the-look {
-    --stl-mobile-media-product-gap: 12px;
-  }
-
-  .shop-the-look__layout {
-    gap: 12px;
-  }
-
-  .shop-the-look__panel {
-    gap: 10px;
-    padding-bottom: 8px;
-  }
-
-  .shop-the-look__card {
-    flex: 0 0 min(46vw, 320px);
-    max-width: 320px;
-    padding-bottom: 12px;
-  }
-
-  .shop-the-look__card-media img {
-    height: clamp(156px, 24vw, 220px);
-  }
-}
-
 @media (max-width: 820px) {
-  /* Large enough landscape phones can use the desktop composition comfortably. */
+  /* Landscape phones use a slimmer desktop-style composition. */
   .shop-the-look--landscape-desktop {
-    --stl-desktop-media-width: clamp(360px, 54vw, 520px);
-    --stl-desktop-media-max-height: calc(100dvh - var(--stl-sticky-line) - 48px);
-    padding: 18px 16px 28px;
+    --stl-desktop-media-width: clamp(320px, 54vw, 520px);
+    --stl-desktop-media-max-height: calc(100dvh - var(--stl-sticky-line) - 32px);
+    padding: 16px 12px 24px;
   }
 
   .shop-the-look--home.shop-the-look--landscape-desktop {
-    padding: 10px 16px 16px;
+    padding: 10px 12px 14px;
   }
 
   .shop-the-look--product.shop-the-look--home.shop-the-look--landscape-desktop {
-    padding: 18px 16px 28px;
+    padding: 16px 12px 24px;
   }
 
   .shop-the-look--landscape-desktop .shop-the-look-switcher {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .shop-the-look--landscape-desktop .shop-the-look__layout {
-    grid-template-columns: minmax(0, 1.08fr) minmax(250px, 0.92fr);
-    gap: clamp(12px, 2.4vw, 18px);
+    grid-template-columns: minmax(0, 1.02fr) minmax(220px, 0.98fr);
+    gap: clamp(10px, 2vw, 16px);
   }
 
   .shop-the-look--landscape-desktop .shop-the-look__header {
@@ -5036,10 +5010,10 @@ body.cart-drawer-open .product-floating-atc {
 
   .shop-the-look--landscape-desktop .shop-the-look__panel {
     display: grid;
-    gap: 14px;
+    gap: 12px;
     overflow: visible;
     justify-items: center;
-    padding-top: min(48px, max(16px, calc(var(--stl-sticky-line) - 76px)));
+    padding-top: min(36px, max(10px, calc(var(--stl-sticky-line) - 96px)));
     scroll-snap-type: none;
   }
 
@@ -5049,17 +5023,17 @@ body.cart-drawer-open .product-floating-atc {
 
   .shop-the-look--landscape-desktop .shop-the-look__card {
     flex: initial;
-    width: min(100%, 320px);
+    width: min(100%, 280px);
     max-width: 100%;
     padding-right: 0;
-    padding-bottom: 18px;
+    padding-bottom: 16px;
     transform: scale(0.97);
     scroll-snap-align: none;
     scroll-snap-stop: normal;
   }
 
   .shop-the-look--home.shop-the-look--landscape-desktop .shop-the-look__card {
-    width: min(100%, 296px);
+    width: min(100%, 264px);
   }
 
   .shop-the-look--landscape-desktop .shop-the-look__card::after {
@@ -5067,7 +5041,7 @@ body.cart-drawer-open .product-floating-atc {
   }
 
   .shop-the-look--landscape-desktop .shop-the-look__card-media img {
-    height: clamp(152px, 22vw, 240px);
+    height: clamp(136px, 30vh, 210px);
   }
 }
 
