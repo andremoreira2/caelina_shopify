@@ -101,6 +101,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
+  overflow-x: clip;
 }
 
 body {
