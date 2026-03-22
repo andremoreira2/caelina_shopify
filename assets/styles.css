@@ -3562,6 +3562,7 @@ body.cart-drawer-open .product-floating-atc {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 24px;
   padding: 18px 0;
   background: transparent;
   border: none;
@@ -3579,10 +3580,12 @@ body.cart-drawer-open .product-floating-atc {
 }
 
 .accordion-content {
-  max-height: 0;
+  height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease;
-  opacity: 0.8;
+  padding-bottom: 0;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: height 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease, transform 0.35s ease, padding-bottom 0.35s ease;
   font-size: 14px;
   line-height: 1.6;
 }
@@ -3600,13 +3603,39 @@ body.cart-drawer-open .product-floating-atc {
 }
 
 .accordion-content.is-open {
-  max-height: 500px;
+  opacity: 0.8;
+  transform: translateY(0);
   padding-bottom: 18px;
 }
 
 .accordion-icon {
-  font-size: 18px;
-  line-height: 1;
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.accordion-icon::before,
+.accordion-icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.accordion-icon::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.accordion-header[aria-expanded="true"] .accordion-icon::after {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(90deg) scaleX(0);
 }
 
 /* Overrides for product layout in light mode */

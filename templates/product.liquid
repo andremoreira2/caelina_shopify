@@ -124,50 +124,105 @@
       <!-- Accordions -->
       <div class="product-accordions">
         <div class="accordion-item">
-            <button class="accordion-header" type="button" aria-expanded="false">
+            <button
+              class="accordion-header"
+              id="accordion-header-description"
+              type="button"
+              aria-expanded="false"
+              aria-controls="accordion-description"
+            >
                 Description
-                <span class="accordion-icon">+</span>
+                <span class="accordion-icon" aria-hidden="true"></span>
             </button>
-            <div class="accordion-content" id="accordion-description">
+            <div
+              class="accordion-content"
+              id="accordion-description"
+              role="region"
+              aria-labelledby="accordion-header-description"
+            >
                 {% unless product.description != blank %}
                   <p>No description available.</p>
                 {% endunless %}
             </div>
         </div>
         <div class="accordion-item" id="accordion-item-details">
-            <button class="accordion-header" type="button" aria-expanded="false">
+            <button
+              class="accordion-header"
+              id="accordion-header-details"
+              type="button"
+              aria-expanded="false"
+              aria-controls="accordion-details"
+            >
                 Details
-                <span class="accordion-icon">+</span>
+                <span class="accordion-icon" aria-hidden="true"></span>
             </button>
-            <div class="accordion-content" id="accordion-details">
+            <div
+              class="accordion-content"
+              id="accordion-details"
+              role="region"
+              aria-labelledby="accordion-header-details"
+            >
             </div>
         </div>
         <div class="accordion-item" id="accordion-item-materials">
-            <button class="accordion-header" type="button" aria-expanded="false">
+            <button
+              class="accordion-header"
+              id="accordion-header-materials"
+              type="button"
+              aria-expanded="false"
+              aria-controls="accordion-materials"
+            >
                 Materials
-                <span class="accordion-icon">+</span>
+                <span class="accordion-icon" aria-hidden="true"></span>
             </button>
-            <div class="accordion-content" id="accordion-materials">
+            <div
+              class="accordion-content"
+              id="accordion-materials"
+              role="region"
+              aria-labelledby="accordion-header-materials"
+            >
                 {% unless product.description != blank %}
                   <p>Premium sterling silver or 14k gold vermeil.</p>
                 {% endunless %}
             </div>
         </div>
         <div class="accordion-item">
-            <button class="accordion-header" type="button" aria-expanded="false">
+            <button
+              class="accordion-header"
+              id="accordion-header-care"
+              type="button"
+              aria-expanded="false"
+              aria-controls="accordion-care"
+            >
                 Care & Maintenance
-                <span class="accordion-icon">+</span>
+                <span class="accordion-icon" aria-hidden="true"></span>
             </button>
-            <div class="accordion-content">
+            <div
+              class="accordion-content"
+              id="accordion-care"
+              role="region"
+              aria-labelledby="accordion-header-care"
+            >
                 <p>Gentle cleaning with a soft cloth. Avoid harsh chemicals.</p>
             </div>
         </div>
         <div class="accordion-item">
-            <button class="accordion-header" type="button" aria-expanded="false">
+            <button
+              class="accordion-header"
+              id="accordion-header-shipping"
+              type="button"
+              aria-expanded="false"
+              aria-controls="accordion-shipping"
+            >
                 Shipping & Returns
-                <span class="accordion-icon">+</span>
+                <span class="accordion-icon" aria-hidden="true"></span>
             </button>
-            <div class="accordion-content">
+            <div
+              class="accordion-content"
+              id="accordion-shipping"
+              role="region"
+              aria-labelledby="accordion-header-shipping"
+            >
                 <p>Free shipping on orders over $100. Returns accepted within 30 days.</p>
             </div>
         </div>
@@ -480,24 +535,72 @@
     }
 
     // Accordion Logic
-    const accordions = document.querySelectorAll(".accordion-header");
-    accordions.forEach(header => {
-        header.addEventListener("click", () => {
-            const content = header.nextElementSibling;
-            const isOpen = content.classList.contains("is-open");
-            
-            // Close others if desired (optional, keeping independent here)
-            // accordions.forEach(h => {
-            //    if(h !== header) {
-            //        h.nextElementSibling.classList.remove("is-open");
-            //        h.querySelector(".accordion-icon").textContent = "+";
-            //    }
-            // });
+    const accordionHeaders = Array.from(document.querySelectorAll(".accordion-header"));
 
-            content.classList.toggle("is-open");
-            header.setAttribute("aria-expanded", !isOpen);
-            header.querySelector(".accordion-icon").textContent = isOpen ? "+" : "-";
+    const getAccordionContent = header => {
+      const content = header.nextElementSibling;
+      return content instanceof HTMLElement ? content : null;
+    };
+
+    const openAccordion = header => {
+      const content = getAccordionContent(header);
+      if (!content || header.getAttribute("aria-expanded") === "true") return;
+
+      const startHeight = content.getBoundingClientRect().height;
+      content.classList.add("is-open");
+      content.setAttribute("aria-hidden", "false");
+      header.setAttribute("aria-expanded", "true");
+      content.style.height = `${startHeight}px`;
+      void content.offsetHeight;
+
+      requestAnimationFrame(() => {
+        content.style.height = `${content.scrollHeight}px`;
+      });
+    };
+
+    const closeAccordion = header => {
+      const content = getAccordionContent(header);
+      if (!content || header.getAttribute("aria-expanded") !== "true") return;
+
+      content.style.height = `${content.getBoundingClientRect().height}px`;
+      void content.offsetHeight;
+
+      requestAnimationFrame(() => {
+        content.classList.remove("is-open");
+        content.setAttribute("aria-hidden", "true");
+        header.setAttribute("aria-expanded", "false");
+        content.style.height = "0px";
+      });
+    };
+
+    accordionHeaders.forEach(header => {
+      const content = getAccordionContent(header);
+      if (!content) return;
+
+      content.setAttribute("aria-hidden", "true");
+      content.style.height = "0px";
+
+      content.addEventListener("transitionend", event => {
+        if (event.propertyName !== "height") return;
+        content.style.height = header.getAttribute("aria-expanded") === "true" ? "auto" : "0px";
+      });
+
+      header.addEventListener("click", () => {
+        const isOpen = header.getAttribute("aria-expanded") === "true";
+
+        accordionHeaders.forEach(otherHeader => {
+          if (otherHeader !== header) {
+            closeAccordion(otherHeader);
+          }
         });
+
+        if (isOpen) {
+          closeAccordion(header);
+          return;
+        }
+
+        openAccordion(header);
+      });
     });
 
     // Description Section Parser
