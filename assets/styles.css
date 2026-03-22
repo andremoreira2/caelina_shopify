@@ -95,6 +95,11 @@
   --price-gap: 0;
 }
 
+html {
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+}
+
 html,
 body {
   min-height: 100%;
@@ -105,6 +110,7 @@ body {
 
 body {
   overflow-x: clip;
+  overscroll-behavior-x: none;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
 }
 
