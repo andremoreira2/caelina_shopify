@@ -146,7 +146,8 @@ body.cart-drawer-open {
   text-align: center;
   position: relative;
   isolation: isolate;
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .home-page__media {
