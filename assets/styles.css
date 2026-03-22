@@ -3653,9 +3653,7 @@ body.cart-drawer-open .product-floating-atc {
 }
 
 .product-announcement {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  width: 100%;
   background: #17171f;
   color: #ffffff;
   overflow: hidden;
