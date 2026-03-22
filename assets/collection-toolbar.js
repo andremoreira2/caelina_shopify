@@ -308,6 +308,30 @@
     }
   }
 
+  function preservePriceFloor() {
+    var storedFloor = parsePriceNumber(root.getAttribute("data-price-floor"));
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-price-range]"), function (group) {
+      var parts = getPriceRangeParts(group);
+      if (!parts) return;
+
+      var currentMin = parsePriceNumber(parts.minSlider.min);
+      if (currentMin == null) return;
+
+      var floor = storedFloor != null ? Math.min(storedFloor, currentMin) : currentMin;
+      root.setAttribute("data-price-floor", String(floor));
+
+      if (floor < currentMin) {
+        var s = String(floor);
+        parts.minSlider.min = s;
+        parts.maxSlider.min = s;
+        parts.minInput.min = s;
+        parts.maxInput.min = s;
+        parts.minInput.placeholder = s;
+      }
+    });
+  }
+
   function syncPriceRanges(scope, options) {
     var groups;
 
@@ -617,6 +641,7 @@
         syncFilterGroupStates(drawer || root);
       }
 
+      preservePriceFloor();
       syncPriceRanges(drawer || root, {
         commitFields: true
       });
@@ -813,6 +838,7 @@
   cacheElements();
   restoreDrawerState(false);
   normalizeSingleOpenFilterGroups(root);
+  preservePriceFloor();
   syncPriceRanges(root, {
     commitFields: true
   });

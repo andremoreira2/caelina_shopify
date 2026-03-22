@@ -1,3 +1,13 @@
+{% assign collection_min_price = 0 %}
+{% assign collection_min_price_raw = 0 %}
+{% for product in collection.products limit: 50 %}
+  {% assign p_price = product.price | money_without_currency | replace: ',', '' | plus: 0 %}
+  {% if forloop.first or p_price < collection_min_price %}
+    {% assign collection_min_price = p_price %}
+    {% assign collection_min_price_raw = product.price %}
+  {% endif %}
+{% endfor %}
+
 {% paginate collection.products by 24 %}
   {% assign active_filter_count = 0 %}
   {% assign current_sort_value = collection.sort_by | default: collection.default_sort_by %}
@@ -166,7 +176,7 @@
                     {% if filter.type == 'price_range' %}
                       {% if filter.min_value.value != blank or filter.max_value.value != blank %}
                         <a class="collection-filter-chip" href="{{ filter.url_to_remove }}">
-                          {% if filter.min_value.value != blank %}{{ filter.min_value.value | money }}{% else %}$0{% endif %}
+                          {% if filter.min_value.value != blank %}{{ filter.min_value.value | money }}{% else %}{{ collection_min_price_raw | money }}{% endif %}
                           -
                           {% if filter.max_value.value != blank %}{{ filter.max_value.value | money }}{% else %}{{ filter.range_max | money }}{% endif %}
                         </a>
@@ -208,6 +218,7 @@
                           {% case filter.type %}
                             {% when 'price_range' %}
                               {% assign price_range_max = filter.range_max | money_without_currency | replace: ',', '' | plus: 0 %}
+                              {% assign price_range_min = collection_min_price %}
                               <div class="filter-range" data-price-range>
                                 <div class="filter-range__slider" data-price-slider>
                                   <span class="filter-range__slider-track" aria-hidden="true"></span>
@@ -215,17 +226,17 @@
                                   <input
                                     class="filter-range__slider-input filter-range__slider-input--min"
                                     type="range"
-                                    min="0"
+                                    min="{{ price_range_min }}"
                                     max="{{ price_range_max }}"
                                     step="1"
-                                    value="{% if filter.min_value.value != blank %}{{ filter.min_value.value | money_without_currency | replace: ',', '' }}{% else %}0{% endif %}"
+                                    value="{% if filter.min_value.value != blank %}{{ filter.min_value.value | money_without_currency | replace: ',', '' }}{% else %}{{ price_range_min }}{% endif %}"
                                     data-price-slider-input="min"
                                     aria-label="Minimum price"
                                   >
                                   <input
                                     class="filter-range__slider-input filter-range__slider-input--max"
                                     type="range"
-                                    min="0"
+                                    min="{{ price_range_min }}"
                                     max="{{ price_range_max }}"
                                     step="1"
                                     value="{% if filter.max_value.value != blank %}{{ filter.max_value.value | money_without_currency | replace: ',', '' }}{% else %}{{ price_range_max }}{% endif %}"
@@ -240,8 +251,8 @@
                                     type="number"
                                     name="{{ filter.min_value.param_name }}"
                                     value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
-                                    placeholder="Min"
-                                    min="0"
+                                    placeholder="{{ price_range_min }}"
+                                    min="{{ price_range_min }}"
                                     max="{{ price_range_max }}"
                                     data-price-input="min"
                                   >
@@ -251,8 +262,8 @@
                                     type="number"
                                     name="{{ filter.max_value.param_name }}"
                                     value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
-                                    placeholder="Max"
-                                    min="0"
+                                    placeholder="{{ price_range_max }}"
+                                    min="{{ price_range_min }}"
                                     max="{{ price_range_max }}"
                                     data-price-input="max"
                                   >
