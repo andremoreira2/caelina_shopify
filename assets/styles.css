@@ -6016,11 +6016,15 @@ body.shop-the-look-modal-open {
 .site-footer__newsletter-fields {
   display: flex;
   gap: 10px;
+  width: 100%;
 }
 
 .site-footer__newsletter-fields input {
   flex: 1;
+  min-width: 0;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   min-height: 44px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.04);
@@ -6035,6 +6039,8 @@ body.shop-the-look-modal-open {
 }
 
 .site-footer__newsletter-fields button {
+  max-width: 100%;
+  box-sizing: border-box;
   min-height: 44px;
   border: 1px solid rgba(255, 255, 255, 0.26);
   background: #17171f;
@@ -6159,6 +6165,7 @@ body.shop-the-look-modal-open {
     flex-direction: column;
   }
 
+  .site-footer__newsletter-fields input,
   .site-footer__newsletter-fields button {
     width: 100%;
   }
