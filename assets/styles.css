@@ -3355,7 +3355,7 @@ body.collection-filters-open {
   }
 
   .collection-filter-drawer__panel {
-    width: 100%;
+    width: calc(100% - clamp(12px, 4vw, 18px));
   }
 
   .collection-sort__panel {

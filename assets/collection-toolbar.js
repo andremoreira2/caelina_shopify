@@ -82,14 +82,13 @@
 
     var rect = toolbar.getBoundingClientRect();
     var top = Math.max(0, Math.round(rect.bottom - 1));
-    var left = Math.max(0, Math.round(rect.left));
-    var right = Math.max(left, Math.round(rect.right));
-    var width = Math.max(0, right - left);
+    var left = 0;
+    var width = Math.max(0, Math.round(document.documentElement.clientWidth || window.innerWidth || rect.width));
     var clipLeft = 0;
 
     if (document.body.classList.contains("collection-filters-open") && drawerPanel) {
-      var drawerWidth = Math.round(drawerPanel.getBoundingClientRect().width || drawerPanel.offsetWidth || 0);
-      clipLeft = Math.max(0, Math.min(width, drawerWidth - left));
+      var drawerRight = Math.round(drawerPanel.getBoundingClientRect().right || drawerPanel.offsetWidth || 0);
+      clipLeft = Math.max(0, Math.min(width, drawerRight));
     }
 
     loadingBar.style.setProperty("--collection-loading-top", top + "px");
@@ -412,6 +411,127 @@
     );
   }
 
+  function resetActiveFiltersStyles(activeFilters) {
+    if (!activeFilters) return;
+    activeFilters.style.height = "";
+    activeFilters.style.opacity = "";
+    activeFilters.style.overflow = "";
+    activeFilters.style.marginBottom = "";
+    activeFilters.style.transition = "";
+    activeFilters.style.willChange = "";
+  }
+
+  function animateActiveFilters(activeFilters, expand) {
+    if (!activeFilters) {
+      return window.Promise.resolve();
+    }
+
+    if (activeFilters._cleanupActiveFiltersAnimation) {
+      activeFilters._cleanupActiveFiltersAnimation();
+    }
+
+    var computedStyles = window.getComputedStyle(activeFilters);
+    var targetHeight = expand ? Math.round(activeFilters.scrollHeight) : Math.round(activeFilters.getBoundingClientRect().height);
+    var targetMarginBottom = computedStyles.marginBottom || "0px";
+
+    if (!targetHeight) {
+      resetActiveFiltersStyles(activeFilters);
+      return window.Promise.resolve();
+    }
+
+    activeFilters.style.overflow = "hidden";
+    activeFilters.style.willChange = "height, opacity, margin-bottom";
+    activeFilters.style.height = (expand ? 0 : targetHeight) + "px";
+    activeFilters.style.opacity = expand ? "0" : computedStyles.opacity;
+    activeFilters.style.marginBottom = expand ? "0px" : targetMarginBottom;
+
+    activeFilters.offsetHeight;
+
+    activeFilters.style.transition = [
+      "height 320ms cubic-bezier(0.22, 1, 0.36, 1)",
+      "opacity 220ms ease",
+      "margin-bottom 320ms cubic-bezier(0.22, 1, 0.36, 1)"
+    ].join(", ");
+    activeFilters.style.height = expand ? targetHeight + "px" : "0px";
+    activeFilters.style.opacity = expand ? "1" : "0";
+    activeFilters.style.marginBottom = expand ? targetMarginBottom : "0px";
+
+    return new window.Promise(function (resolve) {
+      var finalize = function () {
+        if (activeFilters._cleanupActiveFiltersAnimation === finalize) {
+          activeFilters._cleanupActiveFiltersAnimation = null;
+        }
+
+        activeFilters.removeEventListener("transitionend", onTransitionEnd);
+        resetActiveFiltersStyles(activeFilters);
+        resolve();
+      };
+
+      var onTransitionEnd = function (event) {
+        if (event.target !== activeFilters || event.propertyName !== "height") return;
+        finalize();
+      };
+
+      activeFilters._cleanupActiveFiltersAnimation = finalize;
+      activeFilters.addEventListener("transitionend", onTransitionEnd);
+    });
+  }
+
+  function animateActiveFiltersReveal(activeFilters) {
+    return animateActiveFilters(activeFilters, true);
+  }
+
+  function animateActiveFiltersHide(activeFilters) {
+    return animateActiveFilters(activeFilters, false);
+  }
+
+  function animateActiveFiltersResize(activeFilters, startHeight) {
+    if (!activeFilters) {
+      return window.Promise.resolve();
+    }
+
+    if (activeFilters._cleanupActiveFiltersAnimation) {
+      activeFilters._cleanupActiveFiltersAnimation();
+    }
+
+    var normalizedStartHeight = Math.max(0, Math.round(startHeight || 0));
+    var endHeight = Math.round(activeFilters.scrollHeight);
+
+    if (!normalizedStartHeight || !endHeight || normalizedStartHeight === endHeight) {
+      resetActiveFiltersStyles(activeFilters);
+      return window.Promise.resolve();
+    }
+
+    activeFilters.style.overflow = "hidden";
+    activeFilters.style.willChange = "height";
+    activeFilters.style.height = normalizedStartHeight + "px";
+
+    activeFilters.offsetHeight;
+
+    activeFilters.style.transition = "height 320ms cubic-bezier(0.22, 1, 0.36, 1)";
+    activeFilters.style.height = endHeight + "px";
+
+    return new window.Promise(function (resolve) {
+      var finalize = function () {
+        if (activeFilters._cleanupActiveFiltersAnimation === finalize) {
+          activeFilters._cleanupActiveFiltersAnimation = null;
+        }
+
+        activeFilters.removeEventListener("transitionend", onTransitionEnd);
+        resetActiveFiltersStyles(activeFilters);
+        resolve();
+      };
+
+      var onTransitionEnd = function (event) {
+        if (event.target !== activeFilters || event.propertyName !== "height") return;
+        finalize();
+      };
+
+      activeFilters._cleanupActiveFiltersAnimation = finalize;
+      activeFilters.addEventListener("transitionend", onTransitionEnd);
+    });
+  }
+
   function setFilterGroupStaticState(scope, isStatic) {
     var container = scope && scope.querySelectorAll ? scope : root;
     if (!container) return;
@@ -628,6 +748,15 @@
       var preserveDrawerState = isDrawerOpen();
       var drawerScrollTop = preserveDrawerState && drawerBody ? drawerBody.scrollTop : 0;
       var openGroupState = preserveDrawerState ? getOpenFilterGroupState() : -1;
+      var currentActiveFilters = preserveDrawerState && drawer ? drawer.querySelector(".collection-filter-drawer__active") : null;
+      var currentActiveFiltersHeight = currentActiveFilters ? Math.round(currentActiveFilters.getBoundingClientRect().height) : 0;
+      var hadActiveFilters = !!currentActiveFilters;
+      var nextHasActiveFilters = preserveDrawerState && !!nextContent.querySelector(".collection-filter-drawer__active");
+
+      if (preserveDrawerState && hadActiveFilters && !nextHasActiveFilters && drawer) {
+        await animateActiveFiltersHide(drawer.querySelector(".collection-filter-drawer__active"));
+        if (requestToken !== nextRequestToken) return;
+      }
 
       content.innerHTML = nextContent.innerHTML;
       cacheElements();
@@ -639,6 +768,12 @@
       } else {
         normalizeSingleOpenFilterGroups(drawer || root);
         syncFilterGroupStates(drawer || root);
+      }
+
+      if (preserveDrawerState && !hadActiveFilters && drawer) {
+        animateActiveFiltersReveal(drawer.querySelector(".collection-filter-drawer__active"));
+      } else if (preserveDrawerState && hadActiveFilters && nextHasActiveFilters && drawer) {
+        animateActiveFiltersResize(drawer.querySelector(".collection-filter-drawer__active"), currentActiveFiltersHeight);
       }
 
       preservePriceFloor();
