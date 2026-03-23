@@ -1,19 +1,30 @@
 <section class="product-page">
-  <h1 class="product-title product-title--mobile">{{ product.title }}</h1>
   <div class="product-media">
     {% assign gallery_images = product.media | where: "media_type", "image" %}
     {% assign image_count = gallery_images.size %}
     {% assign image_remainder = image_count | modulo: 2 %}
-    <div class="product-gallery-grid{% if image_count > 1 and image_remainder == 1 %} product-gallery-grid--odd{% endif %}">
-      {% for media in gallery_images %}
-        <div class="product-gallery-grid__item">
-          <img
-            src="{{ media | image_url: width: 1200 }}"
-            alt="{{ media.alt | escape }}"
-            loading="{% if forloop.index0 < 2 %}eager{% else %}lazy{% endif %}"
-          >
+    <div class="product-gallery-frame">
+      <div class="product-gallery-grid{% if image_count > 1 and image_remainder == 1 %} product-gallery-grid--odd{% endif %}" data-product-gallery>
+        {% for media in gallery_images %}
+          <div class="product-gallery-grid__item">
+            <img
+              src="{{ media | image_url: width: 1200 }}"
+              alt="{{ media.alt | escape }}"
+              loading="{% if forloop.index0 < 2 %}eager{% else %}lazy{% endif %}"
+            >
+          </div>
+        {% endfor %}
+      </div>
+      {% if image_count > 1 %}
+        <div
+          class="product-gallery-progress"
+          data-product-gallery-progress
+          aria-hidden="true"
+          style="--product-gallery-count: {{ image_count }};"
+        >
+          <span class="product-gallery-progress__thumb"></span>
         </div>
-      {% endfor %}
+      {% endif %}
     </div>
     {% if image_count == 0 %}
       <div class="product-placeholder">No images yet.</div>
@@ -80,7 +91,9 @@
              <label class="visually-hidden" for="quantity">Quantity</label>
              <!-- Simplified Quantity Input to match design ( - 1 + ) -->
              <div class="qty-control">
-                <button type="button" class="qty-btn" data-qty-minus aria-label="Decrease quantity">&minus;</button>
+                <button type="button" class="qty-btn qty-btn--minus" data-qty-minus aria-label="Decrease quantity">
+                  <span class="qty-btn__icon" aria-hidden="true"></span>
+                </button>
                 <input
                   id="quantity"
                   class="product-qty"
@@ -93,7 +106,9 @@
                   inputmode="none"
                   readonly
                 >
-                <button type="button" class="qty-btn" data-qty-plus aria-label="Increase quantity">&plus;</button>
+                <button type="button" class="qty-btn qty-btn--plus" data-qty-plus aria-label="Increase quantity">
+                  <span class="qty-btn__icon" aria-hidden="true"></span>
+                </button>
              </div>
         </div>
 
@@ -111,11 +126,6 @@
             <span class="btn-text">{% if current_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
         </button>
       </div>
-      
-      {% if current_variant.available %}
-        <button type="button" class="btn secondary">Buy it now</button>
-      {% endif %}
-
       <!-- Hidden raw description for JS parsing -->
       {% if product.description != blank %}
         <div id="product-description-raw" hidden>{{ product.description }}</div>
@@ -380,6 +390,8 @@
     const qtyWrapper = document.querySelector("[data-qty-wrapper]");
     const formRow = document.querySelector(".product-form-row");
     const optionGroups = document.querySelectorAll("[data-option-index]");
+    const galleryGrid = document.querySelector("[data-product-gallery]");
+    const galleryProgress = document.querySelector("[data-product-gallery-progress]");
     const floatingBar = document.querySelector("[data-floating-atc]");
     const floatingPrice = floatingBar?.querySelector("[data-floating-price]");
     const floatingAddBtn = floatingBar?.querySelector("[data-floating-add-to-cart]");
@@ -450,6 +462,36 @@
         window.addEventListener("resize", checkVisibility);
       }
       checkVisibility();
+    }
+
+    if (galleryGrid && galleryProgress) {
+      let galleryProgressFrame = 0;
+
+      const syncGalleryProgress = () => {
+        galleryProgressFrame = 0;
+        const maxScrollLeft = Math.max(0, galleryGrid.scrollWidth - galleryGrid.clientWidth);
+        const progress = maxScrollLeft > 1
+          ? Math.min(1, Math.max(0, galleryGrid.scrollLeft / maxScrollLeft))
+          : 0;
+
+        galleryProgress.style.setProperty("--product-gallery-progress", progress.toFixed(4));
+        galleryProgress.hidden = maxScrollLeft <= 1;
+      };
+
+      const queueGalleryProgressSync = () => {
+        if (galleryProgressFrame) return;
+        galleryProgressFrame = window.requestAnimationFrame(syncGalleryProgress);
+      };
+
+      galleryGrid.addEventListener("scroll", queueGalleryProgressSync, { passive: true });
+      window.addEventListener("resize", queueGalleryProgressSync);
+
+      if ("ResizeObserver" in window) {
+        const galleryResizeObserver = new ResizeObserver(queueGalleryProgressSync);
+        galleryResizeObserver.observe(galleryGrid);
+      }
+
+      queueGalleryProgressSync();
     }
 
     if (variantSelect) {
@@ -565,10 +607,11 @@
       content.style.height = `${content.getBoundingClientRect().height}px`;
       void content.offsetHeight;
 
+      content.classList.remove("is-open");
+      content.setAttribute("aria-hidden", "true");
+      header.setAttribute("aria-expanded", "false");
+
       requestAnimationFrame(() => {
-        content.classList.remove("is-open");
-        content.setAttribute("aria-hidden", "true");
-        header.setAttribute("aria-expanded", "false");
         content.style.height = "0px";
       });
     };
@@ -679,10 +722,23 @@
     if(qtyInput && minusBtn && plusBtn) {
         const minQty = Number(qtyInput.min) || 1;
         const maxQty = Number(qtyInput.max) || 99;
+        const qtyPressTimers = new WeakMap();
         const clampQty = (value) => {
             const parsed = parseInt(value, 10);
             if (!Number.isFinite(parsed)) return minQty;
             return Math.min(maxQty, Math.max(minQty, parsed));
+        };
+        const animateQtyButton = (button) => {
+            if (button.disabled) return;
+            const existingTimer = qtyPressTimers.get(button);
+            if (existingTimer) window.clearTimeout(existingTimer);
+            button.classList.remove("is-animating");
+            void button.offsetWidth;
+            button.classList.add("is-animating");
+            qtyPressTimers.set(button, window.setTimeout(() => {
+                button.classList.remove("is-animating");
+                qtyPressTimers.delete(button);
+            }, 380));
         };
         const syncQty = (value) => {
             const nextQty = clampQty(value);
@@ -691,10 +747,18 @@
             plusBtn.disabled = nextQty >= maxQty;
         };
 
+        minusBtn.addEventListener("pointerdown", () => {
+            animateQtyButton(minusBtn);
+        });
+        plusBtn.addEventListener("pointerdown", () => {
+            animateQtyButton(plusBtn);
+        });
         minusBtn.addEventListener("click", () => {
+            if (!qtyPressTimers.get(minusBtn)) animateQtyButton(minusBtn);
             syncQty((parseInt(qtyInput.value, 10) || minQty) - 1);
         });
         plusBtn.addEventListener("click", () => {
+            if (!qtyPressTimers.get(plusBtn)) animateQtyButton(plusBtn);
             syncQty((parseInt(qtyInput.value, 10) || minQty) + 1);
         });
         qtyInput.addEventListener("input", () => {
