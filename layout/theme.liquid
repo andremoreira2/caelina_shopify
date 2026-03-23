@@ -124,79 +124,81 @@
   </header>
   {{ content_for_layout }}
 
-  <footer class="site-footer" role="contentinfo">
-    <div class="site-footer__inner">
-      <div class="site-footer__grid">
-        <div class="site-footer__column site-footer__column--newsletter">
-          <h2 class="site-footer__heading">Newsletter</h2>
-          <p class="site-footer__text">Get early access to drops and private offers.</p>
-          {% form 'customer', class: 'site-footer__newsletter-form' %}
-            <input type="hidden" name="contact[tags]" value="newsletter">
-            <div class="site-footer__newsletter-fields">
-              <label for="FooterNewsletterEmail" class="visually-hidden">Email</label>
-              <input
-                id="FooterNewsletterEmail"
-                type="email"
-                name="contact[email]"
-                value="{% if customer %}{{ customer.email }}{% endif %}"
-                placeholder="Enter your email"
-                autocorrect="off"
-                autocapitalize="off"
-                autocomplete="email"
-                required
-              >
-              <button type="submit">Subscribe</button>
-            </div>
-            {%- if form.posted_successfully? -%}
-              <p class="site-footer__message site-footer__message--success" tabindex="-1" autofocus>Thanks for subscribing.</p>
-            {%- elsif form.errors -%}
-              <div class="site-footer__message site-footer__message--error" tabindex="-1" autofocus>{{ form.errors | default_errors }}</div>
-            {%- endif -%}
-          {% endform %}
-        </div>
+  {% unless template.name == 'index' %}
+    <footer class="site-footer" role="contentinfo">
+      <div class="site-footer__inner">
+        <div class="site-footer__grid">
+          <div class="site-footer__column site-footer__column--newsletter">
+            <h2 class="site-footer__heading">Newsletter</h2>
+            <p class="site-footer__text">Get early access to drops and private offers.</p>
+            {% form 'customer', class: 'site-footer__newsletter-form' %}
+              <input type="hidden" name="contact[tags]" value="newsletter">
+              <div class="site-footer__newsletter-fields">
+                <label for="FooterNewsletterEmail" class="visually-hidden">Email</label>
+                <input
+                  id="FooterNewsletterEmail"
+                  type="email"
+                  name="contact[email]"
+                  value="{% if customer %}{{ customer.email }}{% endif %}"
+                  placeholder="Enter your email"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  autocomplete="email"
+                  required
+                >
+                <button type="submit">Subscribe</button>
+              </div>
+              {%- if form.posted_successfully? -%}
+                <p class="site-footer__message site-footer__message--success" tabindex="-1" autofocus>Thanks for subscribing.</p>
+              {%- elsif form.errors -%}
+                <div class="site-footer__message site-footer__message--error" tabindex="-1" autofocus>{{ form.errors | default_errors }}</div>
+              {%- endif -%}
+            {% endform %}
+          </div>
 
-        <div class="site-footer__column">
-          <h2 class="site-footer__heading">Shop</h2>
-          <ul class="site-footer__links" role="list">
-            {% assign footer_shop_links = linklists['header-subnavv'] %}
-            {% if footer_shop_links and footer_shop_links.links.size > 0 %}
-              {% for link in footer_shop_links.links %}
-                <li>
-                  <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
-                </li>
-              {% endfor %}
-            {% else %}
-              <li><a href="/collections/earrings">Earrings</a></li>
-              <li><a href="/collections/rings">Rings</a></li>
-            {% endif %}
-          </ul>
+          <div class="site-footer__column">
+            <h2 class="site-footer__heading">Shop</h2>
+            <ul class="site-footer__links" role="list">
+              {% assign footer_shop_links = linklists['header-subnavv'] %}
+              {% if footer_shop_links and footer_shop_links.links.size > 0 %}
+                {% for link in footer_shop_links.links %}
+                  <li>
+                    <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
+                  </li>
+                {% endfor %}
+              {% else %}
+                <li><a href="/collections/earrings">Earrings</a></li>
+                <li><a href="/collections/rings">Rings</a></li>
+              {% endif %}
+            </ul>
+          </div>
+
         </div>
 
       </div>
 
-    </div>
+      <div class="site-footer__meta">
+        <p>© {{ 'now' | date: '%Y' }} CAELINA. All rights reserved.</p>
+        <ul class="site-footer__payments site-footer__payments--bottom" role="list" aria-label="Payment methods">
+          {% assign enabled_payments = shop.enabled_payment_types %}
+          {% if enabled_payments and enabled_payments.size > 0 %}
+            {% for type in enabled_payments %}
+              <li class="site-footer__payment">{{ type | payment_type_svg_tag }}</li>
+            {% endfor %}
+          {% else %}
+            <li class="site-footer__payment">{{ 'visa' | payment_type_svg_tag }}</li>
+            <li class="site-footer__payment">{{ 'master' | payment_type_svg_tag }}</li>
+            <li class="site-footer__payment">{{ 'american_express' | payment_type_svg_tag }}</li>
+            <li class="site-footer__payment">{{ 'paypal' | payment_type_svg_tag }}</li>
+          {% endif %}
+        </ul>
+      </div>
 
-    <div class="site-footer__meta">
-      <p>© {{ 'now' | date: '%Y' }} CAELINA. All rights reserved.</p>
-      <ul class="site-footer__payments site-footer__payments--bottom" role="list" aria-label="Payment methods">
-        {% assign enabled_payments = shop.enabled_payment_types %}
-        {% if enabled_payments and enabled_payments.size > 0 %}
-          {% for type in enabled_payments %}
-            <li class="site-footer__payment">{{ type | payment_type_svg_tag }}</li>
-          {% endfor %}
-        {% else %}
-          <li class="site-footer__payment">{{ 'visa' | payment_type_svg_tag }}</li>
-          <li class="site-footer__payment">{{ 'master' | payment_type_svg_tag }}</li>
-          <li class="site-footer__payment">{{ 'american_express' | payment_type_svg_tag }}</li>
-          <li class="site-footer__payment">{{ 'paypal' | payment_type_svg_tag }}</li>
-        {% endif %}
-      </ul>
-    </div>
-
-    <div class="site-footer__brand" aria-hidden="true">
-      <span class="site-footer__brand-wordmark">CΛELINΛ</span>
-    </div>
-  </footer>
+      <div class="site-footer__brand" aria-hidden="true">
+        <span class="site-footer__brand-wordmark">CΛELINΛ</span>
+      </div>
+    </footer>
+  {% endunless %}
 
   <div class="cart-drawer" data-cart-drawer aria-hidden="true">
     <div class="cart-drawer__overlay" data-cart-drawer-close></div>
