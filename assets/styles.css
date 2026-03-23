@@ -130,7 +130,10 @@ body.template-product {
 }
 
 body.cart-drawer-open {
-  overflow: hidden;
+  /* Avoid creating a new scroll container on body, which breaks sticky
+     sections like shop-the-look while the cart drawer is open. */
+  overflow: clip;
+  overscroll-behavior: none;
 }
 
 .home-page {
@@ -5336,7 +5339,8 @@ body.cart-drawer-open .product-floating-atc {
 }
 
 body.shop-the-look-modal-open {
-  overflow: hidden;
+  overflow: clip;
+  overscroll-behavior: none;
 }
 
 .shop-the-look-variant-modal {
