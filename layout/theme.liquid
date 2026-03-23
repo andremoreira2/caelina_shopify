@@ -176,10 +176,6 @@
 
     </div>
 
-    <div class="site-footer__brand" aria-hidden="true">
-      <span class="site-footer__brand-wordmark">CΛELINΛ</span>
-    </div>
-
     <div class="site-footer__meta">
       <p>© {{ 'now' | date: '%Y' }} CAELINA. All rights reserved.</p>
       <ul class="site-footer__payments site-footer__payments--bottom" role="list" aria-label="Payment methods">
@@ -195,6 +191,10 @@
           <li class="site-footer__payment">{{ 'paypal' | payment_type_svg_tag }}</li>
         {% endif %}
       </ul>
+    </div>
+
+    <div class="site-footer__brand" aria-hidden="true">
+      <span class="site-footer__brand-wordmark">CΛELINΛ</span>
     </div>
   </footer>
 

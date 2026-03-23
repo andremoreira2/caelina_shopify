@@ -6099,7 +6099,7 @@ body.shop-the-look-modal-open {
 
 .site-footer__meta {
   margin-top: clamp(10px, 1.8vw, 20px);
-  padding: 0 20px 22px;
+  padding: 0 20px clamp(16px, 2vw, 22px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -6117,20 +6117,24 @@ body.shop-the-look-modal-open {
 .site-footer__brand {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
-  padding: clamp(18px, 3.8vw, 44px) 0 clamp(12px, 2vw, 20px);
+  padding: clamp(14px, 3vw, 32px) 0 0;
 }
 
 .site-footer__brand-wordmark {
   display: block;
-  width: 100%;
+  width: max-content;
+  margin: 0;
+  position: relative;
+  left: 50%;
+  transform: translate(-48.35%, 0.06em);
   text-align: center;
-  color: rgba(242, 241, 234, 0.512);
+  color: rgba(242, 241, 234, 0.5);
   font-family: "Times New Roman", Times, serif;
   text-transform: uppercase;
   font-weight: 400;
-  font-size: clamp(90px, 18vw, 280px);
-  line-height: 0.78;
-  letter-spacing: 0.22em;
+  font-size: clamp(72px, 19vw, 360px);
+  line-height: 0.74;
+  letter-spacing: 0.16em;
   user-select: none;
   white-space: nowrap;
 }
@@ -6163,6 +6167,7 @@ body.shop-the-look-modal-open {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    padding-bottom: 14px;
   }
 
   .site-footer__payments--bottom {
@@ -6171,7 +6176,6 @@ body.shop-the-look-modal-open {
   }
 
   .site-footer__brand-wordmark {
-    letter-spacing: 0.16em;
-    font-size: clamp(72px, 24vw, 140px);
+    letter-spacing: 0.12em;
   }
 }
