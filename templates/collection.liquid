@@ -369,6 +369,14 @@
                         </svg>
                       </button>
                     </div>
+                    <div
+                      class="collection-card__gallery-progress"
+                      data-collection-card-progress
+                      aria-hidden="true"
+                      style="--collection-card-gallery-count: {{ product_image_count }};"
+                    >
+                      <span class="collection-card__gallery-progress-thumb"></span>
+                    </div>
                     <script type="application/json" data-collection-card-images>
                       [
                         {% for product_image in product.images %}

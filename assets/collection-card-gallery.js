@@ -1,5 +1,6 @@
 (() => {
   const CARD_SELECTOR = ".collection-card";
+  const MOBILE_MEDIA_QUERY = "(max-width: 900px)";
 
   const initCard = (card) => {
     if (!(card instanceof HTMLElement)) return;
@@ -10,6 +11,8 @@
     const prevButton = card.querySelector("[data-collection-card-prev]");
     const nextButton = card.querySelector("[data-collection-card-next]");
     const media = card.querySelector(".collection-card__media");
+    const imageLink = card.querySelector(".collection-card__image-link");
+    const progress = card.querySelector("[data-collection-card-progress]");
 
     if (!image || !dataNode || !prevButton || !nextButton || !media) return;
 
@@ -23,6 +26,21 @@
     if (!Array.isArray(images) || images.length < 2) return;
 
     let currentIndex = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let suppressNextClick = false;
+    const mobileMedia = window.matchMedia(MOBILE_MEDIA_QUERY);
+
+    const syncProgress = () => {
+      if (!(progress instanceof HTMLElement)) return;
+      const progressValue = images.length > 1 ? currentIndex / (images.length - 1) : 0;
+      progress.style.setProperty("--collection-card-gallery-progress", progressValue.toFixed(4));
+    };
+
+    const syncButtons = () => {
+      prevButton.disabled = currentIndex <= 0;
+      nextButton.disabled = currentIndex >= images.length - 1;
+    };
 
     const syncImage = () => {
       const nextImage = images[currentIndex];
@@ -38,12 +56,15 @@
       if (nextImage.height) {
         image.height = nextImage.height;
       }
+
+      syncButtons();
+      syncProgress();
     };
 
     const setIndex = (nextIndex) => {
-      const wrappedIndex = ((nextIndex % images.length) + images.length) % images.length;
-      if (wrappedIndex === currentIndex) return;
-      currentIndex = wrappedIndex;
+      const clampedIndex = Math.max(0, Math.min(images.length - 1, nextIndex));
+      if (clampedIndex === currentIndex) return;
+      currentIndex = clampedIndex;
       syncImage();
     };
 
@@ -63,6 +84,42 @@
       event.preventDefault();
       event.stopPropagation();
       setIndex(currentIndex + 1);
+    });
+
+    media.addEventListener(
+      "touchstart",
+      (event) => {
+        if (!mobileMedia.matches || event.touches.length !== 1) return;
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
+      },
+      { passive: true }
+    );
+
+    media.addEventListener(
+      "touchend",
+      (event) => {
+        if (!mobileMedia.matches || event.changedTouches.length !== 1) return;
+
+        const deltaX = event.changedTouches[0].clientX - touchStartX;
+        const deltaY = event.changedTouches[0].clientY - touchStartY;
+
+        if (Math.abs(deltaX) < 32 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+
+        suppressNextClick = true;
+        setIndex(currentIndex + (deltaX < 0 ? 1 : -1));
+        window.setTimeout(() => {
+          suppressNextClick = false;
+        }, 260);
+      },
+      { passive: true }
+    );
+
+    imageLink?.addEventListener("click", (event) => {
+      if (!suppressNextClick) return;
+      event.preventDefault();
+      event.stopPropagation();
+      suppressNextClick = false;
     });
 
     media.addEventListener("mouseleave", resetImage);
