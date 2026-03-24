@@ -127,40 +127,47 @@
   {% assign mobile_menu = linklists['header-subnavv'] %}
   <div class="mobile-menu" data-mobile-menu aria-hidden="true">
     <div class="mobile-menu__overlay" data-mobile-menu-close></div>
-    <div class="mobile-menu__panel" id="MobileMenu" role="dialog" aria-modal="true" aria-labelledby="MobileMenuTitle" tabindex="-1">
+    <div class="mobile-menu__panel" id="MobileMenu" role="dialog" aria-modal="true" aria-label="Mobile menu" tabindex="-1">
       <div class="mobile-menu__frame">
         <header class="mobile-menu__header">
           <a class="mobile-menu__brand" href="{{ routes.root_url }}" data-mobile-menu-close>CΛELINΛ</a>
           <button class="mobile-menu__close" type="button" aria-label="Close menu" data-mobile-menu-close>Close</button>
         </header>
         <div class="mobile-menu__body">
-          <p class="mobile-menu__eyebrow" id="MobileMenuTitle">Collections</p>
-          <nav class="mobile-menu__nav" aria-label="Mobile collections">
-            {% if mobile_menu and mobile_menu.links.size > 0 %}
-              {% for link in mobile_menu.links %}
-                <a
-                  href="{{ link.url }}"
-                  class="mobile-menu__link{% if link.current or link.active or link.child_active %} is-active{% endif %}"
-                  {% if link.current %} aria-current="page"{% endif %}
-                  data-mobile-menu-close
-                >
-                  {{ link.title }}
-                </a>
-              {% endfor %}
-            {% else %}
-              {% assign jewelry_entries = 'earrings:Earrings|rings:Rings|necklaces:Necklaces|bracelets:Bracelets|watches:Watches' | split: '|' %}
-              {% for entry in jewelry_entries %}
-                {% assign parts = entry | split: ':' %}
-                {% assign handle = parts[0] %}
-                {% assign label = parts[1] %}
-                <a href="/collections/{{ handle }}" class="mobile-menu__link" data-mobile-menu-close>{{ label }}</a>
-              {% endfor %}
-            {% endif %}
-          </nav>
+          <section class="mobile-menu__section mobile-menu__section--feature" aria-labelledby="MobileMenuTitle">
+            <p class="mobile-menu__eyebrow" id="MobileMenuTitle">Explore</p>
+            <nav class="mobile-menu__nav" aria-label="Brand experience">
+              <a href="{{ routes.root_url }}" class="mobile-menu__link{% if template.name == 'index' %} is-active{% endif %}"{% if template.name == 'index' %} aria-current="page"{% endif %} data-mobile-menu-close>The World of Caelina</a>
+            </nav>
+          </section>
+          <section class="mobile-menu__section" aria-labelledby="MobileMenuCollectionsTitle">
+            <p class="mobile-menu__eyebrow" id="MobileMenuCollectionsTitle">Collections</p>
+            <nav class="mobile-menu__nav" aria-label="Mobile collections">
+              {% if mobile_menu and mobile_menu.links.size > 0 %}
+                {% for link in mobile_menu.links %}
+                  <a
+                    href="{{ link.url }}"
+                    class="mobile-menu__link{% if link.current or link.active or link.child_active %} is-active{% endif %}"
+                    {% if link.current %} aria-current="page"{% endif %}
+                    data-mobile-menu-close
+                  >
+                    {{ link.title }}
+                  </a>
+                {% endfor %}
+              {% else %}
+                {% assign jewelry_entries = 'earrings:Earrings|rings:Rings|necklaces:Necklaces|bracelets:Bracelets|watches:Watches' | split: '|' %}
+                {% for entry in jewelry_entries %}
+                  {% assign parts = entry | split: ':' %}
+                  {% assign handle = parts[0] %}
+                  {% assign label = parts[1] %}
+                  <a href="/collections/{{ handle }}" class="mobile-menu__link" data-mobile-menu-close>{{ label }}</a>
+                {% endfor %}
+              {% endif %}
+            </nav>
+          </section>
         </div>
         <footer class="mobile-menu__footer">
           <nav class="mobile-menu__utility" aria-label="Store links">
-            <a class="mobile-menu__utility-link" href="/pages/home" data-mobile-menu-close>Home</a>
             <a class="mobile-menu__utility-link" href="/search" data-mobile-menu-close>Search</a>
             <a class="mobile-menu__utility-link" href="/account" data-mobile-menu-close>Account</a>
             <a class="mobile-menu__utility-link" href="{{ routes.cart_url }}" aria-expanded="false" aria-haspopup="dialog" data-cart-toggle data-mobile-menu-close>Cart</a>

@@ -1391,6 +1391,16 @@ body.template-home .site-header {
   padding: clamp(28px, 7vh, 52px) 0 26px;
 }
 
+.mobile-menu__section {
+  display: grid;
+  gap: 16px;
+}
+
+.mobile-menu__section + .mobile-menu__section {
+  padding-top: 14px;
+  border-top: 1px solid rgba(23, 19, 15, 0.1);
+}
+
 .mobile-menu__eyebrow {
   margin: 0;
   font-size: 10px;
