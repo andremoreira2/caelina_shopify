@@ -588,15 +588,26 @@
       const content = getAccordionContent(header);
       if (!content || header.getAttribute("aria-expanded") === "true") return;
 
-      const startHeight = content.getBoundingClientRect().height;
+      // Lock padding at 0 so adding the class doesn't start a separate transition
+      content.style.paddingBottom = "0px";
       content.classList.add("is-open");
       content.setAttribute("aria-hidden", "false");
       header.setAttribute("aria-expanded", "true");
-      content.style.height = `${startHeight}px`;
+
+      // Measure the full target height with final padding applied
+      content.style.height = "auto";
+      content.style.paddingBottom = "";
+      const endHeight = content.getBoundingClientRect().height;
+
+      // Reset to collapsed state
+      content.style.height = "0px";
+      content.style.paddingBottom = "0px";
       void content.offsetHeight;
 
+      // Animate both height and padding together in the same frame
       requestAnimationFrame(() => {
-        content.style.height = `${content.scrollHeight}px`;
+        content.style.height = `${endHeight}px`;
+        content.style.paddingBottom = "";
       });
     };
 
@@ -604,6 +615,9 @@
       const content = getAccordionContent(header);
       if (!content || header.getAttribute("aria-expanded") !== "true") return;
 
+      // Lock current dimensions as inline styles before removing the class
+      // so the class removal doesn't cause a layout shift with sticky positioning
+      content.style.paddingBottom = getComputedStyle(content).paddingBottom;
       content.style.height = `${content.getBoundingClientRect().height}px`;
       void content.offsetHeight;
 
@@ -613,6 +627,7 @@
 
       requestAnimationFrame(() => {
         content.style.height = "0px";
+        content.style.paddingBottom = "0px";
       });
     };
 
@@ -625,7 +640,10 @@
 
       content.addEventListener("transitionend", event => {
         if (event.propertyName !== "height") return;
-        content.style.height = header.getAttribute("aria-expanded") === "true" ? "auto" : "0px";
+        if (header.getAttribute("aria-expanded") !== "true") {
+          content.style.height = "0px";
+          content.style.paddingBottom = "";
+        }
       });
 
       header.addEventListener("click", () => {

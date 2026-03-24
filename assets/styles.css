@@ -1582,6 +1582,8 @@ kbd {
 @media (min-width: 901px) {
   .product-page {
     --product-sticky-top: max(16px, calc(var(--site-header-offset, 0px) + 16px));
+    padding-bottom: calc(clamp(28px, 7vw, 80px) + 48px);
+    overflow-anchor: none;
   }
 
   .product-media {
@@ -1592,6 +1594,7 @@ kbd {
     position: sticky;
     top: var(--product-sticky-top);
     align-self: start;
+    overflow-anchor: none;
   }
 }
 
@@ -3754,6 +3757,7 @@ body.cart-drawer-open .product-floating-atc {
 .product-accordions {
   margin-top: 40px;
   border-top: 1px solid #e5e5e5;
+  overflow-anchor: none;
 }
 
 .accordion-item {
@@ -3783,12 +3787,12 @@ body.cart-drawer-open .product-floating-atc {
 }
 
 .accordion-content {
+  box-sizing: border-box;
   height: 0;
   overflow: hidden;
   padding-bottom: 0;
   opacity: 0;
-  transform: translateY(-8px);
-  transition: height 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease, transform 0.35s ease, padding-bottom 0.35s ease;
+  transition: height 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease, padding-bottom 0.8s cubic-bezier(0.22, 1, 0.36, 1);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -3807,7 +3811,6 @@ body.cart-drawer-open .product-floating-atc {
 
 .accordion-content.is-open {
   opacity: 0.8;
-  transform: translateY(0);
   padding-bottom: 18px;
 }
 
