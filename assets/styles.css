@@ -1256,10 +1256,6 @@ body.template-home .site-header {
 }
 
 @media (max-width: 275px) {
-  .site-header__mobile-right a[href="/account"] {
-    display: none;
-  }
-
   .site-header__brand {
     font-size: 13px;
     letter-spacing: 0.1em;
