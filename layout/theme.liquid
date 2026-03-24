@@ -86,7 +86,15 @@
     </div>
     <div class="site-header__mobile" aria-label="Mobile header">
       <div class="site-header__mobile-left">
-        <button class="site-header__icon" type="button" aria-label="Open menu">
+        <button
+          class="site-header__icon site-header__menu-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-controls="MobileMenu"
+          aria-expanded="false"
+          aria-haspopup="dialog"
+          data-mobile-menu-toggle
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
           </svg>
@@ -122,6 +130,55 @@
       </div>
     </div>
   </header>
+  {% assign mobile_menu = linklists['header-subnavv'] %}
+  <div class="mobile-menu" data-mobile-menu aria-hidden="true">
+    <div class="mobile-menu__overlay" data-mobile-menu-close></div>
+    <div class="mobile-menu__panel" id="MobileMenu" role="dialog" aria-modal="true" aria-labelledby="MobileMenuTitle" tabindex="-1">
+      <div class="mobile-menu__frame">
+        <header class="mobile-menu__header">
+          <a class="mobile-menu__brand" href="{{ routes.root_url }}" data-mobile-menu-close>CΛELINΛ</a>
+          <button class="mobile-menu__close" type="button" aria-label="Close menu" data-mobile-menu-close>Close</button>
+        </header>
+        <div class="mobile-menu__body">
+          <p class="mobile-menu__eyebrow" id="MobileMenuTitle">Collections</p>
+          <nav class="mobile-menu__nav" aria-label="Mobile collections">
+            {% if mobile_menu and mobile_menu.links.size > 0 %}
+              {% for link in mobile_menu.links %}
+                <a
+                  href="{{ link.url }}"
+                  class="mobile-menu__link{% if link.current or link.active or link.child_active %} is-active{% endif %}"
+                  {% if link.current %} aria-current="page"{% endif %}
+                  data-mobile-menu-close
+                >
+                  {{ link.title }}
+                </a>
+              {% endfor %}
+            {% else %}
+              {% assign jewelry_entries = 'earrings:Earrings|rings:Rings|necklaces:Necklaces|bracelets:Bracelets|watches:Watches' | split: '|' %}
+              {% for entry in jewelry_entries %}
+                {% assign parts = entry | split: ':' %}
+                {% assign handle = parts[0] %}
+                {% assign label = parts[1] %}
+                <a href="/collections/{{ handle }}" class="mobile-menu__link" data-mobile-menu-close>{{ label }}</a>
+              {% endfor %}
+            {% endif %}
+          </nav>
+        </div>
+        <footer class="mobile-menu__footer">
+          <nav class="mobile-menu__utility" aria-label="Store links">
+            <a class="mobile-menu__utility-link" href="/pages/home" data-mobile-menu-close>Home</a>
+            <a class="mobile-menu__utility-link" href="/search" data-mobile-menu-close>Search</a>
+            <a class="mobile-menu__utility-link" href="/account" data-mobile-menu-close>Account</a>
+            <a class="mobile-menu__utility-link" href="{{ routes.cart_url }}" aria-expanded="false" aria-haspopup="dialog" data-cart-toggle data-mobile-menu-close>Cart</a>
+          </nav>
+          <div class="mobile-menu__notes" aria-label="Store highlights">
+            <p class="mobile-menu__note">Free worldwide shipping</p>
+            <p class="mobile-menu__note">Sign up and get a $35 gift</p>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
   {{ content_for_layout }}
 
   {% unless template.name == 'index' %}
@@ -228,6 +285,7 @@
   {{ 'cart-drawer.js' | asset_url | script_tag }}
   <script src="{{ 'header-scroll.js' | asset_url }}" defer></script>
   <script src="{{ 'search.js' | asset_url }}" defer></script>
+  <script src="{{ 'mobile-menu.js' | asset_url }}" defer></script>
   {% if template.name == 'product' or (template.name == 'page' and template.suffix == 'home') %}
     <script src="{{ 'shop-the-look.js' | asset_url }}" defer></script>
   {% endif %}
