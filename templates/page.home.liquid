@@ -355,6 +355,7 @@
     var sections = document.querySelectorAll("[data-home-collections]");
     if (!sections.length) return;
     var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var mobilePeekMedia = window.matchMedia("(max-width: 680px)");
     var autoplayDelay = 2300;
 
     sections.forEach(function (section) {
@@ -385,13 +386,20 @@
         var nextPoints = [0];
         var viewportRect = viewport.getBoundingClientRect();
         var currentScroll = viewport.scrollLeft;
+        var useCenteredSnapPoints = mobilePeekMedia.matches;
 
         cards.forEach(function (card) {
           var cardRect = card.getBoundingClientRect();
           var left = currentScroll + (cardRect.left - viewportRect.left);
-          left = Math.min(maxScroll, Math.max(0, left));
-          if (Math.abs(left - nextPoints[nextPoints.length - 1]) > 2) {
-            nextPoints.push(left);
+          var targetLeft = left;
+
+          if (useCenteredSnapPoints) {
+            targetLeft = left - Math.max(0, (viewport.clientWidth - cardRect.width) / 2);
+          }
+
+          targetLeft = Math.min(maxScroll, Math.max(0, targetLeft));
+          if (Math.abs(targetLeft - nextPoints[nextPoints.length - 1]) > 2) {
+            nextPoints.push(targetLeft);
           }
         });
 
@@ -434,6 +442,12 @@
         });
       }
 
+      function updateActiveCard() {
+        track.querySelectorAll(".home-collections__card").forEach(function (card, index) {
+          card.classList.toggle("is-active", mobilePeekMedia.matches && index === currentIndex);
+        });
+      }
+
       function buildDots() {
         pagination.innerHTML = "";
         dots = [];
@@ -463,6 +477,7 @@
         var hasMultiplePages = pageCount > 1;
         prev.disabled = !hasMultiplePages;
         next.disabled = !hasMultiplePages;
+        updateActiveCard();
         updateActiveDot();
       }
 
