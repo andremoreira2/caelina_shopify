@@ -97,7 +97,7 @@
 
 html {
   overflow-x: clip;
-  overscroll-behavior-x: none;
+  overscroll-behavior: none;
 }
 
 html,
@@ -110,7 +110,7 @@ body {
 
 body {
   overflow-x: clip;
-  overscroll-behavior-x: none;
+  overscroll-behavior: none;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
 }
 
