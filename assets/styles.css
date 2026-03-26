@@ -746,7 +746,7 @@ body.mobile-menu-open {
 
   .home-collections__card {
     flex: 0 0 min(79vw, 388px);
-    min-height: 0;
+    min-height: 200px;
     aspect-ratio: 5 / 7;
     scroll-snap-align: center;
   }

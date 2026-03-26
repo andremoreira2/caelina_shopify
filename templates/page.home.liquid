@@ -605,6 +605,12 @@
       viewport.addEventListener("pointerdown", noteUserGesture);
       viewport.addEventListener("wheel", noteUserGesture, { passive: true });
       window.addEventListener("resize", recalc);
+      window.addEventListener("orientationchange", function () {
+        setTimeout(function () {
+          viewport.scrollLeft = 0;
+          recalc();
+        }, 150);
+      });
       window.addEventListener("load", recalc);
       track.querySelectorAll("img").forEach(function (img) {
         if (img.complete) return;
