@@ -375,6 +375,8 @@
       var suppressScrollResetUntil = 0;
       var lastUserGestureAt = 0;
       var hasResetForGesture = false;
+      var recalcFrameId = 0;
+      var recalcTimeoutId = 0;
 
       function getMaxScroll() {
         return Math.max(0, viewport.scrollWidth - viewport.clientWidth);
@@ -384,17 +386,16 @@
         var cards = track.querySelectorAll(".home-collections__card");
         var maxScroll = getMaxScroll();
         var nextPoints = [0];
-        var viewportRect = viewport.getBoundingClientRect();
-        var currentScroll = viewport.scrollLeft;
+        var trackOffset = track.offsetLeft;
         var useCenteredSnapPoints = mobilePeekMedia.matches;
 
         cards.forEach(function (card) {
-          var cardRect = card.getBoundingClientRect();
-          var left = currentScroll + (cardRect.left - viewportRect.left);
+          var cardWidth = card.offsetWidth;
+          var left = card.offsetLeft - trackOffset;
           var targetLeft = left;
 
           if (useCenteredSnapPoints) {
-            targetLeft = left - Math.max(0, (viewport.clientWidth - cardRect.width) / 2);
+            targetLeft = left - Math.max(0, (viewport.clientWidth - cardWidth) / 2);
           }
 
           targetLeft = Math.min(maxScroll, Math.max(0, targetLeft));
@@ -425,6 +426,10 @@
         });
 
         return closestIndex;
+      }
+
+      function clampIndex(index) {
+        return Math.min(pageCount - 1, Math.max(0, index));
       }
 
       function setProgress(progress) {
@@ -482,10 +487,18 @@
       }
 
       function scrollToIndex(index) {
-        var targetIndex = Math.min(pageCount - 1, Math.max(0, index));
+        var targetIndex = clampIndex(index);
         var targetLeft = scrollPoints[targetIndex] || 0;
         suppressScrollResetUntil = performance.now() + 500;
         viewport.scrollTo({ left: targetLeft, behavior: "smooth" });
+      }
+
+      function syncScrollPosition(index) {
+        var targetIndex = clampIndex(index);
+        var targetLeft = scrollPoints[targetIndex] || 0;
+        suppressScrollResetUntil = performance.now() + 300;
+        viewport.scrollLeft = targetLeft;
+        currentIndex = targetIndex;
       }
 
       function scrollByStep(direction) {
@@ -565,9 +578,11 @@
         rafId = requestAnimationFrame(tick);
       }
 
-      function recalc() {
+      function recalc(targetIndex) {
         var previousPageCount = pageCount;
+        var resolvedTargetIndex = typeof targetIndex === "number" ? targetIndex : getCurrentIndex();
         rebuildScrollPoints();
+        syncScrollPosition(resolvedTargetIndex);
         var countChanged = pageCount !== previousPageCount;
 
         if (countChanged) {
@@ -583,6 +598,33 @@
           stopTimer();
           resetTimer();
         }
+      }
+
+      function queueRecalc() {
+        var targetIndex = getCurrentIndex();
+
+        stopTimer();
+
+        if (recalcFrameId) {
+          cancelAnimationFrame(recalcFrameId);
+        }
+
+        if (recalcTimeoutId) {
+          clearTimeout(recalcTimeoutId);
+        }
+
+        recalcFrameId = requestAnimationFrame(function () {
+          recalc(targetIndex);
+          recalcFrameId = requestAnimationFrame(function () {
+            recalc(targetIndex);
+            recalcFrameId = 0;
+          });
+        });
+
+        recalcTimeoutId = window.setTimeout(function () {
+          recalc(targetIndex);
+          recalcTimeoutId = 0;
+        }, 180);
       }
 
       prev.addEventListener("click", function () {
@@ -604,17 +646,12 @@
       viewport.addEventListener("touchstart", noteUserGesture, { passive: true });
       viewport.addEventListener("pointerdown", noteUserGesture);
       viewport.addEventListener("wheel", noteUserGesture, { passive: true });
-      window.addEventListener("resize", recalc);
-      window.addEventListener("orientationchange", function () {
-        setTimeout(function () {
-          viewport.scrollLeft = 0;
-          recalc();
-        }, 150);
-      });
-      window.addEventListener("load", recalc);
+      window.addEventListener("resize", queueRecalc);
+      window.addEventListener("orientationchange", queueRecalc);
+      window.addEventListener("load", queueRecalc);
       track.querySelectorAll("img").forEach(function (img) {
         if (img.complete) return;
-        img.addEventListener("load", recalc, { once: true });
+        img.addEventListener("load", queueRecalc, { once: true });
       });
       viewport.addEventListener("keydown", function (event) {
         if (event.key === "ArrowLeft") {
@@ -635,9 +672,9 @@
       });
 
       if (typeof prefersReducedMotion.addEventListener === "function") {
-        prefersReducedMotion.addEventListener("change", recalc);
+        prefersReducedMotion.addEventListener("change", queueRecalc);
       } else if (typeof prefersReducedMotion.addListener === "function") {
-        prefersReducedMotion.addListener(recalc);
+        prefersReducedMotion.addListener(queueRecalc);
       }
 
       rebuildScrollPoints();
