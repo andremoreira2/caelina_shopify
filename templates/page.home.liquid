@@ -382,8 +382,43 @@
         return Math.max(0, viewport.scrollWidth - viewport.clientWidth);
       }
 
+      function getCards() {
+        return Array.prototype.slice.call(track.querySelectorAll(".home-collections__card"));
+      }
+
+      function syncCardDimensions() {
+        var cards = getCards();
+        if (!cards.length) return;
+
+        cards.forEach(function (card) {
+          card.style.removeProperty("width");
+          card.style.removeProperty("height");
+          card.style.removeProperty("flex-basis");
+        });
+
+        if (!mobilePeekMedia.matches) return;
+
+        if (cards.length === 1) {
+          var singleWidth = viewport.clientWidth;
+          var singleHeight = Math.round(singleWidth * 1.4);
+          cards[0].style.width = singleWidth + "px";
+          cards[0].style.height = singleHeight + "px";
+          cards[0].style.flexBasis = singleWidth + "px";
+          return;
+        }
+
+        var cardWidth = Math.min(Math.round(viewport.clientWidth * 0.815), 388);
+        var cardHeight = Math.round(cardWidth * 1.4);
+
+        cards.forEach(function (card) {
+          card.style.width = cardWidth + "px";
+          card.style.height = cardHeight + "px";
+          card.style.flexBasis = cardWidth + "px";
+        });
+      }
+
       function rebuildScrollPoints() {
-        var cards = track.querySelectorAll(".home-collections__card");
+        var cards = getCards();
         var maxScroll = getMaxScroll();
         var nextPoints = [0];
         var trackOffset = track.offsetLeft;
@@ -448,7 +483,7 @@
       }
 
       function updateActiveCard() {
-        track.querySelectorAll(".home-collections__card").forEach(function (card, index) {
+        getCards().forEach(function (card, index) {
           card.classList.toggle("is-active", mobilePeekMedia.matches && index === currentIndex);
         });
       }
@@ -581,6 +616,7 @@
       function recalc(targetIndex) {
         var previousPageCount = pageCount;
         var resolvedTargetIndex = typeof targetIndex === "number" ? targetIndex : getCurrentIndex();
+        syncCardDimensions();
         rebuildScrollPoints();
         syncScrollPosition(resolvedTargetIndex);
         var countChanged = pageCount !== previousPageCount;
@@ -649,6 +685,13 @@
       window.addEventListener("resize", queueRecalc);
       window.addEventListener("orientationchange", queueRecalc);
       window.addEventListener("load", queueRecalc);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", queueRecalc);
+      }
+      if ("ResizeObserver" in window) {
+        var carouselResizeObserver = new ResizeObserver(queueRecalc);
+        carouselResizeObserver.observe(viewport);
+      }
       track.querySelectorAll("img").forEach(function (img) {
         if (img.complete) return;
         img.addEventListener("load", queueRecalc, { once: true });
