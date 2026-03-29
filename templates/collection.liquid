@@ -40,6 +40,17 @@
     {%- endif -%}
   {%- endcapture -%}
   {% assign clear_filters_url = collection.url | append: clear_filters_query %}
+  {% assign collection_switcher_menu = linklists['header-subnavv'] %}
+  {% assign collection_switcher_has_menu_links = false %}
+
+  {% if collection_switcher_menu and collection_switcher_menu.links.size > 0 %}
+    {% for link in collection_switcher_menu.links %}
+      {% if link.type == 'collection_link' %}
+        {% assign collection_switcher_has_menu_links = true %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 
   <section class="collection-page" data-collection-root>
     <div class="collection-loading" aria-hidden="true" data-collection-loading>
@@ -47,10 +58,97 @@
     </div>
 
     <header class="collection-header">
-      <h1 class="collection-title page-title">{{ collection.title }}</h1>
-      {% if collection.description != blank %}
-        <div class="collection-description">{{ collection.description }}</div>
-      {% endif %}
+      <div class="collection-switcher">
+        <nav class="collection-switcher__track" aria-label="Collection categories">
+          {% if collection_switcher_has_menu_links %}
+            {% for link in collection_switcher_menu.links %}
+              {% if link.type == 'collection_link' %}
+                {% assign switcher_collection = link.object %}
+                {% assign switcher_title = switcher_collection.title | default: link.title %}
+                {% assign switcher_url = link.url %}
+                {% assign switcher_image = blank %}
+                {% assign switcher_is_active = false %}
+
+                {% if switcher_collection %}
+                  {% assign switcher_is_active = switcher_collection.handle == collection.handle %}
+                  {% assign switcher_image = switcher_collection.image | default: switcher_collection.featured_image %}
+                  {% if switcher_image == blank and switcher_collection.products.first %}
+                    {% assign switcher_image = switcher_collection.products.first.featured_media.preview_image | default: switcher_collection.products.first.featured_image %}
+                  {% endif %}
+                {% elsif link.current or link.active or link.child_active %}
+                  {% assign switcher_is_active = true %}
+                {% endif %}
+
+                <a class="collection-switcher__card{% if switcher_is_active %} is-active{% endif %}" href="{{ switcher_url }}"{% if switcher_is_active %} aria-current="page"{% endif %}>
+                  <span class="collection-switcher__media">
+                    {% if switcher_image != blank %}
+                      <img
+                        class="collection-switcher__image"
+                        src="{{ switcher_image | image_url: width: 720 }}"
+                        alt="{{ switcher_title | escape }}"
+                        loading="lazy"
+                        width="360"
+                        height="480"
+                      >
+                    {% else %}
+                      <span class="collection-switcher__image collection-switcher__image--fallback" aria-hidden="true"></span>
+                    {% endif %}
+                  </span>
+                  <span class="collection-switcher__label">{{ switcher_title }}</span>
+                </a>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            {% assign collection_switcher_entries = 'earrings:Earrings|rings:Rings|necklaces:Necklaces|bracelets:Bracelets|watches:Watches' | split: '|' %}
+
+            {% for entry in collection_switcher_entries %}
+              {% assign parts = entry | split: ':' %}
+              {% assign handle = parts[0] %}
+              {% assign fallback_title = parts[1] %}
+              {% assign switcher_collection = collections[handle] %}
+              {% assign switcher_url = '/collections/' | append: handle %}
+              {% assign switcher_title = fallback_title %}
+              {% assign switcher_image = blank %}
+              {% assign switcher_is_active = handle == collection.handle %}
+
+              {% if switcher_collection %}
+                {% assign switcher_url = switcher_collection.url %}
+                {% assign switcher_title = switcher_collection.title | default: fallback_title %}
+                {% assign switcher_is_active = switcher_collection.handle == collection.handle %}
+                {% assign switcher_image = switcher_collection.image | default: switcher_collection.featured_image %}
+                {% if switcher_image == blank and switcher_collection.products.first %}
+                  {% assign switcher_image = switcher_collection.products.first.featured_media.preview_image | default: switcher_collection.products.first.featured_image %}
+                {% endif %}
+              {% endif %}
+
+              <a class="collection-switcher__card{% if switcher_is_active %} is-active{% endif %}" href="{{ switcher_url }}"{% if switcher_is_active %} aria-current="page"{% endif %}>
+                <span class="collection-switcher__media">
+                  {% if switcher_image != blank %}
+                    <img
+                      class="collection-switcher__image"
+                      src="{{ switcher_image | image_url: width: 720 }}"
+                      alt="{{ switcher_title | escape }}"
+                      loading="lazy"
+                      width="360"
+                      height="480"
+                    >
+                  {% else %}
+                    <span class="collection-switcher__image collection-switcher__image--fallback" aria-hidden="true"></span>
+                  {% endif %}
+                </span>
+                <span class="collection-switcher__label">{{ switcher_title }}</span>
+              </a>
+            {% endfor %}
+          {% endif %}
+        </nav>
+      </div>
+
+      <div class="collection-header__intro">
+        <h1 class="collection-title page-title">{{ collection.title }}</h1>
+        {% if collection.description != blank %}
+          <div class="collection-description">{{ collection.description }}</div>
+        {% endif %}
+      </div>
     </header>
 
     <div data-collection-content>
