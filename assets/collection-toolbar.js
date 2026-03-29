@@ -16,10 +16,28 @@
   var requestToken = 0;
   var lastFocusedElement = null;
 
+  function syncDrawerMount() {
+    var nextDrawer = root.querySelector("[data-filter-drawer]");
+
+    if (nextDrawer) {
+      if (drawer && drawer !== nextDrawer && document.body.contains(drawer)) {
+        drawer.replaceWith(nextDrawer);
+      }
+
+      drawer = nextDrawer;
+    } else if (!drawer || !document.body.contains(drawer)) {
+      drawer = document.querySelector("[data-filter-drawer]");
+    }
+
+    if (drawer && drawer.parentNode !== document.body) {
+      document.body.appendChild(drawer);
+    }
+  }
+
   function cacheElements() {
     content = root.querySelector("[data-collection-content]");
     toolbar = root.querySelector("[data-collection-toolbar]");
-    drawer = root.querySelector("[data-filter-drawer]");
+    syncDrawerMount();
     drawerPanel = drawer ? drawer.querySelector(".collection-filter-drawer__panel") : null;
     drawerBody = drawer ? drawer.querySelector(".collection-filter-drawer__body") : null;
     sort = root.querySelector("[data-collection-sort]");
@@ -823,37 +841,8 @@
       return;
     }
 
-    var closeTrigger = event.target.closest("[data-filter-close]");
-    if (closeTrigger && root.contains(closeTrigger)) {
-      event.preventDefault();
-      closeDrawer();
-      return;
-    }
-
-    var filterSummary = event.target.closest(".collection-filter-group__summary");
-    if (filterSummary && root.contains(filterSummary)) {
-      event.preventDefault();
-
-      var filterGroup = filterSummary.closest(".collection-filter-group");
-      if (!filterGroup) return;
-
-      var shouldExpand = !filterGroup.hasAttribute("open");
-      if (shouldExpand) {
-        closeSiblingFilterGroups(filterGroup);
-      }
-
-      animateFilterGroup(filterGroup, shouldExpand);
-      return;
-    }
-
     var link = event.target.closest("a");
     if (!link || !root.contains(link)) return;
-
-    if (link.matches(".collection-filter-chip, .collection-filter-drawer__reset")) {
-      event.preventDefault();
-      requestCollection(link.href);
-      return;
-    }
 
     if (link.closest(".collection-pagination")) {
       event.preventDefault();
@@ -868,10 +857,59 @@
 
     if (target.closest(".collection-sort__panel") && target.name === "sort_by" && sort) {
       handleSortSubmit(sort.querySelector("form"));
+    }
+  });
+
+  root.addEventListener("submit", function (event) {
+    var form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+
+    if (form.closest(".collection-sort")) {
+      event.preventDefault();
+      handleSortSubmit(form);
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    var target = event.target;
+    if (!(target instanceof Element) || !drawer) return;
+
+    var closeTrigger = target.closest("[data-filter-close]");
+    if (closeTrigger && drawer.contains(closeTrigger)) {
+      event.preventDefault();
+      closeDrawer();
       return;
     }
 
-    if (!target.closest(".collection-filter-form") || !drawer) return;
+    var filterSummary = target.closest(".collection-filter-group__summary");
+    if (filterSummary && drawer.contains(filterSummary)) {
+      event.preventDefault();
+
+      var filterGroup = filterSummary.closest(".collection-filter-group");
+      if (!filterGroup) return;
+
+      var shouldExpand = !filterGroup.hasAttribute("open");
+      if (shouldExpand) {
+        closeSiblingFilterGroups(filterGroup);
+      }
+
+      animateFilterGroup(filterGroup, shouldExpand);
+      return;
+    }
+
+    var link = target.closest("a");
+    if (!link || !drawer.contains(link)) return;
+
+    if (link.matches(".collection-filter-chip, .collection-filter-drawer__reset")) {
+      event.preventDefault();
+      requestCollection(link.href);
+    }
+  });
+
+  document.addEventListener("change", function (event) {
+    var target = event.target;
+    if (!(target instanceof HTMLInputElement) || !drawer || !drawer.contains(target)) return;
+    if (!target.closest(".collection-filter-form")) return;
 
     if (isPriceSliderInput(target)) {
       var sliderGroup = target.closest("[data-price-range]");
@@ -901,11 +939,12 @@
     }
   });
 
-  root.addEventListener("input", function (event) {
+  document.addEventListener("input", function (event) {
     var target = event.target;
-    if (isPriceSliderInput(target)) {
-      if (!target.closest(".collection-filter-form") || !drawer) return;
+    if (!drawer || !(target instanceof HTMLInputElement) || !drawer.contains(target)) return;
+    if (!target.closest(".collection-filter-form")) return;
 
+    if (isPriceSliderInput(target)) {
       var sliderGroup = target.closest("[data-price-range]");
       syncPriceRangeGroup(sliderGroup, {
         fromSlider: true,
@@ -917,7 +956,6 @@
     }
 
     if (!isPriceInput(target)) return;
-    if (!target.closest(".collection-filter-form") || !drawer) return;
 
     var priceGroup = target.closest("[data-price-range]");
     syncPriceRangeGroup(priceGroup, {
@@ -926,9 +964,9 @@
     syncPriceApplyState(priceGroup);
   });
 
-  root.addEventListener("submit", function (event) {
+  document.addEventListener("submit", function (event) {
     var form = event.target;
-    if (!(form instanceof HTMLFormElement)) return;
+    if (!(form instanceof HTMLFormElement) || !drawer || !drawer.contains(form)) return;
 
     if (form.matches(".collection-filter-form")) {
       event.preventDefault();
@@ -938,12 +976,6 @@
       handleFilterSubmit(form, {
         includeDraftPrice: true
       });
-      return;
-    }
-
-    if (form.closest(".collection-sort")) {
-      event.preventDefault();
-      handleSortSubmit(form);
     }
   });
 

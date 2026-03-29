@@ -151,7 +151,6 @@ body.mobile-menu-open {
 
 .site-page {
   position: relative;
-  z-index: 1;
   background: var(--site-page-background);
 }
 
@@ -2922,7 +2921,10 @@ kbd {
 
 .collection-filter-drawer {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 160;
   opacity: 0;
   pointer-events: none;
@@ -3383,7 +3385,8 @@ kbd {
 }
 
 body.collection-filters-open {
-  overflow: hidden;
+  overflow: clip;
+  overscroll-behavior: none;
 }
 
 .collection-grid {
@@ -6463,6 +6466,7 @@ body.shop-the-look-modal-open {
 
 @media (min-width: 981px) {
   body.site-footer-reveal-enabled .site-page {
+    z-index: 1;
     min-height: 100vh;
     margin-bottom: var(--site-footer-height);
   }
@@ -6516,16 +6520,38 @@ body.shop-the-look-modal-open {
 }
 
 .site-footer__links a {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
   color: #4d505a;
   text-decoration: none;
   font-size: 14px;
   letter-spacing: 0.03em;
+  padding-bottom: 3px;
   transition: color 0.2s ease;
+}
+
+.site-footer__links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.18s ease;
 }
 
 .site-footer__links a:hover,
 .site-footer__links a:focus-visible {
   color: #111111;
+}
+
+.site-footer__links a:hover::after,
+.site-footer__links a:focus-visible::after {
+  transform: scaleX(1);
 }
 
 .site-footer__newsletter-form {
