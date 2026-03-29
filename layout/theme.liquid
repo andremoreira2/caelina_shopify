@@ -181,10 +181,12 @@
       </div>
     </div>
   </div>
-  {{ content_for_layout }}
+  <div class="site-page" data-site-page>
+    {{ content_for_layout }}
+  </div>
 
   {% unless template.name == 'index' %}
-    <footer class="site-footer" role="contentinfo">
+    <footer class="site-footer" role="contentinfo" data-site-footer>
       <div class="site-footer__inner">
         <div class="site-footer__grid">
           <div class="site-footer__column site-footer__column--newsletter">
@@ -297,5 +299,6 @@
   {% if template.name == 'index' %}
     <script src="{{ 'app.js' | asset_url }}" defer></script>
   {% endif %}
+  <script src="{{ 'footer-reveal.js' | asset_url }}" defer></script>
 </body>
 </html>
