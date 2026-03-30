@@ -6625,6 +6625,17 @@ body.shop-the-look-modal-open {
     margin-bottom: var(--site-footer-height);
   }
 
+  body.site-footer-reveal-enabled .site-page::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(-1 * clamp(24px, 4vw, 40px));
+    height: clamp(24px, 4vw, 40px);
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(11, 11, 15, 0.12) 0%, rgba(11, 11, 15, 0) 100%);
+  }
+
   body.site-footer-reveal-enabled .site-footer {
     position: fixed;
     left: 0;
