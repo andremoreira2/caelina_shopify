@@ -14,6 +14,17 @@
     return `$${amount}`;
   };
 
+  const esc = (value) => String(value ?? "").replace(
+    /[&<>"']/g,
+    (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    })[char]
+  );
+
   const buildCard = (product) => {
     const variant = product.variants?.[0];
     const available = product.available;
@@ -31,7 +42,7 @@
     if (featuredImage) {
       imageHTML = `<img
         src="${featuredImage}&width=600"
-        alt="${product.title}"
+        alt="${esc(product.title)}"
         loading="lazy"
         data-collection-card-image
       >`;
@@ -46,16 +57,16 @@
           width: 600,
           height: 800,
         }))
-      );
+      ).replace(/</g, "\\u003C");
 
       galleryHTML = `
         <div class="collection-card__nav" data-collection-card-nav aria-hidden="true">
-          <button type="button" class="collection-card__nav-button collection-card__nav-button--prev" data-collection-card-prev aria-label="Show previous image for ${product.title}">
+          <button type="button" class="collection-card__nav-button collection-card__nav-button--prev" data-collection-card-prev aria-label="Show previous image for ${esc(product.title)}">
             <svg class="collection-card__nav-icon" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
               <path d="M8.91003 19.9201L15.43 13.4001C16.2 12.6301 16.2 11.3701 15.43 10.6001L8.91003 4.08008" class="collection-card__nav-arrow"></path>
             </svg>
           </button>
-          <button type="button" class="collection-card__nav-button collection-card__nav-button--next" data-collection-card-next aria-label="Show next image for ${product.title}">
+          <button type="button" class="collection-card__nav-button collection-card__nav-button--next" data-collection-card-next aria-label="Show next image for ${esc(product.title)}">
             <svg class="collection-card__nav-icon" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
               <path d="M8.91003 19.9201L15.43 13.4001C16.2 12.6301 16.2 11.3701 15.43 10.6001L8.91003 4.08008" class="collection-card__nav-arrow"></path>
             </svg>
@@ -79,7 +90,7 @@
         <form method="post" action="/cart/add" class="collection-card__quick-add-form">
           <input type="hidden" name="id" value="${variant.id}">
           <input type="hidden" name="quantity" value="1">
-          <button type="submit" class="btn btn--atc collection-card__quick-add" aria-label="Add ${product.title} to cart">
+          <button type="submit" class="btn btn--atc collection-card__quick-add" aria-label="Add ${esc(product.title)} to cart">
             <span class="btn-icon" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
@@ -90,7 +101,7 @@
         </form>`;
     } else {
       actionsHTML = `
-        <a class="btn btn--atc collection-card__quick-add collection-card__quick-add--link" href="${product.url}" aria-label="Choose options for ${product.title}">
+        <a class="btn btn--atc collection-card__quick-add collection-card__quick-add--link" href="${esc(product.url)}" aria-label="Choose options for ${esc(product.title)}">
           <span class="btn-icon" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
@@ -109,7 +120,7 @@
       <article class="collection-card">
         <div class="collection-card__media">
           ${badgeHTML}
-          <a class="collection-card__image-link" href="${product.url}" aria-label="${product.title}">
+          <a class="collection-card__image-link" href="${esc(product.url)}" aria-label="${esc(product.title)}">
             <div class="collection-card__image-wrapper">
               ${imageHTML}
             </div>
@@ -119,8 +130,8 @@
             ${actionsHTML}
           </div>
         </div>
-        <a class="collection-card__info" href="${product.url}">
-          <span class="collection-card__title">${product.title}</span>
+        <a class="collection-card__info" href="${esc(product.url)}">
+          <span class="collection-card__title">${esc(product.title)}</span>
           <span class="collection-card__price price--card price">
             ${priceHTML}
           </span>
