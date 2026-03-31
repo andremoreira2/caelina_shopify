@@ -41,6 +41,19 @@
         "id": "home_stl_look_handles",
         "label": "Look set handles (ordered)",
         "info": "Example: home-page-shop-the-look"
+      },
+      {
+        "type": "header",
+        "content": "Home portrait reveal"
+      },
+      {
+        "type": "paragraph",
+        "content": "Optional image for the slim scroll reveal between Shop the Look and the Caelina story. If empty, the first Shop the Look image is used."
+      },
+      {
+        "type": "image_picker",
+        "id": "home_portrait_reveal_image",
+        "label": "Reveal image"
       }
     ]
   }

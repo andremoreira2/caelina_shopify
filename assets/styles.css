@@ -355,6 +355,67 @@ body.mobile-menu-open {
   }
 }
 
+.home-portrait-reveal {
+  --home-portrait-overflow: 160px;
+  --home-portrait-shift: 0px;
+  position: relative;
+  z-index: 2;
+  background: var(--home-bg);
+  padding: clamp(12px, 1.8vw, 20px) 0 clamp(28px, 3.8vw, 42px);
+}
+
+.home-portrait-reveal__sticky {
+  display: block;
+}
+
+.home-portrait-reveal__window {
+  position: relative;
+  width: min(100%, 1440px);
+  height: clamp(184px, 20vw, 280px);
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--home-bg);
+  box-shadow:
+    0 16px 42px rgba(10, 10, 14, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 28px 42px rgba(6, 6, 8, 0.16),
+    inset 0 -28px 42px rgba(6, 6, 8, 0.14);
+}
+
+.home-portrait-reveal__window::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0.06) 20%, rgba(0, 0, 0, 0.04) 52%, rgba(0, 0, 0, 0.22)),
+    radial-gradient(140% 58% at 50% 50%, rgba(255, 255, 255, 0.06), transparent 60%);
+  pointer-events: none;
+}
+
+.home-portrait-reveal__window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-top: 1px solid rgba(255, 255, 255, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.72);
+  pointer-events: none;
+}
+
+.home-portrait-reveal__image {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  height: calc(100% + var(--home-portrait-overflow));
+  object-fit: cover;
+  object-position: 50% 0%;
+  transform: translateY(calc(var(--home-portrait-shift) * -1)) scale(1.02);
+  transform-origin: top center;
+  will-change: transform;
+}
+
 .home-story {
   position: relative;
   z-index: 2;
@@ -446,6 +507,31 @@ body.mobile-menu-open {
 
   .home-story__name {
     color: rgb(244, 244, 248);
+  }
+}
+
+@media (max-width: 980px) {
+  .home-portrait-reveal__window {
+    height: clamp(176px, 28vw, 240px);
+  }
+}
+
+@media (max-width: 680px) {
+  .home-portrait-reveal__window {
+    width: 100%;
+    height: clamp(156px, 44vw, 214px);
+    box-shadow:
+      0 14px 34px rgba(10, 10, 14, 0.07),
+      inset 0 1px 0 rgba(255, 255, 255, 0.26),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.16),
+      inset 0 22px 32px rgba(6, 6, 8, 0.14),
+      inset 0 -22px 32px rgba(6, 6, 8, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-portrait-reveal__image {
+    will-change: auto;
   }
 }
 

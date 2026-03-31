@@ -283,6 +283,48 @@
     {% endif %}
   {% endif %}
 
+  {% assign home_portrait_reveal_image = settings.home_portrait_reveal_image %}
+  {% if home_portrait_reveal_image == blank and home_stl_resolved_handles != blank %}
+    {% assign home_portrait_reveal_handle_lines = home_stl_resolved_handles | newline_to_br | split: '<br />' %}
+    {% assign home_portrait_reveal_handle_entry = home_portrait_reveal_handle_lines.first | strip %}
+    {% assign home_portrait_reveal_set = blank %}
+
+    {% if home_portrait_reveal_handle_entry == 'mf:primary' %}
+      {% assign home_portrait_reveal_set = home_stl_primary_set %}
+    {% elsif home_portrait_reveal_handle_entry == 'mf:secondary' %}
+      {% assign home_portrait_reveal_set = home_stl_secondary_set %}
+    {% elsif home_portrait_reveal_handle_entry == 'mf:fallback' %}
+      {% assign home_portrait_reveal_set = home_stl_fallback_set %}
+    {% else %}
+      {% assign home_portrait_reveal_mo_handle = home_portrait_reveal_handle_entry | remove_first: 'mo:' %}
+      {% assign home_portrait_reveal_set = metaobjects.look_set[home_portrait_reveal_mo_handle] %}
+    {% endif %}
+
+    {% if home_portrait_reveal_set != blank %}
+      {% assign home_portrait_reveal_image = home_portrait_reveal_set.shop_the_look_image.value | default: home_portrait_reveal_set.image.value | default: home_portrait_reveal_set.shop_the_look_image | default: home_portrait_reveal_set.image %}
+    {% endif %}
+  {% endif %}
+
+  {% if home_portrait_reveal_image != blank %}
+    <section class="home-portrait-reveal" data-home-portrait-reveal>
+      <div class="home-portrait-reveal__sticky">
+        <div class="home-portrait-reveal__window">
+          <img
+            class="home-portrait-reveal__image"
+            data-home-portrait-reveal-image
+            src="{{ home_portrait_reveal_image | image_url: width: 2800 }}"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            width="{{ home_portrait_reveal_image.width }}"
+            height="{{ home_portrait_reveal_image.height }}"
+            sizes="100vw"
+          >
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
   {% comment %} ---- RENDER ---- {% endcomment %}
   {% if home_stl_total_looks > 0 %}
     <div class="shop-the-look-group" data-stl-group data-stl-section>
@@ -725,6 +767,67 @@
       updateControls();
       startTimer();
     });
+  })();
+</script>
+
+<script>
+  (function initHomePortraitReveal() {
+    var sections = document.querySelectorAll("[data-home-portrait-reveal]");
+    if (!sections.length) return;
+
+    var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var compactMedia = window.matchMedia("(max-width: 680px)");
+    var mediumMedia = window.matchMedia("(max-width: 980px)");
+    var ticking = false;
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function updateSection(section) {
+      var windowNode = section.querySelector(".home-portrait-reveal__window");
+      if (!windowNode) return;
+
+      var rect = section.getBoundingClientRect();
+      var revealRange = window.innerHeight + rect.height;
+      var progress = prefersReducedMotion.matches ? 0.5 : clamp((window.innerHeight - rect.top) / revealRange, 0, 1);
+      var compact = compactMedia.matches;
+      var medium = mediumMedia.matches;
+      // Tune reveal travel here per breakpoint.
+      var intensity = compact ? 0.52 : (medium ? 0.76 : 1.1);
+      var minOverflow = compact ? 76 : (medium ? 116 : 160);
+      var maxOverflow = compact ? 138 : (medium ? 196 : 320);
+      var easedProgress = compact ? progress : (1 - Math.pow(1 - progress, 1.14));
+      var overflow = Math.round(clamp(windowNode.clientHeight * intensity, minOverflow, maxOverflow));
+      var shift = overflow * easedProgress;
+
+      section.style.setProperty("--home-portrait-overflow", overflow + "px");
+      section.style.setProperty("--home-portrait-shift", shift.toFixed(2) + "px");
+    }
+
+    function update() {
+      ticking = false;
+      sections.forEach(updateSection);
+    }
+
+    function requestUpdate() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+
+    requestUpdate();
+
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+    window.addEventListener("load", requestUpdate);
+    document.addEventListener("visibilitychange", requestUpdate);
+
+    if (typeof prefersReducedMotion.addEventListener === "function") {
+      prefersReducedMotion.addEventListener("change", requestUpdate);
+    } else if (typeof prefersReducedMotion.addListener === "function") {
+      prefersReducedMotion.addListener(requestUpdate);
+    }
   })();
 </script>
 
