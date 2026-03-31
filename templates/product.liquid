@@ -375,6 +375,26 @@
   %}
 {% endif %}
 
+<section
+  class="product-recommendations"
+  data-product-recommendations
+  data-product-id="{{ product.id }}"
+  data-product-url="{{ product.url }}"
+  aria-label="You may also like"
+  hidden
+>
+  <div class="product-recommendations__header">
+    <h2 class="product-recommendations__title">You May Also Like</h2>
+    <div class="product-recommendations__progress" data-recommendations-progress aria-hidden="true">
+      <span class="product-recommendations__progress-thumb" data-recommendations-progress-thumb></span>
+    </div>
+  </div>
+  <div class="product-recommendations__grid" data-recommendations-grid>
+  </div>
+</section>
+
+<script src="{{ 'product-recommendations.js' | asset_url }}" defer="defer"></script>
+
 <script>
   (() => {
     const variants = {{ product.variants | json }};

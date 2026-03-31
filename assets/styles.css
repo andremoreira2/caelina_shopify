@@ -4627,6 +4627,156 @@ body.cart-drawer-open .product-floating-atc {
 }
 
 /* =========================================
+   Product Recommendations — "You May Also Like"
+   ========================================= */
+
+.product-recommendations {
+  width: 100%;
+  padding: 60px 0 80px;
+  box-sizing: border-box;
+  background: var(--home-bg, #faf8f5);
+  color: #1a1a1a;
+  overflow: hidden;
+}
+
+.product-recommendations__header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 0 60px;
+}
+
+.product-recommendations__title {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  margin: 0 0 24px;
+}
+
+.product-recommendations__grid {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0 60px;
+}
+
+.product-recommendations__grid.is-dragging {
+  scroll-behavior: auto;
+  cursor: grabbing;
+}
+
+@media (hover: hover) {
+  .product-recommendations__grid {
+    cursor: grab;
+  }
+
+  .product-recommendations__grid img {
+    -webkit-user-drag: none;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .product-recommendations__grid.is-dragging {
+    user-select: none;
+  }
+}
+
+.product-recommendations__grid::-webkit-scrollbar {
+  display: none;
+}
+
+.product-recommendations__grid .collection-card {
+  flex: 0 0 calc(25% - 18px);
+  min-width: 220px;
+}
+
+@media (max-width: 1280px) {
+  .product-recommendations__grid .collection-card {
+    flex: 0 0 calc(33.333% - 16px);
+  }
+}
+
+@media (max-width: 900px) {
+  .product-recommendations {
+    padding: 48px 0 60px;
+  }
+
+  .product-recommendations__header {
+    padding: 0 20px;
+  }
+
+  .product-recommendations__grid {
+    padding: 0 20px;
+    gap: 14px;
+  }
+
+  .product-recommendations__grid .collection-card {
+    flex: 0 0 calc(50% - 7px);
+    min-width: 160px;
+  }
+}
+
+.product-recommendations__progress {
+  position: relative;
+  height: 17px;
+  cursor: pointer;
+}
+
+.product-recommendations__progress::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.product-recommendations__progress-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: var(--rec-progress-thumb, 0);
+  transform: translateX(var(--rec-progress-offset, 0));
+  cursor: grab;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.product-recommendations__progress-thumb::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #1a1a1a;
+}
+
+.product-recommendations__progress.is-dragging {
+  cursor: grabbing;
+}
+
+.product-recommendations__progress.is-dragging .product-recommendations__progress-thumb {
+  cursor: grabbing;
+  transition: none;
+}
+
+@media (max-width: 480px) {
+  .product-recommendations__header {
+    margin-bottom: 28px;
+  }
+
+  .product-recommendations__grid .collection-card {
+    flex: 0 0 65%;
+  }
+}
+
+/* =========================================
    Shop The Look
    ========================================= */
 
