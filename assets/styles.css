@@ -1,5 +1,4 @@
 :root {
-  --bg: #0b0b0f;
   --fg: #eaeaf2;
   --home-bg: #fdfaf5;
   --site-footer-height: 0px;
@@ -105,7 +104,7 @@ html,
 body {
   min-height: 100%;
   margin: 0;
-  background: var(--bg);
+  background: var(--home-bg);
   color: var(--fg);
 }
 
@@ -113,7 +112,14 @@ body {
   overflow-x: clip;
   overscroll-behavior: none;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  --site-page-background: var(--bg);
+  --site-page-background: var(--home-bg);
+}
+
+body.template-page,
+body.template-cart {
+  background: var(--home-bg);
+  color: #1a1a1a;
+  --site-page-background: var(--home-bg);
 }
 
 body.template-index {
@@ -122,6 +128,8 @@ body.template-index {
 }
 
 body.template-home {
+  background: var(--home-bg);
+  color: #1a1a1a;
   --site-page-background: var(--home-bg);
 }
 
@@ -1766,7 +1774,7 @@ body.template-home .site-header {
   background:
     radial-gradient(1200px 800px at 20% 10%, rgba(120, 80, 255, 0.20), transparent 50%),
     radial-gradient(1000px 700px at 80% 70%, rgba(0, 190, 255, 0.12), transparent 55%),
-    var(--bg);
+    var(--home-bg);
 }
 
 #viewport.dragging {
@@ -2404,8 +2412,8 @@ kbd {
   gap: 16px;
   padding: 16px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(17, 17, 17, 0.1);
+  background: rgba(255, 255, 255, 0.78);
 }
 
 .cart-line-media img {
@@ -2460,8 +2468,8 @@ kbd {
   width: 80px;
   padding: 8px 10px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(17, 17, 17, 0.14);
+  background: rgba(255, 255, 255, 0.92);
   color: inherit;
 }
 
@@ -2481,8 +2489,8 @@ kbd {
   gap: 14px;
   padding: 18px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(17, 17, 17, 0.1);
+  background: rgba(255, 255, 255, 0.78);
   align-self: start;
 }
 
@@ -2521,7 +2529,7 @@ kbd {
 .cart-trust span {
   padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(17, 17, 17, 0.14);
 }
 
 .cart-note {
@@ -4816,7 +4824,7 @@ body.cart-drawer-open .product-floating-atc {
   position: relative;
   width: 100%;
   z-index: 2;
-  background: linear-gradient(168deg, #faf6ef 0%, #f7f3ec 38%, #f4f0e8 100%);
+  background: var(--home-bg);
   padding-top: clamp(36px, 5.6vw, 72px);
   padding-bottom: clamp(10px, 1.6vw, 20px);
 }
@@ -6410,13 +6418,13 @@ body.shop-the-look-modal-open {
 
 .drawer-cart {
   /* Enforce light theme variables locally */
-  --bg: #ffffff;
+  --drawer-bg: #ffffff;
   --fg: #111111;
   --border: #e5e5e5;
   --accent: #D4C4A8;
   /* Approximate gold from reference */
 
-  background: var(--bg);
+  background: var(--drawer-bg);
   color: var(--fg);
   height: 100%;
   display: flex;
