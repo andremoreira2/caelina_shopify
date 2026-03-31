@@ -26,63 +26,65 @@
     <div class="drawer-cart__empty">Your cart is empty.</div>
     <a class="btn" href="/collections/all">Explore products</a>
   {% else %}
-    <ul class="drawer-cart__lines">
-      {% for item in cart.items %}
-        <li class="drawer-cart__line" data-cart-line data-key="{{ item.key }}">
-          <a class="drawer-cart__line-image" href="{{ item.url }}">
-            {% if item.image %}
-              <img
-                src="{{ item.image | image_url: width: 200 }}"
-                alt="{{ item.image.alt | escape }}"
-                loading="lazy"
-              >
-            {% endif %}
-          </a>
-          
-          <div class="drawer-cart__line-details">
-            <div class="drawer-cart__line-header">
-              <a class="drawer-cart__name" href="{{ item.url }}">{{ item.product.title }}</a>
-              {% render 'price',
-                amount: item.final_price,
-                wrapper_class: 'drawer-cart__price price--compact'
-              %}
-            </div>
-            
-            {% if item.variant.title != 'Default Title' %}
-              <div class="drawer-cart__variant">Color: {{ item.variant.title }}</div>
-              {% render 'price',
-                amount: item.final_price,
-                wrapper_class: 'drawer-cart__variant-price price--compact'
-              %}
-            {% endif %}
+    <div class="drawer-cart__body">
+      <ul class="drawer-cart__lines">
+        {% for item in cart.items %}
+          <li class="drawer-cart__line" data-cart-line data-key="{{ item.key }}">
+            <a class="drawer-cart__line-image" href="{{ item.url }}">
+              {% if item.image %}
+                <img
+                  src="{{ item.image | image_url: width: 200 }}"
+                  alt="{{ item.image.alt | escape }}"
+                  loading="lazy"
+                >
+              {% endif %}
+            </a>
 
-            <div class="drawer-cart__controls">
-              <div class="drawer-cart__qty-wrapper">
-                {% assign max_quantity = item.quantity %}
-                {% if max_quantity < 10 %}
-                  {% assign max_quantity = 10 %}
-                {% endif %}
-                <select class="drawer-cart__qty-select" data-qty-input>
-                  {% for i in (1..max_quantity) %}
-                    <option value="{{ i }}" {% if item.quantity == i %}selected{% endif %}>{{ i }}</option>
-                  {% endfor %}
-                </select>
-                <svg class="drawer-cart__qty-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor">
-                  <path d="M1 1L5 5L9 1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+            <div class="drawer-cart__line-details">
+              <div class="drawer-cart__line-header">
+                <a class="drawer-cart__name" href="{{ item.url }}">{{ item.product.title }}</a>
+                {% render 'price',
+                  amount: item.final_price,
+                  wrapper_class: 'drawer-cart__price price--compact'
+                %}
               </div>
-              
-              <button class="drawer-cart__remove" type="button" data-remove>REMOVE</button>
-            </div>
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
 
-    <!-- Upsell hidden for now to match clean design, or we can restore it down here later -->
-    <div class="drawer-cart__upsell" data-upsell-container style="display: none;">
-      <h3 class="drawer-cart__upsell-title">You might also like</h3>
-      <div class="drawer-cart__upsell-item" data-upsell-item></div>
+              {% if item.variant.title != 'Default Title' %}
+                <div class="drawer-cart__variant">Color: {{ item.variant.title }}</div>
+                {% render 'price',
+                  amount: item.final_price,
+                  wrapper_class: 'drawer-cart__variant-price price--compact'
+                %}
+              {% endif %}
+
+              <div class="drawer-cart__controls">
+                <div class="drawer-cart__qty-wrapper">
+                  {% assign max_quantity = item.quantity %}
+                  {% if max_quantity < 10 %}
+                    {% assign max_quantity = 10 %}
+                  {% endif %}
+                  <select class="drawer-cart__qty-select" data-qty-input>
+                    {% for i in (1..max_quantity) %}
+                      <option value="{{ i }}" {% if item.quantity == i %}selected{% endif %}>{{ i }}</option>
+                    {% endfor %}
+                  </select>
+                  <svg class="drawer-cart__qty-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor">
+                    <path d="M1 1L5 5L9 1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+
+                <button class="drawer-cart__remove" type="button" data-remove>REMOVE</button>
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <!-- Complementary upsell populated client-side when Shopify returns matches -->
+      <div class="drawer-cart__upsell" data-upsell-container style="display: none;">
+        <h3 class="drawer-cart__upsell-title" data-upsell-title>Pair it with</h3>
+        <div class="drawer-cart__upsell-item" data-upsell-item></div>
+      </div>
     </div>
 
     <div class="drawer-cart__footer">
