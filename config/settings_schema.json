@@ -54,6 +54,70 @@
         "type": "image_picker",
         "id": "home_portrait_reveal_image",
         "label": "Reveal image"
+      },
+      {
+        "type": "paragraph",
+        "content": "Framing controls use percentages. Horizontal focus: 0 = left, 100 = right. Start/end positions: 0 = top, 100 = bottom."
+      },
+      {
+        "type": "range",
+        "id": "home_portrait_reveal_desktop_x",
+        "label": "Desktop horizontal focus",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "default": 50
+      },
+      {
+        "type": "range",
+        "id": "home_portrait_reveal_desktop_start",
+        "label": "Desktop start position",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "default": 0
+      },
+      {
+        "type": "range",
+        "id": "home_portrait_reveal_desktop_end",
+        "label": "Desktop end position",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "default": 100
+      },
+      {
+        "type": "range",
+        "id": "home_portrait_reveal_mobile_x",
+        "label": "Mobile horizontal focus",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "default": 50
+      },
+      {
+        "type": "range",
+        "id": "home_portrait_reveal_mobile_start",
+        "label": "Mobile start position",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "default": 0
+      },
+      {
+        "type": "range",
+        "id": "home_portrait_reveal_mobile_end",
+        "label": "Mobile end position",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "default": 100
       }
     ]
   }

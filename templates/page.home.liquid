@@ -306,7 +306,16 @@
   {% endif %}
 
   {% if home_portrait_reveal_image != blank %}
-    <section class="home-portrait-reveal" data-home-portrait-reveal>
+    <section
+      class="home-portrait-reveal"
+      data-home-portrait-reveal
+      data-reveal-desktop-x="{{ settings.home_portrait_reveal_desktop_x | default: 50 }}"
+      data-reveal-desktop-start="{{ settings.home_portrait_reveal_desktop_start | default: 0 }}"
+      data-reveal-desktop-end="{{ settings.home_portrait_reveal_desktop_end | default: 100 }}"
+      data-reveal-mobile-x="{{ settings.home_portrait_reveal_mobile_x | default: 50 }}"
+      data-reveal-mobile-start="{{ settings.home_portrait_reveal_mobile_start | default: 0 }}"
+      data-reveal-mobile-end="{{ settings.home_portrait_reveal_mobile_end | default: 100 }}"
+    >
       <div class="home-portrait-reveal__sticky">
         <div class="home-portrait-reveal__window">
           <img
@@ -784,6 +793,11 @@
       return Math.max(min, Math.min(max, value));
     }
 
+    function readNumber(value, fallback) {
+      var parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    }
+
     function updateSection(section) {
       var windowNode = section.querySelector(".home-portrait-reveal__window");
       if (!windowNode) return;
@@ -799,10 +813,16 @@
       var maxOverflow = compact ? 138 : (medium ? 196 : 320);
       var easedProgress = compact ? progress : (1 - Math.pow(1 - progress, 1.14));
       var overflow = Math.round(clamp(windowNode.clientHeight * intensity, minOverflow, maxOverflow));
-      var shift = overflow * easedProgress;
+      var x = compact ? readNumber(section.dataset.revealMobileX, 50) : readNumber(section.dataset.revealDesktopX, 50);
+      var start = compact ? readNumber(section.dataset.revealMobileStart, 0) : readNumber(section.dataset.revealDesktopStart, 0);
+      var end = compact ? readNumber(section.dataset.revealMobileEnd, 100) : readNumber(section.dataset.revealDesktopEnd, 100);
+      var startShift = overflow * clamp(start / 100, 0, 1);
+      var endShift = overflow * clamp(end / 100, 0, 1);
+      var shift = startShift + ((endShift - startShift) * easedProgress);
 
       section.style.setProperty("--home-portrait-overflow", overflow + "px");
       section.style.setProperty("--home-portrait-shift", shift.toFixed(2) + "px");
+      section.style.setProperty("--home-portrait-x", clamp(x, 0, 100).toFixed(2) + "%");
     }
 
     function update() {

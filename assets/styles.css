@@ -1,6 +1,7 @@
 :root {
   --fg: #eaeaf2;
   --home-bg: #fdfaf5;
+  --canvas-bg: #000000;
   --site-footer-height: 0px;
   /* Global Add-To-Cart controls (desktop defaults) */
   --atc-btn-height: 46px;
@@ -124,7 +125,8 @@ body.template-cart {
 
 body.template-index {
   overflow: hidden;
-  background: var(--home-bg);
+  background: var(--canvas-bg);
+  --site-page-background: var(--canvas-bg);
 }
 
 body.template-home {
@@ -358,6 +360,7 @@ body.mobile-menu-open {
 .home-portrait-reveal {
   --home-portrait-overflow: 160px;
   --home-portrait-shift: 0px;
+  --home-portrait-x: 50%;
   position: relative;
   z-index: 2;
   background: var(--home-bg);
@@ -410,7 +413,7 @@ body.mobile-menu-open {
   width: 100%;
   height: calc(100% + var(--home-portrait-overflow));
   object-fit: cover;
-  object-position: 50% 0%;
+  object-position: var(--home-portrait-x) 0%;
   transform: translateY(calc(var(--home-portrait-shift) * -1)) scale(1.02);
   transform-origin: top center;
   will-change: transform;
@@ -1857,10 +1860,9 @@ body.template-home .site-header {
   touch-action: none;
   /* IMPORTANT: allows custom panning on touch devices */
   user-select: none;
-  background:
-    radial-gradient(1200px 800px at 20% 10%, rgba(120, 80, 255, 0.20), transparent 50%),
-    radial-gradient(1000px 700px at 80% 70%, rgba(0, 190, 255, 0.12), transparent 55%),
-    var(--home-bg);
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--canvas-bg);
 }
 
 #viewport.dragging {
@@ -1874,6 +1876,7 @@ body.template-home .site-header {
   top: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
 }
 
 .tile {
