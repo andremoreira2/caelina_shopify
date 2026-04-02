@@ -311,10 +311,10 @@
       data-home-portrait-reveal
       data-reveal-desktop-x="{{ settings.home_portrait_reveal_desktop_x | default: 50 }}"
       data-reveal-desktop-start="{{ settings.home_portrait_reveal_desktop_start | default: 0 }}"
-      data-reveal-desktop-end="{{ settings.home_portrait_reveal_desktop_end | default: 100 }}"
+      data-reveal-desktop-speed="{{ settings.home_portrait_reveal_desktop_speed | default: 100 }}"
       data-reveal-mobile-x="{{ settings.home_portrait_reveal_mobile_x | default: 50 }}"
       data-reveal-mobile-start="{{ settings.home_portrait_reveal_mobile_start | default: 0 }}"
-      data-reveal-mobile-end="{{ settings.home_portrait_reveal_mobile_end | default: 100 }}"
+      data-reveal-mobile-speed="{{ settings.home_portrait_reveal_mobile_speed | default: 100 }}"
     >
       <div class="home-portrait-reveal__sticky">
         <div class="home-portrait-reveal__window">
@@ -798,9 +798,23 @@
       return Number.isFinite(parsed) ? parsed : fallback;
     }
 
+    function getImageRatio(imageNode) {
+      if (!imageNode) return 1;
+
+      var naturalWidth = imageNode.naturalWidth || readNumber(imageNode.getAttribute("width"), 0);
+      var naturalHeight = imageNode.naturalHeight || readNumber(imageNode.getAttribute("height"), 0);
+
+      if (naturalWidth > 0 && naturalHeight > 0) {
+        return naturalWidth / naturalHeight;
+      }
+
+      return 1;
+    }
+
     function updateSection(section) {
       var windowNode = section.querySelector(".home-portrait-reveal__window");
-      if (!windowNode) return;
+      var imageNode = section.querySelector("[data-home-portrait-reveal-image]");
+      if (!windowNode || !imageNode) return;
 
       var rect = section.getBoundingClientRect();
       var revealRange = window.innerHeight + rect.height;
@@ -809,20 +823,37 @@
       var medium = mediumMedia.matches;
       // Tune reveal travel here per breakpoint.
       var intensity = compact ? 0.52 : (medium ? 0.76 : 1.1);
-      var minOverflow = compact ? 76 : (medium ? 116 : 160);
-      var maxOverflow = compact ? 138 : (medium ? 196 : 320);
+      var maxTravelRatio = compact ? 1.1 : (medium ? 1.5 : 2.2);
       var easedProgress = compact ? progress : (1 - Math.pow(1 - progress, 1.14));
-      var overflow = Math.round(clamp(windowNode.clientHeight * intensity, minOverflow, maxOverflow));
       var x = compact ? readNumber(section.dataset.revealMobileX, 50) : readNumber(section.dataset.revealDesktopX, 50);
       var start = compact ? readNumber(section.dataset.revealMobileStart, 0) : readNumber(section.dataset.revealDesktopStart, 0);
-      var end = compact ? readNumber(section.dataset.revealMobileEnd, 100) : readNumber(section.dataset.revealDesktopEnd, 100);
-      var startShift = overflow * clamp(start / 100, 0, 1);
-      var endShift = overflow * clamp(end / 100, 0, 1);
-      var shift = startShift + ((endShift - startShift) * easedProgress);
+      var speed = compact ? readNumber(section.dataset.revealMobileSpeed, 100) : readNumber(section.dataset.revealDesktopSpeed, 100);
+      var ratio = getImageRatio(imageNode);
+      var frameWidth = windowNode.clientWidth;
+      var frameHeight = windowNode.clientHeight;
+      var frameAspect = frameWidth / Math.max(1, frameHeight);
+      var mediaWidth = frameWidth;
+      var mediaHeight = frameHeight;
 
-      section.style.setProperty("--home-portrait-overflow", overflow + "px");
-      section.style.setProperty("--home-portrait-shift", shift.toFixed(2) + "px");
-      section.style.setProperty("--home-portrait-x", clamp(x, 0, 100).toFixed(2) + "%");
+      if (ratio > frameAspect) {
+        mediaHeight = frameHeight;
+        mediaWidth = Math.max(frameWidth, frameHeight * ratio);
+      } else {
+        mediaWidth = frameWidth;
+        mediaHeight = Math.max(frameHeight, frameWidth / Math.max(ratio, 0.0001));
+      }
+
+      var availableX = Math.max(0, mediaWidth - frameWidth);
+      var availableY = Math.max(0, mediaHeight - frameHeight);
+      var clampedSpeed = clamp((speed / 100) * intensity, 0, maxTravelRatio);
+      var startShiftY = availableY * clamp(start / 100, 0, 1);
+      var shiftY = clamp(startShiftY + (availableY * clampedSpeed * easedProgress), 0, availableY);
+      var shiftX = availableX * clamp(x / 100, 0, 1);
+
+      section.style.setProperty("--home-portrait-media-width", mediaWidth.toFixed(2) + "px");
+      section.style.setProperty("--home-portrait-media-height", mediaHeight.toFixed(2) + "px");
+      section.style.setProperty("--home-portrait-shift-x", shiftX.toFixed(2) + "px");
+      section.style.setProperty("--home-portrait-shift", shiftY.toFixed(2) + "px");
     }
 
     function update() {

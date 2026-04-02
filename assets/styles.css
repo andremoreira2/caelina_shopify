@@ -358,9 +358,10 @@ body.mobile-menu-open {
 }
 
 .home-portrait-reveal {
-  --home-portrait-overflow: 160px;
+  --home-portrait-media-width: 100%;
+  --home-portrait-media-height: 100%;
+  --home-portrait-shift-x: 0px;
   --home-portrait-shift: 0px;
-  --home-portrait-x: 50%;
   position: relative;
   z-index: 2;
   background: var(--home-bg);
@@ -410,11 +411,10 @@ body.mobile-menu-open {
 .home-portrait-reveal__image {
   position: absolute;
   inset: 0 0 auto;
-  width: 100%;
-  height: calc(100% + var(--home-portrait-overflow));
-  object-fit: cover;
-  object-position: var(--home-portrait-x) 0%;
-  transform: translateY(calc(var(--home-portrait-shift) * -1)) scale(1.02);
+  width: var(--home-portrait-media-width);
+  height: var(--home-portrait-media-height);
+  max-width: none;
+  transform: translate(calc(var(--home-portrait-shift-x) * -1), calc(var(--home-portrait-shift) * -1)) scale(1.02);
   transform-origin: top center;
   will-change: transform;
 }

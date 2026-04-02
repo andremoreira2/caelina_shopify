@@ -48,7 +48,7 @@
       },
       {
         "type": "paragraph",
-        "content": "Optional image for the slim scroll reveal between Shop the Look and the Caelina story. If empty, the first Shop the Look image is used."
+        "content": "Optional image for the slim scroll reveal between Shop by Collection and Shop the Look. If empty, the first Shop the Look image is used."
       },
       {
         "type": "image_picker",
@@ -57,7 +57,7 @@
       },
       {
         "type": "paragraph",
-        "content": "Framing controls use percentages. Horizontal focus: 0 = left, 100 = right. Start/end positions: 0 = top, 100 = bottom."
+        "content": "Framing controls use percentages. Horizontal focus: 0 = left, 100 = right. Start position: 0 = top, 100 = bottom. Speed controls how much the image travels while you scroll."
       },
       {
         "type": "range",
@@ -81,11 +81,11 @@
       },
       {
         "type": "range",
-        "id": "home_portrait_reveal_desktop_end",
-        "label": "Desktop end position",
+        "id": "home_portrait_reveal_desktop_speed",
+        "label": "Desktop reveal speed",
         "min": 0,
-        "max": 100,
-        "step": 1,
+        "max": 300,
+        "step": 5,
         "unit": "%",
         "default": 100
       },
@@ -111,11 +111,11 @@
       },
       {
         "type": "range",
-        "id": "home_portrait_reveal_mobile_end",
-        "label": "Mobile end position",
+        "id": "home_portrait_reveal_mobile_speed",
+        "label": "Mobile reveal speed",
         "min": 0,
-        "max": 100,
-        "step": 1,
+        "max": 300,
+        "step": 5,
         "unit": "%",
         "default": 100
       }
