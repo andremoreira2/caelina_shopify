@@ -2,23 +2,23 @@
   var header = document.querySelector('.site-header');
   if (!header) return;
   var body = document.body;
-  var isHomeTemplate = body.classList.contains('template-home') || body.classList.contains('template-index');
-  var homeCollectionsSection = isHomeTemplate ? document.querySelector('[data-home-collections]') : null;
+  var hasHeroHeader = body.classList.contains('template-home') || body.classList.contains('template-index');
+  var homeCollectionsSection = hasHeroHeader ? document.querySelector('[data-home-collections]') : null;
 
   var homeShrinkFallbackStart = 650;
   var homeShrinkRange = 40;
-  var shrinkStart = isHomeTemplate ? homeShrinkFallbackStart : 150;
-  var shrinkEnd = isHomeTemplate ? homeShrinkFallbackStart + homeShrinkRange : 190;
+  var shrinkStart = hasHeroHeader ? homeShrinkFallbackStart : 0;
+  var shrinkEnd = hasHeroHeader ? homeShrinkFallbackStart + homeShrinkRange : 1;
   var shrinkDistance = Math.max(1, shrinkEnd - shrinkStart);
   var ticking = false;
 
-  if (!isHomeTemplate) {
+  if (!hasHeroHeader) {
     header.classList.add('site-header--fixed');
     body.classList.add('has-fixed-header');
   }
 
   function updateShrinkThresholds() {
-    if (!isHomeTemplate) return;
+    if (!hasHeroHeader) return;
     if (!homeCollectionsSection) {
       shrinkStart = homeShrinkFallbackStart;
       shrinkEnd = homeShrinkFallbackStart + homeShrinkRange;
@@ -48,8 +48,8 @@
 
   function applyHeaderState() {
     var scrollY = window.scrollY || window.pageYOffset || 0;
-    var isScrolled = scrollY > shrinkStart;
-    var progress = Math.min(Math.max((scrollY - shrinkStart) / shrinkDistance, 0), 1);
+    var isScrolled = hasHeroHeader ? scrollY > shrinkStart : true;
+    var progress = hasHeroHeader ? Math.min(Math.max((scrollY - shrinkStart) / shrinkDistance, 0), 1) : 1;
 
     header.classList.toggle('is-scrolled', isScrolled);
     header.style.setProperty('--header-shrink-progress', progress.toFixed(3));

@@ -1035,6 +1035,10 @@ body.template-home .site-header {
   right: 0;
 }
 
+body:not(.template-index):not(.template-home) .site-header {
+  --header-shrink-progress: 1;
+}
+
 .site-header.is-scrolled {
   background: #0b0b0f;
   color: var(--fg);
