@@ -13,6 +13,12 @@
     "home_hero_video_primary_url": "https://cdn.shopify.com/videos/c/o/v/693ebb9b81594aeab755f32cba0ec8a8.mp4",
     "home_hero_video_secondary_url": "https://cdn.shopify.com/videos/c/o/v/2a4aefd158e942f0b69536514e2e19d2.mp4",
     "home_stl_look_handles": "look-4\nhome-page-shop-the-look\ntest-set-name",
+    "home_portrait_reveal_image": "shopify://shop_images/1f4874e873d01ce4d678348986fbec28e2cdedbabaf60c3ea837acbdf9b2838a.jpg",
+    "home_portrait_reveal_desktop_start": 35,
+    "home_portrait_reveal_desktop_speed": 60,
+    "home_portrait_reveal_mobile_x": 0,
+    "home_portrait_reveal_mobile_start": 60,
+    "home_portrait_reveal_mobile_speed": 85,
     "content_for_index": []
   },
   "platform_customizations": {
