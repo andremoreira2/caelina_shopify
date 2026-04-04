@@ -2641,6 +2641,119 @@ kbd {
   color: #b44343;
 }
 
+.content-page__inner--faq {
+  max-width: 1100px;
+}
+
+.faq-page__intro {
+  max-width: 780px;
+  margin: 0 auto 26px;
+  color: #4c4f57;
+  text-align: center;
+}
+
+.faq-page__intro > :first-child {
+  margin-top: 0;
+}
+
+.faq-page__intro > :last-child {
+  margin-bottom: 0;
+}
+
+.faq-page__intro p,
+.faq-page__intro li {
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.faq-page__list {
+  border-top: 1px solid rgba(17, 17, 17, 0.12);
+}
+
+.faq-page__item {
+  border-bottom: 1px solid rgba(17, 17, 17, 0.12);
+}
+
+.faq-page__question {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 0;
+  cursor: pointer;
+}
+
+.faq-page__question::-webkit-details-marker {
+  display: none;
+}
+
+.faq-page__question-text {
+  color: #15161a;
+  font-family: "Times New Roman", Times, serif;
+  font-size: clamp(24px, 3vw, 38px);
+  line-height: 1.08;
+  letter-spacing: 0.01em;
+}
+
+.faq-page__icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  color: #1a1a1a;
+}
+
+.faq-page__icon::before,
+.faq-page__icon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+  transition: transform 0.18s ease;
+}
+
+.faq-page__icon::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.faq-page__item[open] .faq-page__icon::after {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.faq-page__answer {
+  max-width: 760px;
+  padding: 0 56px 26px 0;
+}
+
+.faq-page__answer > :first-child {
+  margin-top: 0;
+}
+
+.faq-page__answer > :last-child {
+  margin-bottom: 0;
+}
+
+.faq-page__answer p,
+.faq-page__answer li {
+  color: #363941;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.faq-page__answer ul,
+.faq-page__answer ol {
+  padding-left: 20px;
+}
+
+.faq-page__source {
+  margin-top: 18px;
+}
+
 @media (max-width: 900px) {
   .content-page {
     padding-top: 112px;
@@ -2653,6 +2766,18 @@ kbd {
   .contact-page-form__field--full {
     grid-column: auto;
   }
+
+  .faq-page__question {
+    padding: 22px 0;
+  }
+
+  .faq-page__question-text {
+    font-size: clamp(20px, 6vw, 28px);
+  }
+
+  .faq-page__answer {
+    padding-right: 0;
+  }
 }
 
 @media (max-width: 680px) {
@@ -2664,6 +2789,19 @@ kbd {
   .content-page__content,
   .contact-page-form {
     padding: 22px 18px;
+  }
+
+  .faq-page__question {
+    gap: 14px;
+    padding: 18px 0;
+  }
+
+  .faq-page__intro {
+    margin-bottom: 18px;
+  }
+
+  .faq-page__question-text {
+    font-size: clamp(18px, 7vw, 24px);
   }
 }
 

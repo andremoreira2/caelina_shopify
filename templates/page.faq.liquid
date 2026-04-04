@@ -1,0 +1,113 @@
+<section class="content-page faq-page" data-faq-page>
+  <div class="content-page__inner content-page__inner--faq">
+    <header class="content-page__header">
+      <h1 class="content-page__title page-title">{{ page.title }}</h1>
+    </header>
+
+    <div class="faq-page__intro" data-faq-intro hidden></div>
+    <div class="faq-page__list" data-faq-list hidden></div>
+
+    <div class="content-page__content faq-page__source" data-faq-source>
+      {{ page.content }}
+    </div>
+  </div>
+</section>
+
+<script>
+  (() => {
+    const initFaqPage = () => {
+      const root = document.querySelector("[data-faq-page]");
+
+      if (!root) {
+        return;
+      }
+
+      const source = root.querySelector("[data-faq-source]");
+      const list = root.querySelector("[data-faq-list]");
+      const intro = root.querySelector("[data-faq-intro]");
+
+      if (!source || !list || !intro) {
+        return;
+      }
+
+      const blocks = Array.from(source.children);
+
+      if (!blocks.length) {
+        return;
+      }
+
+      const introNodes = [];
+      const entries = [];
+      let currentEntry = null;
+
+      blocks.forEach((block) => {
+        const tagName = block.tagName.toUpperCase();
+
+        if (tagName === "H2") {
+          currentEntry = {
+            question: block.textContent.trim(),
+            answerNodes: [],
+          };
+          entries.push(currentEntry);
+          return;
+        }
+
+        if (currentEntry) {
+          currentEntry.answerNodes.push(block.cloneNode(true));
+          return;
+        }
+
+        introNodes.push(block.cloneNode(true));
+      });
+
+      const validEntries = entries.filter((entry) => entry.question && entry.answerNodes.length);
+
+      if (!validEntries.length) {
+        return;
+      }
+
+      if (introNodes.length) {
+        introNodes.forEach((node) => intro.appendChild(node));
+        intro.hidden = false;
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      validEntries.forEach((entry) => {
+        const item = document.createElement("details");
+        item.className = "faq-page__item";
+
+        const question = document.createElement("summary");
+        question.className = "faq-page__question";
+
+        const questionText = document.createElement("span");
+        questionText.className = "faq-page__question-text";
+        questionText.textContent = entry.question;
+
+        const icon = document.createElement("span");
+        icon.className = "faq-page__icon";
+        icon.setAttribute("aria-hidden", "true");
+
+        question.append(questionText, icon);
+
+        const answer = document.createElement("div");
+        answer.className = "faq-page__answer";
+        entry.answerNodes.forEach((node) => answer.appendChild(node));
+
+        item.append(question, answer);
+        fragment.appendChild(item);
+      });
+
+      list.appendChild(fragment);
+      list.hidden = false;
+      source.hidden = true;
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initFaqPage, { once: true });
+      return;
+    }
+
+    initFaqPage();
+  })();
+</script>
