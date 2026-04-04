@@ -234,25 +234,37 @@
             </ul>
           </div>
 
+          <div class="site-footer__column">
+            <h2 class="site-footer__heading">Client Care</h2>
+            <ul class="site-footer__links" role="list">
+              {% assign footer_contact_page = pages['contact'] %}
+              {% assign footer_faq_page = pages['faq'] %}
+              {% assign footer_shipping_page = pages['shipping'] %}
+              {% assign footer_returns_page = pages['returns'] %}
+              <li><a href="{% if footer_contact_page %}{{ footer_contact_page.url }}{% else %}/pages/contact{% endif %}">Contact</a></li>
+              <li><a href="{% if footer_faq_page %}{{ footer_faq_page.url }}{% else %}/pages/faq{% endif %}">FAQ</a></li>
+              <li><a href="{% if footer_shipping_page %}{{ footer_shipping_page.url }}{% else %}/pages/shipping{% endif %}">Shipping</a></li>
+              <li><a href="{% if footer_returns_page %}{{ footer_returns_page.url }}{% else %}/pages/returns{% endif %}">Returns</a></li>
+            </ul>
+          </div>
+
         </div>
 
       </div>
 
       <div class="site-footer__meta">
         <p>© {{ 'now' | date: '%Y' }} CAELINA. All rights reserved.</p>
-        <ul class="site-footer__payments site-footer__payments--bottom" role="list" aria-label="Payment methods">
-          {% assign enabled_payments = shop.enabled_payment_types %}
-          {% if enabled_payments and enabled_payments.size > 0 %}
-            {% for type in enabled_payments %}
-              <li class="site-footer__payment">{{ type | payment_type_svg_tag }}</li>
-            {% endfor %}
-          {% else %}
-            <li class="site-footer__payment">{{ 'visa' | payment_type_svg_tag }}</li>
-            <li class="site-footer__payment">{{ 'master' | payment_type_svg_tag }}</li>
-            <li class="site-footer__payment">{{ 'american_express' | payment_type_svg_tag }}</li>
-            <li class="site-footer__payment">{{ 'paypal' | payment_type_svg_tag }}</li>
+        <nav class="site-footer__legal" aria-label="Policies">
+          {% if shop.privacy_policy != blank %}
+            <a href="{{ shop.privacy_policy.url }}">Privacy Policy</a>
           {% endif %}
-        </ul>
+          {% if shop.terms_of_service != blank %}
+            <a href="{{ shop.terms_of_service.url }}">Terms of Service</a>
+          {% endif %}
+          {% if shop.refund_policy != blank %}
+            <a href="{{ shop.refund_policy.url }}">Refund Policy</a>
+          {% endif %}
+        </nav>
       </div>
 
       <div class="site-footer__brand" aria-hidden="true">
