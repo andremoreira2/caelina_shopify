@@ -19,6 +19,9 @@
     "home_portrait_reveal_mobile_x": 0,
     "home_portrait_reveal_mobile_start": 10,
     "home_portrait_reveal_mobile_speed": 110,
+    "footer_instagram_url": "https://www.instagram.com/caelinajewelry",
+    "footer_tiktok_url": "https://www.tiktok.com/",
+    "footer_pinterest_url": "https://www.pinterest.com/",
     "content_for_index": []
   },
   "platform_customizations": {
