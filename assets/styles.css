@@ -7644,10 +7644,10 @@ body.shop-the-look-modal-open {
 .site-footer__meta {
   margin-top: clamp(10px, 1.8vw, 20px);
   padding: 0 20px clamp(16px, 2vw, 22px);
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
 }
 
 .site-footer__meta p {
@@ -7658,11 +7658,38 @@ body.shop-the-look-modal-open {
   text-transform: uppercase;
 }
 
+.site-footer__social {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 12px 20px;
+}
+
+.site-footer__social a {
+  color: #4d505a;
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+.site-footer__social a:hover,
+.site-footer__social a:focus-visible {
+  color: #111111;
+}
+
+.site-footer__copyright {
+  justify-self: center;
+  text-align: center;
+}
+
 .site-footer__legal {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 12px 20px;
+  justify-self: end;
 }
 
 .site-footer__legal a {
@@ -7736,15 +7763,22 @@ body.shop-the-look-modal-open {
   }
 
   .site-footer__meta {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     align-items: center;
     text-align: center;
+    gap: 12px;
     padding-bottom: 14px;
   }
 
+  .site-footer__social,
   .site-footer__legal {
     justify-content: center;
     width: 100%;
+    justify-self: center;
+  }
+
+  .site-footer__copyright {
+    justify-self: center;
   }
 
   .site-footer__brand-wordmark {

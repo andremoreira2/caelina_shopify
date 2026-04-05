@@ -118,6 +118,25 @@
         "step": 5,
         "unit": "%",
         "default": 100
+      },
+      {
+        "type": "header",
+        "content": "Footer social links"
+      },
+      {
+        "type": "url",
+        "id": "footer_instagram_url",
+        "label": "Instagram URL"
+      },
+      {
+        "type": "url",
+        "id": "footer_tiktok_url",
+        "label": "TikTok URL"
+      },
+      {
+        "type": "url",
+        "id": "footer_pinterest_url",
+        "label": "Pinterest URL"
       }
     ]
   }

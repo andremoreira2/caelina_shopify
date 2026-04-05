@@ -253,7 +253,18 @@
       </div>
 
       <div class="site-footer__meta">
-        <p>© {{ 'now' | date: '%Y' }} CAELINA. All rights reserved.</p>
+        <nav class="site-footer__social" aria-label="Social media">
+          {% if settings.footer_instagram_url != blank %}
+            <a href="{{ settings.footer_instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram</a>
+          {% endif %}
+          {% if settings.footer_tiktok_url != blank %}
+            <a href="{{ settings.footer_tiktok_url }}" target="_blank" rel="noopener noreferrer">TikTok</a>
+          {% endif %}
+          {% if settings.footer_pinterest_url != blank %}
+            <a href="{{ settings.footer_pinterest_url }}" target="_blank" rel="noopener noreferrer">Pinterest</a>
+          {% endif %}
+        </nav>
+        <p class="site-footer__copyright">© {{ 'now' | date: '%Y' }} CAELINA. All rights reserved.</p>
         <nav class="site-footer__legal" aria-label="Policies">
           {% if shop.privacy_policy != blank %}
             <a href="{{ shop.privacy_policy.url }}">Privacy Policy</a>
