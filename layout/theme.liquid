@@ -38,8 +38,8 @@
       font-display: swap;
     }
   </style>
-  {{ 'styles.css' | asset_url | stylesheet_tag }}
   {{ content_for_header }}
+  {{ 'styles.css' | asset_url | stylesheet_tag }}
 </head>
 <body class="template-{{ template.name }}{% if template.name == 'page' and template.suffix == 'home' %} template-home{% endif %}">
   <header class="site-header" role="banner">
