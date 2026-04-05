@@ -117,6 +117,7 @@ body {
 }
 
 body.template-page,
+body.template-policy,
 body.template-cart {
   background: var(--home-bg);
   color: #1a1a1a;
@@ -2556,6 +2557,70 @@ kbd {
 .content-page__content a {
   color: #111111;
   text-underline-offset: 0.18em;
+}
+
+.content-page__content--policy,
+.content-page__content--policy p,
+.content-page__content--policy li,
+.content-page__content--policy span,
+.content-page__content--policy strong,
+.content-page__content--policy em {
+  color: #30333a !important;
+}
+
+.content-page__content--policy h1,
+.content-page__content--policy h2,
+.content-page__content--policy h3,
+.content-page__content--policy h4,
+.content-page__content--policy h5,
+.content-page__content--policy h6 {
+  color: #15161a !important;
+}
+
+.content-page__content--policy a {
+  color: #111111 !important;
+}
+
+body.template-policy .site-page,
+body.template-policy .site-page > *,
+.content-page--policy,
+.content-page--policy .content-page__header,
+.content-page--policy .content-page__title,
+.content-page--policy .content-page__content {
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+
+body.template-policy .site-page {
+  color: #1a1a1a !important;
+}
+
+.content-page--policy .content-page__title {
+  color: #15161a !important;
+}
+
+.content-page--policy .content-page__content,
+.content-page--policy .content-page__content p,
+.content-page--policy .content-page__content li,
+.content-page--policy .content-page__content div,
+.content-page--policy .content-page__content span,
+.content-page--policy .content-page__content strong,
+.content-page--policy .content-page__content em {
+  color: #30333a !important;
+}
+
+.content-page--policy .content-page__content h1,
+.content-page--policy .content-page__content h2,
+.content-page--policy .content-page__content h3,
+.content-page--policy .content-page__content h4,
+.content-page--policy .content-page__content h5,
+.content-page--policy .content-page__content h6 {
+  color: #15161a !important;
+}
+
+.content-page--policy .content-page__content a {
+  color: #111111 !important;
 }
 
 .contact-page-form {
