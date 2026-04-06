@@ -264,7 +264,6 @@
             <a href="{{ settings.footer_pinterest_url }}" target="_blank" rel="noopener noreferrer">Pinterest</a>
           {% endif %}
         </nav>
-        <p class="site-footer__copyright">© {{ 'now' | date: '%Y' }} CAELINA. All rights reserved.</p>
         <nav class="site-footer__legal" aria-label="Policies">
           {% if shop.privacy_policy != blank %}
             <a href="{{ shop.privacy_policy.url }}">Privacy Policy</a>
@@ -277,6 +276,8 @@
           {% endif %}
         </nav>
       </div>
+
+      <p class="site-footer__copyright">© {{ 'now' | date: '%Y' }} CAELINA. All rights reserved.</p>
 
       <div class="site-footer__brand" aria-hidden="true">
         <span class="site-footer__brand-wordmark">CΛELINΛ</span>
