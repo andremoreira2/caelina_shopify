@@ -894,20 +894,10 @@
       // on mobile browser chrome changes.
       const stickyTop = parseFloat(window.getComputedStyle(inner).top || "0") || 0;
       const stickyHeight = inner.getBoundingClientRect().height;
-      const floatingBarInset = (() => {
-        if (!root.classList.contains("shop-the-look--product")) return 0;
-
-        const floatingBar = document.querySelector("[data-floating-atc]");
-        if (!floatingBar) return 0;
-
-        const rect = floatingBar.getBoundingClientRect();
-        return Math.max(0, Math.min(window.innerHeight, window.innerHeight - rect.top));
-      })();
       const requiredSectionHeight = Math.ceil(
         stickyTop
         + stickyHeight
         + scrollableDistance
-        + floatingBarInset
         + STL_MOBILE_STICKY_END_BUFFER
       );
       root.style.height = `${requiredSectionHeight}px`;

@@ -238,8 +238,6 @@
         </div>
       </div>
     {% endform %}
-
-    <a class="cart-link" href="/cart">View cart</a>
   </div>
 </section>
 
@@ -277,50 +275,6 @@
     </div>
   </div>
 </section>
-
-{% assign floating_variant = product.selected_or_first_available_variant %}
-{% assign floating_image = product.featured_image | default: product.images.first %}
-<div class="product-floating-atc" data-floating-atc aria-hidden="true">
-  <div class="product-floating-atc__inner">
-    <div class="product-floating-atc__left">
-      {% if floating_image != blank %}
-        <div class="product-floating-atc__image-wrap" aria-hidden="true">
-          <img
-            class="product-floating-atc__image"
-            src="{{ floating_image | image_url: width: 160 }}"
-            alt="{{ floating_image.alt | default: product.title | escape }}"
-            loading="lazy"
-            width="80"
-            height="80"
-          >
-        </div>
-      {% endif %}
-      <div class="product-floating-atc__meta">
-        <p class="product-floating-atc__title">{{ product.title }}</p>
-        {% render 'price',
-          amount: floating_variant.price,
-          wrapper_tag: 'p',
-          wrapper_class: 'product-floating-atc__price price--compact',
-          current_class: 'product-floating-atc__price-value',
-          current_attrs: 'data-floating-price'
-        %}
-      </div>
-    </div>
-    <button
-      type="button"
-      class="btn btn--atc product-floating-atc__btn"
-      data-floating-add-to-cart
-      {% unless floating_variant.available %}disabled{% endunless %}
-    >
-      <span class="btn-icon product-floating-atc__btn-icon" data-floating-add-icon aria-hidden="true" {% unless floating_variant.available %}hidden{% endunless %}>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-        </svg>
-      </span>
-      <span class="btn-text" data-floating-add-text>{% if floating_variant.available %}Add to cart{% else %}Sold out{% endif %}</span>
-    </button>
-  </div>
-</div>
 
 {% assign stl_enabled = product.metafields.custom.shop_the_look_enabled.value %}
 {% assign stl_title = 'Complete the Look' %}
@@ -400,7 +354,6 @@
     const variants = {{ product.variants | json }};
 
     const variantSelect = document.getElementById("variantSelect");
-    const productForm = document.querySelector(".product-form");
     const priceWrap = document.querySelector("[data-product-price]");
     const priceValue = priceWrap?.querySelector(".product-price-value");
     const compareValue = priceWrap?.querySelector(".product-compare");
@@ -412,77 +365,6 @@
     const optionGroups = document.querySelectorAll("[data-option-index]");
     const galleryGrid = document.querySelector("[data-product-gallery]");
     const galleryProgress = document.querySelector("[data-product-gallery-progress]");
-    const floatingBar = document.querySelector("[data-floating-atc]");
-    const floatingPrice = floatingBar?.querySelector("[data-floating-price]");
-    const floatingAddBtn = floatingBar?.querySelector("[data-floating-add-to-cart]");
-    const floatingAddText = floatingBar?.querySelector("[data-floating-add-text]");
-    const floatingAddIcon = floatingBar?.querySelector("[data-floating-add-icon]");
-
-    const syncFloatingState = (available, price) => {
-      if (floatingPrice && price) {
-        floatingPrice.textContent = price;
-      }
-      if (floatingAddBtn) {
-        floatingAddBtn.disabled = !available;
-        if (floatingAddText) {
-          floatingAddText.textContent = available ? "Add to cart" : "Sold out";
-        } else {
-          floatingAddBtn.textContent = available ? "Add to cart" : "Sold out";
-        }
-      }
-      if (floatingAddIcon) {
-        floatingAddIcon.hidden = !available;
-      }
-    };
-
-    const setFloatingVisibility = (visible) => {
-      if (!floatingBar) return;
-      floatingBar.classList.toggle("is-visible", visible);
-      floatingBar.setAttribute("aria-hidden", visible ? "false" : "true");
-    };
-
-    if (floatingAddBtn && addBtn && productForm) {
-      floatingAddBtn.addEventListener("click", () => {
-        if (addBtn.disabled) return;
-        if (typeof productForm.requestSubmit === "function") {
-          productForm.requestSubmit(addBtn);
-        } else {
-          addBtn.click();
-        }
-      });
-    }
-
-    if (floatingBar) {
-      floatingBar.addEventListener("click", (e) => {
-        if (e.target.closest("[data-floating-add-to-cart]")) return;
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-    }
-
-    if (floatingBar && addBtn) {
-      const checkVisibility = () => {
-        const rect = addBtn.getBoundingClientRect();
-        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-        const inView = rect.top < viewportHeight && rect.bottom > 0;
-        setFloatingVisibility(!inView && !addBtn.disabled);
-      };
-
-      if ("IntersectionObserver" in window) {
-        const observer = new IntersectionObserver(
-          (entries) => {
-            const entry = entries[0];
-            setFloatingVisibility(!entry.isIntersecting && !addBtn.disabled);
-          },
-          { threshold: 0.4 }
-        );
-        observer.observe(addBtn);
-        window.addEventListener("resize", checkVisibility);
-      } else {
-        window.addEventListener("scroll", checkVisibility, { passive: true });
-        window.addEventListener("resize", checkVisibility);
-      }
-      checkVisibility();
-    }
 
     if (galleryGrid && galleryProgress) {
       let galleryProgressFrame = 0;
@@ -542,7 +424,6 @@
           } else {
             addBtn.textContent = available ? "Add to cart" : "Sold out";
           }
-          syncFloatingState(available, optionPrice);
         }
       }
 
@@ -592,8 +473,6 @@
           syncButtons();
         });
       }
-    } else {
-      syncFloatingState(!addBtn?.disabled, priceValue?.textContent?.trim());
     }
 
     // Accordion Logic
