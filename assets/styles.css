@@ -160,6 +160,53 @@ body.mobile-menu-open {
   overscroll-behavior: none;
 }
 
+[data-scroll-reveal] {
+  --scroll-enter-distance: 18px;
+  --scroll-enter-duration: 620ms;
+  --scroll-enter-delay: 0ms;
+  --scroll-enter-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-enter-enabled [data-scroll-reveal].is-scroll-enter-prepared {
+  opacity: 0;
+  transform: translateY(var(--scroll-enter-distance));
+  transition:
+    opacity var(--scroll-enter-duration) var(--scroll-enter-ease) var(--scroll-enter-delay),
+    transform var(--scroll-enter-duration) var(--scroll-enter-ease) var(--scroll-enter-delay);
+  will-change: opacity, transform;
+}
+
+.scroll-enter-enabled [data-scroll-reveal="fade"].is-scroll-enter-prepared {
+  transform: none;
+}
+
+.scroll-enter-enabled [data-scroll-reveal="fade-down"].is-scroll-enter-prepared {
+  transform: translateY(calc(var(--scroll-enter-distance) * -1));
+}
+
+.scroll-enter-enabled [data-scroll-reveal="fade-left"].is-scroll-enter-prepared {
+  transform: translateX(var(--scroll-enter-distance));
+}
+
+.scroll-enter-enabled [data-scroll-reveal="fade-right"].is-scroll-enter-prepared {
+  transform: translateX(calc(var(--scroll-enter-distance) * -1));
+}
+
+.scroll-enter-enabled [data-scroll-reveal].is-scroll-enter-prepared.is-scroll-enter-visible {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
+}
+
 .site-page {
   position: relative;
   background: var(--site-page-background);
@@ -6715,9 +6762,14 @@ body.collection-filters-open {
     display: none;
   }
 
-  /* Entrance animation: vertical on mobile */
-  [data-stl-section] .shop-the-look__media-column {
-    transform: translateY(-20px);
+  /* Keep Shop the Look mobile layout stable; its sticky carousel measures and
+     transforms these elements while scrolling. */
+  [data-stl-section] .shop-the-look__media-column,
+  [data-stl-section] .shop-the-look__panel,
+  [data-stl-section] .shop-the-look-group__top {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 
 
