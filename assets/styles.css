@@ -4932,6 +4932,12 @@ body.collection-filters-open {
   min-height: 100vh;
 }
 
+@media (max-width: 900px) {
+  .product-page {
+    padding-top: 0;
+  }
+}
+
 /* Update Button Styles for Product Page */
 .product-form .btn--atc {
   width: 100%;
