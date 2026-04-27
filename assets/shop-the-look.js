@@ -1103,16 +1103,32 @@
      Entrance animation (IntersectionObserver)
      ========================================= */
   const revealSections = document.querySelectorAll("[data-stl-section]");
-  if (revealSections.length && typeof IntersectionObserver !== "undefined") {
+  const revealSectionTops = document.querySelectorAll("[data-stl-section] .shop-the-look-group__top");
+  if (revealSections.length || revealSectionTops.length) {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) {
+    if (prefersReduced || typeof IntersectionObserver === "undefined") {
       revealSections.forEach((section) => section.classList.add("is-revealed"));
+      revealSectionTops.forEach((top) => top.classList.add("is-stl-top-revealed"));
     } else {
+      const revealTopObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-stl-top-revealed");
+              revealTopObserver.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0.01,
+          rootMargin: "0px 0px 8% 0px",
+        }
+      );
       const revealObserverOptions = {
-        // Trigger a bit later so the entrance animation is visible after the
-        // section has moved further into the viewport.
-        threshold: 0.22,
-        rootMargin: "0px 0px -14% 0px",
+        // Reveal the media and product panel earlier, while still letting the
+        // title lead the sequence by a small amount.
+        threshold: 0.14,
+        rootMargin: "0px 0px -4% 0px",
       };
       const revealObserver = new IntersectionObserver(
         (entries) => {
@@ -1125,6 +1141,7 @@
         },
         revealObserverOptions
       );
+      revealSectionTops.forEach((top) => revealTopObserver.observe(top));
       revealSections.forEach((section) => revealObserver.observe(section));
     }
   }

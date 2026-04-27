@@ -6014,7 +6014,8 @@ body.collection-filters-open {
 
 [data-stl-section].is-revealed .shop-the-look__media-column,
 [data-stl-section].is-revealed .shop-the-look__panel,
-[data-stl-section].is-revealed .shop-the-look-group__top {
+[data-stl-section].is-revealed .shop-the-look-group__top,
+[data-stl-section] .shop-the-look-group__top.is-stl-top-revealed {
   opacity: 1;
   transform: none;
 }
