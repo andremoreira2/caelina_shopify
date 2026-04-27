@@ -16,6 +16,9 @@
   <!-- Performance: Preconnect to external domains -->
   <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
   <link rel="dns-prefetch" href="https://cdn.shopify.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300&display=swap" rel="stylesheet">
 
   {% if page_description %}
     <meta name="description" content="{{ page_description }}">
@@ -27,6 +30,9 @@
   <meta name="theme-color" content="#0b0b0f">
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{ page_title }}</title>
+  <script>
+    document.documentElement.classList.add('js-page-transition');
+  </script>
   <style>
     @font-face {
       font-family: "Mayonice";
@@ -42,6 +48,11 @@
   {{ 'styles.css' | asset_url | stylesheet_tag }}
 </head>
 <body class="template-{{ template.name }}{% if template.name == 'page' and template.suffix == 'home' %} template-home{% endif %}">
+  <div class="page-transition" data-page-transition aria-hidden="true">
+    <div class="page-transition__mark">
+      <span class="page-transition__logo">CΛELINΛ</span>
+    </div>
+  </div>
   <header class="site-header" role="banner">
     <div class="site-announcement-bar" role="note" aria-label="Store announcement">
       <span>FREE WORLDWIDE SHIPPING</span>
@@ -310,6 +321,7 @@
     </div>
   </div>
 
+  <script src="{{ 'page-transition.js' | asset_url }}"></script>
   {{ 'cart-drawer.js' | asset_url | script_tag }}
   <script src="{{ 'header-scroll.js' | asset_url }}" defer></script>
   <script src="{{ 'search.js' | asset_url }}" defer></script>

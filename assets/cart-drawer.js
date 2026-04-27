@@ -47,6 +47,86 @@
     }
   };
 
+  const buildLoadingLineItemMarkup = () => `
+    <li class="drawer-cart__line drawer-cart__line--loading" aria-hidden="true">
+      <div class="drawer-cart__loading-image"></div>
+      <div class="drawer-cart__line-details">
+        <div class="drawer-cart__line-header">
+          <span class="drawer-cart__loading-line drawer-cart__loading-line--title"></span>
+          <span class="drawer-cart__loading-line drawer-cart__loading-line--compact"></span>
+        </div>
+        <span class="drawer-cart__loading-line drawer-cart__loading-line--meta"></span>
+        <div class="drawer-cart__controls">
+          <span class="drawer-cart__loading-qty"></span>
+          <span class="drawer-cart__loading-line drawer-cart__loading-line--remove"></span>
+        </div>
+      </div>
+    </li>
+  `;
+
+  const getDrawerLoadingMarkup = () => `
+    <div class="drawer-cart drawer-cart--loading" aria-live="polite" aria-busy="true">
+      <div class="drawer-cart__header-banner">
+        Use coupon code <strong>WELCOME10</strong> for 10% off your first order.
+      </div>
+      <div class="drawer-cart__header">
+        <h2 class="drawer-cart__title">Cart</h2>
+        <button class="drawer-cart__close" type="button" data-cart-drawer-close aria-label="Close cart">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="drawer-cart__shipping drawer-cart__shipping--loading" aria-hidden="true">
+        <span class="drawer-cart__loading-line drawer-cart__loading-line--shipping"></span>
+        <div class="drawer-cart__loading-progress">
+          <span class="drawer-cart__loading-progress-fill"></span>
+        </div>
+      </div>
+      <div class="drawer-cart__body">
+        <div class="drawer-cart__loading-intro">
+          <span class="drawer-cart__loading-wordmark">CΛELINΛ</span>
+          <p class="drawer-cart__loading-copy">Preparing your cart</p>
+        </div>
+        <ul class="drawer-cart__lines">
+          ${buildLoadingLineItemMarkup()}
+          ${buildLoadingLineItemMarkup()}
+        </ul>
+      </div>
+      <div class="drawer-cart__footer drawer-cart__footer--loading" aria-hidden="true">
+        <div class="drawer-cart__loading-subtotal">
+          <span class="drawer-cart__loading-line drawer-cart__loading-line--label"></span>
+          <span class="drawer-cart__loading-line drawer-cart__loading-line--price"></span>
+        </div>
+        <span class="drawer-cart__loading-button"></span>
+        <span class="drawer-cart__loading-disclaimer"></span>
+      </div>
+    </div>
+  `;
+
+  const getDrawerErrorMarkup = () => `
+    <div class="drawer-cart drawer-cart--loading drawer-cart--error" aria-live="polite">
+      <div class="drawer-cart__header-banner">
+        Use coupon code <strong>WELCOME10</strong> for 10% off your first order.
+      </div>
+      <div class="drawer-cart__header">
+        <h2 class="drawer-cart__title">Cart</h2>
+        <button class="drawer-cart__close" type="button" data-cart-drawer-close aria-label="Close cart">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="drawer-cart__loading-error">
+        <span class="drawer-cart__loading-wordmark">CΛELINΛ</span>
+        <p class="drawer-cart__loading-error-title">Could not load your cart.</p>
+        <button class="drawer-cart__loading-retry" type="button" data-cart-drawer-retry>Try again</button>
+      </div>
+    </div>
+  `;
+
   const buildUpsellCard = (product) => {
     const productTitle = esc(product.title);
     const productUrl = esc(product.url);
@@ -285,8 +365,10 @@
   };
 
   const refreshDrawer = async () => {
+    content.setAttribute("aria-busy", "true");
+
     try {
-      content.innerHTML = '<div class="cart-drawer__loading">Loading…</div>';
+      content.innerHTML = getDrawerLoadingMarkup();
       const res = await fetch("/cart?view=drawer", { credentials: "same-origin" });
       if (!res.ok) throw new Error("Failed to load cart");
       const html = await res.text();
@@ -303,8 +385,9 @@
 
     } catch (err) {
       console.warn(err);
-      content.innerHTML =
-        '<div class="cart-drawer__loading">Could not load cart.</div>';
+      content.innerHTML = getDrawerErrorMarkup();
+    } finally {
+      content.removeAttribute("aria-busy");
     }
   };
 
@@ -477,6 +560,24 @@
 
   closeButtons.forEach((btn) => {
     btn.addEventListener("click", closeDrawer);
+  });
+
+  content.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const closeTrigger = target.closest("[data-cart-drawer-close]");
+    if (closeTrigger) {
+      event.preventDefault();
+      closeDrawer();
+      return;
+    }
+
+    const retryTrigger = target.closest("[data-cart-drawer-retry]");
+    if (retryTrigger) {
+      event.preventDefault();
+      refreshDrawer();
+    }
   });
 
   window.addEventListener("keydown", (e) => {
