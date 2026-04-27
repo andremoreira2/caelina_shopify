@@ -506,6 +506,17 @@
       const cardRect = target.getBoundingClientRect();
       const boundsRect = scrollBoundsRoot.getBoundingClientRect();
       const maxScrollTop = Math.max(0, window.scrollY + boundsRect.bottom - window.innerHeight);
+      const desktopFocusTop = window.innerHeight * DESKTOP_CARD_FOCUS_RATIO;
+      const desktopFocusTolerance = Math.max(28, window.innerHeight * 0.05);
+      const isFullyVisibleInViewport = cardRect.top >= -STL_SCROLL_LOCK_TOLERANCE
+        && cardRect.bottom <= window.innerHeight + STL_SCROLL_LOCK_TOLERANCE;
+      const isAlreadyNearDesktopFocus = Math.abs(cardRect.top - desktopFocusTop) <= desktopFocusTolerance;
+
+      // Skip tiny adjustments when the selected card is already close enough
+      // to the intended desktop focus position.
+      if (isFullyVisibleInViewport && isAlreadyNearDesktopFocus) {
+        return null;
+      }
 
       let targetTop;
       if (cardRect.bottom > window.innerHeight) {
@@ -518,10 +529,6 @@
           0,
           maxScrollTop
         );
-        // If the computed target would scroll DOWN and the card is already fully visible, skip
-        if (targetTop > window.scrollY && cardRect.top >= 0) {
-          return null;
-        }
       }
 
       window.scrollTo({

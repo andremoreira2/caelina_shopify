@@ -7024,7 +7024,9 @@ body.collection-filters-open {
 
   .shop-the-look__panel {
     justify-items: center;
-    padding-top: min(84px, max(22px, calc(var(--stl-sticky-line) - 60px)));
+    /* Keep the first card lower so hotspot clicks don't need to pull
+       the page upward just to reveal the top of the list. */
+    padding-top: min(112px, max(48px, calc(var(--stl-sticky-line) - 28px)));
   }
 
   .shop-the-look--home .shop-the-look__panel {
