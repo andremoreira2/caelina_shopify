@@ -336,6 +336,9 @@
   {% if template.name == 'index' %}
     <script src="{{ 'app.js' | asset_url }}" defer></script>
   {% endif %}
+  {% if request.page_type == 'policy' or template.name == 'policy' %}
+    <script src="{{ 'policy-sections.js' | asset_url }}" defer></script>
+  {% endif %}
   <script src="{{ 'footer-reveal.js' | asset_url }}" defer></script>
 </body>
 </html>

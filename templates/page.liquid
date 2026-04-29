@@ -1,10 +1,15 @@
-<section class="content-page">
-  <div class="content-page__inner">
+{% assign is_client_care_document = false %}
+{% if page.handle == 'shipping' or page.handle == 'returns' %}
+  {% assign is_client_care_document = true %}
+{% endif %}
+
+<section class="content-page{% if is_client_care_document %} client-care-page client-care-page--{{ page.handle }}{% endif %}">
+  <div class="content-page__inner{% if is_client_care_document %} client-care-page__inner{% endif %}">
     <header class="content-page__header">
       <h1 class="content-page__title page-title">{{ page.title }}</h1>
     </header>
 
-    <div class="content-page__content">
+    <div class="content-page__content{% if is_client_care_document %} client-care-page__content{% endif %}">
       {{ page.content }}
     </div>
   </div>
