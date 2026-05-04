@@ -1,5 +1,5 @@
-<section class="content-page content-page--contact">
-  <div class="content-page__inner">
+<section class="content-page content-page--contact contact-page">
+  <div class="content-page__inner contact-page__inner">
     <header class="content-page__header">
       <h1 class="content-page__title page-title">{{ page.title }}</h1>
     </header>
@@ -10,55 +10,89 @@
       </div>
     {% endif %}
 
-    {% form 'contact', class: 'contact-page-form' %}
-      {% if form.posted_successfully? %}
-        <p class="contact-page-form__message contact-page-form__message--success" tabindex="-1" autofocus>
-          Thanks. We received your message and will get back to you soon.
-        </p>
-      {% elsif form.errors %}
-        <div class="contact-page-form__message contact-page-form__message--error" tabindex="-1" autofocus>
-          {{ form.errors | default_errors }}
-        </div>
-      {% endif %}
-
-      <div class="contact-page-form__grid">
-        <div class="contact-page-form__field">
-          <label for="ContactName">Name</label>
-          <input
-            id="ContactName"
-            type="text"
-            name="contact[name]"
-            value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
-            autocomplete="name"
-          >
+    <div class="contact-page__layout">
+      <aside class="contact-page__panel" aria-labelledby="ContactCareTitle">
+        <div class="contact-page__panel-header">
+          <p class="contact-page__panel-eyebrow">Support</p>
+          <h2 id="ContactCareTitle">We are here to help</h2>
+          <p>Send a note and our team will reply within 1-2 business days.</p>
         </div>
 
-        <div class="contact-page-form__field">
-          <label for="ContactEmail">Email</label>
-          <input
-            id="ContactEmail"
-            type="email"
-            name="contact[email]"
-            value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
-            autocomplete="email"
-            autocorrect="off"
-            autocapitalize="off"
-            required
-          >
+        <dl class="contact-page__details">
+          <div>
+            <dt>Response time</dt>
+            <dd>1-2 business days</dd>
+          </div>
+          <div>
+            <dt>Order help</dt>
+            <dd>Include your order number if you have one.</dd>
+          </div>
+          <div>
+            <dt>Private styling</dt>
+            <dd>Tell us what you are shopping for and any sizing notes.</dd>
+          </div>
+        </dl>
+
+        <nav class="contact-page__links" aria-label="Client care links">
+          {% assign contact_faq_page = pages['faq'] %}
+          {% assign contact_shipping_page = pages['shipping'] %}
+          {% assign contact_returns_page = pages['returns'] %}
+          <a href="{% if contact_faq_page %}{{ contact_faq_page.url }}{% else %}/pages/faq{% endif %}">FAQ</a>
+          <a href="{% if contact_shipping_page %}{{ contact_shipping_page.url }}{% else %}/pages/shipping{% endif %}">Shipping</a>
+          <a href="{% if contact_returns_page %}{{ contact_returns_page.url }}{% else %}/pages/returns{% endif %}">Returns</a>
+        </nav>
+      </aside>
+
+      {% form 'contact', class: 'contact-page-form' %}
+        {% if form.posted_successfully? %}
+          <p class="contact-page-form__message contact-page-form__message--success" tabindex="-1" autofocus>
+            Thanks. We received your message and will get back to you soon.
+          </p>
+        {% elsif form.errors %}
+          <div class="contact-page-form__message contact-page-form__message--error" tabindex="-1" autofocus>
+            {{ form.errors | default_errors }}
+          </div>
+        {% endif %}
+
+        <div class="contact-page-form__grid">
+          <div class="contact-page-form__field">
+            <label for="ContactName">Name</label>
+            <input
+              id="ContactName"
+              type="text"
+              name="contact[name]"
+              value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+              autocomplete="name"
+            >
+          </div>
+
+          <div class="contact-page-form__field">
+            <label for="ContactEmail">Email</label>
+            <input
+              id="ContactEmail"
+              type="email"
+              name="contact[email]"
+              value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+              autocomplete="email"
+              autocorrect="off"
+              autocapitalize="off"
+              required
+            >
+          </div>
+
+          <div class="contact-page-form__field contact-page-form__field--full">
+            <label for="ContactBody">Message</label>
+            <textarea
+              id="ContactBody"
+              name="contact[body]"
+              rows="8"
+              required
+            >{% if form.body %}{{ form.body }}{% endif %}</textarea>
+          </div>
         </div>
 
-        <div class="contact-page-form__field contact-page-form__field--full">
-          <label for="ContactBody">Message</label>
-          <textarea
-            id="ContactBody"
-            name="contact[body]"
-            rows="8"
-            required
-          >{% if form.body %}{{ form.body }}{% endif %}</textarea>
-        </div>
-      </div>
-
-      <button class="contact-page-form__submit" type="submit">Send Message</button>
-    {% endform %}
+        <button class="contact-page-form__submit" type="submit">Send Message</button>
+      {% endform %}
+    </div>
   </div>
 </section>
