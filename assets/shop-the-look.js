@@ -179,11 +179,14 @@
     const mediaWrap = root.querySelector(".shop-the-look__media-wrap");
     const inner = root.querySelector(".shop-the-look__inner");
     const scrollBoundsRoot = root.closest("[data-stl-section]") || root;
+    const sectionHeading = scrollBoundsRoot.querySelector(".shop-the-look-group__top");
     if (!dots.length || !cards.length) return;
+    const firstCardIndex = toNumber(cards[0].dataset.index);
 
     let activeIndex = -1;
     let rafPending = false;
     let pendingScrollTarget = null;
+    let preservedEdgeSelection = null;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobileLayout = window.matchMedia(`(max-width: ${STL_MOBILE_BREAKPOINT}px)`);
     const landscapeDesktopLayout = window.matchMedia(
@@ -303,6 +306,40 @@
       syncGalleries();
     };
 
+    const getPreservedEdgeIndex = () => {
+      if (!preservedEdgeSelection) return null;
+
+      const target = findCardByIndex(preservedEdgeSelection.index);
+      if (!target) {
+        preservedEdgeSelection = null;
+        return null;
+      }
+
+      const rect = target.getBoundingClientRect();
+      const isVisible = rect.bottom > 0 && rect.top < window.innerHeight;
+      if (!isVisible) {
+        preservedEdgeSelection = null;
+        return null;
+      }
+
+      if (
+        preservedEdgeSelection.edge === "start"
+        && window.scrollY <= preservedEdgeSelection.boundary + STL_SCROLL_LOCK_TOLERANCE
+      ) {
+        return preservedEdgeSelection.index;
+      }
+
+      if (
+        preservedEdgeSelection.edge === "end"
+        && window.scrollY >= preservedEdgeSelection.boundary - STL_SCROLL_LOCK_TOLERANCE
+      ) {
+        return preservedEdgeSelection.index;
+      }
+
+      preservedEdgeSelection = null;
+      return null;
+    };
+
     const getNearestCardIndex = () => {
       let bestIndex = activeIndex >= 0 ? activeIndex : toNumber(cards[0].dataset.index);
       let bestDistance = Infinity;
@@ -323,6 +360,11 @@
         });
 
         return bestIndex;
+      }
+
+      const preservedEdgeIndex = getPreservedEdgeIndex();
+      if (preservedEdgeIndex !== null) {
+        return preservedEdgeIndex;
       }
 
       const targetY = window.innerHeight * DESKTOP_CARD_FOCUS_RATIO;
@@ -406,6 +448,14 @@
     };
 
     const lockActiveDuringScroll = (nextIndex, targetScroll) => {
+      preservedEdgeSelection = targetScroll?.preserveIndex
+        ? {
+            index: nextIndex,
+            edge: targetScroll.preserveEdge,
+            boundary: targetScroll.preserveBoundary,
+          }
+        : null;
+
       if (!targetScroll) {
         clearPendingScrollTarget();
         return;
@@ -427,6 +477,9 @@
         index: nextIndex,
         surface: targetScroll.surface,
         position: clampedPosition,
+        preserveIndex: !!targetScroll.preserveIndex,
+        preserveEdge: targetScroll.preserveEdge || null,
+        preserveBoundary: targetScroll.preserveBoundary ?? null,
         startedAt: performance.now(),
         lastPosition: currentPosition,
         lastMovedAt: performance.now(),
@@ -511,6 +564,14 @@
       const isFullyVisibleInViewport = cardRect.top >= -STL_SCROLL_LOCK_TOLERANCE
         && cardRect.bottom <= window.innerHeight + STL_SCROLL_LOCK_TOLERANCE;
       const isAlreadyNearDesktopFocus = Math.abs(cardRect.top - desktopFocusTop) <= desktopFocusTolerance;
+      const startEdgeBuffer = nextIndex === firstCardIndex ? 0 : 8;
+      const lastCardIndex = toNumber(cards[cards.length - 1].dataset.index);
+      const useBottomBiasedLastCardFocus = window.innerWidth <= 1180 && nextIndex === lastCardIndex;
+      const headingBottom = sectionHeading ? sectionHeading.getBoundingClientRect().bottom : 0;
+      const minTargetTop = headingBottom < 0
+        ? Math.max(0, window.scrollY + headingBottom + startEdgeBuffer)
+        : 0;
+      const idealTargetTop = window.scrollY + cardRect.top - desktopFocusTop;
 
       // Skip tiny adjustments when the selected card is already close enough
       // to the intended desktop focus position.
@@ -518,17 +579,23 @@
         return null;
       }
 
-      let targetTop;
-      if (cardRect.bottom > window.innerHeight) {
-        // Card is below the viewport bottom — scroll just enough to reveal it
-        targetTop = clamp(window.scrollY + cardRect.bottom - window.innerHeight, 0, maxScrollTop);
-      } else {
-        // Card is fully or partially visible — scroll up to focus position
-        targetTop = clamp(
-          window.scrollY + cardRect.top - (window.innerHeight * DESKTOP_CARD_FOCUS_RATIO),
-          0,
+      let targetTop = clamp(idealTargetTop, minTargetTop, maxScrollTop);
+      let preserveEdge = idealTargetTop < minTargetTop - STL_SCROLL_LOCK_TOLERANCE
+        ? "start"
+        : (idealTargetTop > maxScrollTop + STL_SCROLL_LOCK_TOLERANCE ? "end" : null);
+
+      if (useBottomBiasedLastCardFocus) {
+        const bottomInset = Math.max(24, Math.min(56, window.innerHeight * 0.06));
+        const bottomBiasedTargetTop = clamp(
+          window.scrollY + cardRect.bottom - (window.innerHeight - bottomInset),
+          minTargetTop,
           maxScrollTop
         );
+
+        if (bottomBiasedTargetTop < targetTop) {
+          targetTop = bottomBiasedTargetTop;
+          preserveEdge = "end";
+        }
       }
 
       window.scrollTo({
@@ -538,6 +605,9 @@
       return {
         surface: "window",
         position: targetTop,
+        preserveIndex: !!preserveEdge,
+        preserveEdge,
+        preserveBoundary: preserveEdge === "start" ? minTargetTop : targetTop,
       };
     };
 

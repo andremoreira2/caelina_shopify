@@ -6059,6 +6059,7 @@ body.collection-filters-open {
   --stl-desktop-media-width: clamp(620px, 39vw, 740px);
   --stl-frame-ratio: 0.8571428571;
   --stl-desktop-media-max-height: calc(100dvh - var(--stl-sticky-line) - clamp(84px, 11vh, 140px));
+  --stl-desktop-panel-end-runway: 0px;
   --stl-media-frame-width: 100%;
 }
 
@@ -7401,6 +7402,7 @@ body.collection-filters-open {
     /* Keep the first card lower so hotspot clicks don't need to pull
        the page upward just to reveal the top of the list. */
     padding-top: min(112px, max(48px, calc(var(--stl-sticky-line) - 28px)));
+    padding-bottom: var(--stl-desktop-panel-end-runway);
   }
 
   .shop-the-look--home .shop-the-look__panel {
@@ -7417,6 +7419,20 @@ body.collection-filters-open {
 
   .shop-the-look__card-media img {
     height: clamp(200px, 23vw, 360px);
+  }
+}
+
+@media (min-width: 821px) and (max-width: 1180px) {
+  .shop-the-look {
+    /* Give the last product enough runway to reach the desktop focus zone
+       before the sticky media column releases on tighter desktop widths. */
+    --stl-desktop-panel-end-runway: clamp(120px, 18vh, 220px);
+  }
+
+  .shop-the-look__panel {
+    /* Keep the first product visible on tighter desktop widths without
+       changing the layout when moving between the first and second cards. */
+    padding-top: clamp(132px, calc(var(--stl-sticky-line) + 56px), 188px);
   }
 }
 
