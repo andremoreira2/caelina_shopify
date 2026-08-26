@@ -370,16 +370,7 @@
           {% assign home_stl_hotspots = home_stl_panel_set.shop_the_look_hotspots.value | default: home_stl_panel_set.hotspots.value | default: home_stl_panel_set.shop_the_look_hotspots | default: home_stl_panel_set.hotspots %}
           {% assign home_stl_is_hidden = false %}
           {% if home_stl_panel_idx > 0 %}{% assign home_stl_is_hidden = true %}{% endif %}
-          {% render 'home-shop-the-look-panel',
-            stl_title: home_stl_title,
-            stl_image: home_stl_image,
-            stl_products: home_stl_products,
-            stl_hotspots: home_stl_hotspots,
-            stl_index: home_stl_panel_idx,
-            stl_hidden: home_stl_is_hidden,
-            stl_grouped: home_stl_total_looks > 1,
-            stl_total_looks: home_stl_total_looks
-          %}
+          {% render 'home-shop-the-look-panel', stl_title: home_stl_title, stl_image: home_stl_image, stl_products: home_stl_products, stl_hotspots: home_stl_hotspots, stl_index: home_stl_panel_idx, stl_hidden: home_stl_is_hidden, stl_grouped: home_stl_total_looks, stl_total_looks: home_stl_total_looks %}
           {% assign home_stl_panel_idx = home_stl_panel_idx | plus: 1 %}
         {% endif %}
       {% endfor %}
@@ -1026,3 +1017,26 @@
     }
   })();
 </script>
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: |-
+    {% render 'home-shop-the-look-panel',
+                stl_title: home_stl_title,
+                stl_image: home_stl_image,
+                stl_products: home_stl_products,
+                stl_hotspots: home_stl_hotspots,
+                stl_index: home_stl_panel_idx,
+                stl_hidden: home_stl_is_hidden,
+                stl_grouped: home_stl_total_looks > 1,
+                stl_total_looks: home_stl_total_looks
+              %}
+  to: "{% render 'home-shop-the-look-panel', stl_title: home_stl_title, stl_image:
+    home_stl_image, stl_products: home_stl_products, stl_hotspots: home_stl_hotspots,
+    stl_index: home_stl_panel_idx, stl_hidden: home_stl_is_hidden, stl_grouped: home_stl_total_looks,
+    stl_total_looks: home_stl_total_looks %}"
+  position: 20310..20606
+{% endcomment %}

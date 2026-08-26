@@ -70,7 +70,7 @@
                 {% assign switcher_is_active = false %}
 
                 {% if switcher_collection %}
-                  {% assign switcher_is_active = switcher_collection.handle == collection.handle %}
+                  {% assign switcher_is_active = switcher_collection.handle %}
                   {% assign switcher_image = switcher_collection.image | default: switcher_collection.featured_image %}
                   {% if switcher_image == blank and switcher_collection.products.first %}
                     {% assign switcher_image = switcher_collection.products.first.featured_media.preview_image | default: switcher_collection.products.first.featured_image %}
@@ -109,12 +109,12 @@
               {% assign switcher_url = '/collections/' | append: handle %}
               {% assign switcher_title = fallback_title %}
               {% assign switcher_image = blank %}
-              {% assign switcher_is_active = handle == collection.handle %}
+              {% assign switcher_is_active = handle %}
 
               {% if switcher_collection %}
                 {% assign switcher_url = switcher_collection.url %}
                 {% assign switcher_title = switcher_collection.title | default: fallback_title %}
-                {% assign switcher_is_active = switcher_collection.handle == collection.handle %}
+                {% assign switcher_is_active = switcher_collection.handle %}
                 {% assign switcher_image = switcher_collection.image | default: switcher_collection.featured_image %}
                 {% if switcher_image == blank and switcher_collection.products.first %}
                   {% assign switcher_image = switcher_collection.products.first.featured_media.preview_image | default: switcher_collection.products.first.featured_image %}
@@ -564,3 +564,21 @@
   <script src="{{ 'collection-toolbar.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'collection-card-gallery.js' | asset_url }}" defer="defer"></script>
 {% endpaginate %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% assign switcher_is_active = switcher_collection.handle == collection.handle
+    %}"
+  to: "{% assign switcher_is_active = switcher_collection.handle %}"
+  position: 3108..3168
+- from: "{% assign switcher_is_active = handle == collection.handle %}"
+  to: "{% assign switcher_is_active = handle %}"
+  position: 5434..5474
+- from: "{% assign switcher_is_active = switcher_collection.handle == collection.handle
+    %}"
+  to: "{% assign switcher_is_active = switcher_collection.handle %}"
+  position: 5701..5761
+{% endcomment %}

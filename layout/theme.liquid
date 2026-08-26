@@ -326,7 +326,7 @@
   <script src="{{ 'header-scroll.js' | asset_url }}" defer></script>
   <script src="{{ 'search.js' | asset_url }}" defer></script>
   <script src="{{ 'mobile-menu.js' | asset_url }}" defer></script>
-  {% if template.name == 'product' or (template.name == 'page' and template.suffix == 'home') %}
+  {% if template.name == 'product' or template.name == 'page' and template.suffix == 'home' %}
     <script src="{{ 'shop-the-look.js' | asset_url }}" defer></script>
   {% endif %}
   {% if template.name == 'page' and template.suffix == 'home' %}
@@ -342,3 +342,15 @@
   <script src="{{ 'footer-reveal.js' | asset_url }}" defer></script>
 </body>
 </html>
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% if template.name == 'product' or (template.name == 'page' and template.suffix
+    == 'home') %}"
+  to: "{% if template.name == 'product' or template.name == 'page' and template.suffix
+    == 'home' %}"
+  position: 17731..17823
+{% endcomment %}
